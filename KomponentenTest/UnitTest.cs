@@ -76,56 +76,48 @@ namespace KomponentenTest
         [DataRow(100 * Math.PI *0.5, -100, 100, -100, DisplayName = "quater circle left")]
         public void InterpolationTestCircle(double input, double radius, double expectedX, double expectedY)
         {
-            double[] Xinterp = new double[(int)input];
-            double[] Yinterp = new double[(int)input];
+            double[] Xinterp = new double[(int)input + 1];
+            double[] Yinterp = new double[(int)input + 1];
             double Z;
-            for (int i = 0; i < (int)input; i++)
+            TrassenGeometrie circle = new Kreis(radius);
+            for (int i = 0; i <= (int)input; i++)
             {
-                (Xinterp[i], Yinterp[i],Z) = InterpolationClass.PointOnCircle(i, radius);
-
+                (Xinterp[i], Yinterp[i],Z) = circle.PointAt(i);
             }
-            (double X, double Y,Z) = InterpolationClass.PointOnCircle(input, radius);
-            Assert.AreEqual(expectedX, X, 0.0000001, "Circle Interpolation returned wrong X-coordinate");
-            Assert.AreEqual(expectedY, Y, 0.0000001, "Circle Interpolation returned wrong Y-coordinate");
+            Assert.AreEqual(expectedX, Xinterp.Last(), 0.0000001, "Circle Interpolation returned wrong X-coordinate");
+            Assert.AreEqual(expectedY, Yinterp.Last(), 0.0000001, "Circle Interpolation returned wrong Y-coordinate");
         }
         [TestMethod]
-        [DataRow(100, 500,50, 100, DisplayName = "Clothoid curvature increase")]
-        [DataRow(100, 50, 500, 100, DisplayName = "Clothoid curvature decrease")]
+        [DataRow(100, 0, 50, 100, DisplayName = "Clothoid curvature increase from 0 right turn")]
+        [DataRow(100, 50, 0, 100, DisplayName = "Clothoid curvature decrease to 0 right turn")]
+        [DataRow(100, 0, -50, 100, DisplayName = "Clothoid curvature increase from 0 left turn")]
+        [DataRow(100, -50, 0, 100, DisplayName = "Clothoid curvature decrease to 0 left turn")]
+        [DataRow(100, 500,50, 100, DisplayName = "Clothoid curvature increase right turn")]
+        [DataRow(100, -500, -50, 100, DisplayName = "Clothoid curvature increase left turn")]
+        [DataRow(100, 50, 500, 100, DisplayName = "Clothoid curvature decrease right turn")]
+        [DataRow(100, -50, -500, 100, DisplayName = "Clothoid curvature decrease left turn")]
+        [DataRow(100, 50, -50, 100, DisplayName = "Clothoid curvature decrease right left turn")]
+        [DataRow(100, -50, 50, 100, DisplayName = "Clothoid curvature decrease left right turn")]
         [DataRow(64.81533, 3221.20091, 1573.91942, 64.81533, DisplayName = "Clothoid curvature decrease2")]
-        public void InterpolationTestClothoid(double input, double radius1, double radius2, double length)
+        [DataRow(80, 0, 500, 80, double.NegativeInfinity, double.NegativeInfinity, 0.0800006569, DisplayName = "Clothoid curvature increase2")] //R.Ullrich EVT_3_Uebergangsboegen
+        public void InterpolationTestClothoid(double input, double radius1, double radius2, double length, double expectedX = double.NegativeInfinity, double expectedY = double.NegativeInfinity, double expectedTangent = double.NegativeInfinity)
         {
-            double[] Xinterp = new double[(int)input];
-            double[] Yinterp = new double[(int)input];
-            double Z;
+            double[] Xinterp = new double[(int)input+1];
+            double[] Yinterp = new double[(int)input+1];
+            double[] Tinterp = new double[(int)input+1];
+            TrassenGeometrie klotoid = new Klothoid(radius1, radius2, length);
             using (StreamWriter outputFile = new StreamWriter(Path.Combine(TestContext.TestDir, @"..\CoordinatesOut.txt")))
             {
-                for (int i = 0; i < (int)input; i++)
+                for (int i = 0; i <= (int)input; i++)
                 {
-                    (Xinterp[i], Yinterp[i], Z) = InterpolationClass.PointOnClothoid(i, radius1, radius2, length);
-                    Debug.WriteLine("Clothoid: " + Xinterp[i] + " " + Yinterp[i]);
-                    outputFile.WriteLine(Xinterp[i].ToString(CultureInfo.InvariantCulture) + " " + Yinterp[i].ToString(CultureInfo.InvariantCulture));
+                    (Xinterp[i], Yinterp[i], Tinterp[i]) = klotoid.PointAt(i);
+                    Debug.WriteLine("Clothoid: " + Xinterp[i] + " " + Yinterp[i] + " " + Tinterp[i]);
+                    outputFile.WriteLine(Xinterp[i].ToString(CultureInfo.InvariantCulture) + " " + Yinterp[i].ToString(CultureInfo.InvariantCulture) + " " + Tinterp[i].ToString(CultureInfo.InvariantCulture));
                 }
             }
-            (double X, double Y, Z) = InterpolationClass.PointOnClothoid(input, radius1, radius2, length);
-        }
-        [TestMethod]
-        [DataRow(10.0, DisplayName = "Fresnel")]
-        public void CalculationTestFresnel(double input)
-        {
-            double stepsize = 0.1;
-            double[] Xinterp = new double[(int)(input/stepsize)+1];
-            double[] Yinterp = new double[(int)(input/stepsize)+1];
-            using (StreamWriter outputFile = new StreamWriter(Path.Combine(TestContext.TestDir, @"..\CoordinatesOut.txt")))
-            {
-                int i = 0;
-                for (double x = 0; x < input; x = x + stepsize)
-                {
-                    (Xinterp[i], Yinterp[i]) = InterpolationClass.CalculateFresnel(x);
-                    Debug.WriteLine("Fresnel: " + Xinterp[i] + " " + Yinterp[i]);
-                    outputFile.WriteLine(Xinterp[i].ToString(CultureInfo.InvariantCulture) + " " + Yinterp[i].ToString(CultureInfo.InvariantCulture));
-                    i++;
-                }
-            }       
+            if (double.IsFinite(expectedX)) { Assert.AreEqual(expectedX, Xinterp.Last(), 0.00001, "Clothoid Interpolation returned wrong X-coordinate"); }
+            if (double.IsFinite(expectedY)) { Assert.AreEqual(expectedY, Yinterp.Last(), 0.00001, "Clothoid Interpolation returned wrong Y-coordinate"); }
+            if (double.IsFinite(expectedTangent)) { Assert.AreEqual(expectedTangent, Tinterp.Last(), 0.00001, "Clothoid Interpolation returned wrong Tangent"); }
         }
     }
     
