@@ -16,8 +16,8 @@ figure
 plot(data(:,2),data(:,1));
 hold on
 plot(data(:,2),data(:,1),'.');
-##plot(odsdata(:,5),odsdata(:,7),'o');
-##text(odsdata(:,5),odsdata(:,7), odstext(1:length(odsdata(:,5)),14));
+plot(odsdata(:,5),odsdata(:,7),'o');
+text(odsdata(:,5),odsdata(:,7), strcat("ID",num2str((1:length(odsdata(:,5)))')," ",odstext(1:length(odsdata(:,5)),14)));
 axis equal
 
 

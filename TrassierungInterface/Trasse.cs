@@ -28,10 +28,16 @@ namespace TrassierungInterface
     }
     struct Interpolation
     {
+        /// <value>Hochwert</value>
         public double[] X;
+        /// <value>Rechtswert</value>
         public double[] Y;
+        /// <value>Hoehe</value>
         public double[] Z;
+        /// <value>Station</value>
         public double[] S;
+        /// <value>Richtung</value>
+        public double[] T;
     }
 
     public class TrassenElement
@@ -147,6 +153,7 @@ namespace TrassierungInterface
                 case Trassenkennzeichen.Knick:
                     break;
                 case Trassenkennzeichen.KSprung:
+                    TrassenGeometrie = new Gerade();
                     break;
                 case Trassenkennzeichen.S_Form_1f:
                     break;
@@ -181,15 +188,21 @@ namespace TrassierungInterface
             {
                 if (s + l != successor.s) { TrassierungLog.Logger?.LogWarning("length missmatch. element is not connected to successor", nameof(l)); }
             }
-            //Connectivity by Interpolation
+            //Connectivity & continuity by Interpolation
             double tolerance = 0.00000001;
             if (Interpolation.X?.Length >0 && successor != null)
             {
+                //Connectivity
                 if (Math.Abs(Interpolation.X.Last() - successor.x) > tolerance && Math.Abs(Interpolation.Y.Last() - successor.y) > tolerance){
-                    TrassierungLog.Logger?.LogWarning("Last interpolated(" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x,2) + Math.Pow(Interpolation.Y.Last() - successor.y,2)).ToString()); 
+                    TrassierungLog.Logger?.LogWarning("Last interpolated Element(ID" + id.ToString() + "_" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x,2) + Math.Pow(Interpolation.Y.Last() - successor.y,2)).ToString()); 
+                }
+                //Continuity
+                if (Math.Abs(Interpolation.T.Last() - successor.T) > tolerance)
+                {
+                    TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") heading differs from successors start heading by " + (Interpolation.T.Last() - successor.T).ToString());
                 }
             }
-            return true;
+                return true;
         }
 
         public void Interpolate(double delta = 1.0)
@@ -203,12 +216,13 @@ namespace TrassierungInterface
             Interpolation.Y = new double[num + 1];
             Interpolation.Z = new double[num + 1];
             Interpolation.S = new double[num + 1];
+            Interpolation.T = new double[num + 1];
 
             for (int i = 0; i <= num; i++)
             {
                 Interpolation.S[i] = i * delta;
-                (Interpolation.X[i], Interpolation.Y[i], Interpolation.Z[i]) = TrassenGeometrie.PointAt(i < num ? i * delta : l);
-                if (transform != null) { transform.Apply(ref Interpolation.X[i], ref Interpolation.Y[i]); }
+                (Interpolation.X[i], Interpolation.Y[i], Interpolation.T[i]) = TrassenGeometrie.PointAt(i < num ? i * delta : l);
+                if (transform != null) { transform.Apply(ref Interpolation.X[i], ref Interpolation.Y[i], ref Interpolation.T[i]); }
             }
             PlausibilityCheck();
         }

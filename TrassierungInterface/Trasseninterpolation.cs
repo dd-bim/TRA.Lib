@@ -38,7 +38,7 @@ namespace TrassierungInterface
             int sig = Math.Sign(radius);
             double r = Math.Abs(radius);
             (double X, double Y) = Math.SinCos(s / r);
-            return (X * r, sig * ((1 - Y) * r), 0.0);
+            return (X * r, sig * ((1 - Y) * r), s/r);
         }
     }
     public class Klothoid : TrassenGeometrie
@@ -275,12 +275,13 @@ namespace TrassierungInterface
             this.dy = dy;
             this.dt = dt;
         }
-        public void Apply(ref double X, ref double Y)
+        public void Apply(ref double X, ref double Y, ref double T)
         {
             double x_ = X * Math.Cos(dt) - Y * Math.Sin(dt);
             double y_ = X * Math.Sin(dt) + Y * Math.Cos(dt);
             X = x_ + dx;
             Y = y_ + dy;
+            T = T + dt;
         }
     }
 }
