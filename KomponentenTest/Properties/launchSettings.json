@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KomponentenTest": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
