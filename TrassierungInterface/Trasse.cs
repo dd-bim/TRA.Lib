@@ -52,6 +52,7 @@ namespace TrassierungInterface
         double s;
         /// <value>Kennzeichen des Elements</value>
         Trassenkennzeichen kz;
+        TrassenGeometrie TrassenGeometrie;
         /// <value>Laenge des ELements</value>
         double l;
         /// <value>Ueberhoehung am Elementanfang</value>
@@ -127,6 +128,33 @@ namespace TrassierungInterface
                 predecessor.successor = this;
             }
             PlausibilityCheck();
+
+            switch (this.kz)
+            {
+                case Trassenkennzeichen.Gerade:
+                    TrassenGeometrie = new Gerade();
+                    break;
+                case Trassenkennzeichen.Kreis:
+                    TrassenGeometrie = new Kreis(r1);
+                    break;
+                case Trassenkennzeichen.Klotoide:
+                    TrassenGeometrie = new Klothoid(r1, r2, l);
+                    break;
+                case Trassenkennzeichen.UB_S_Form:
+                    break;
+                case Trassenkennzeichen.Bloss:
+                    break;
+                case Trassenkennzeichen.Knick:
+                    break;
+                case Trassenkennzeichen.KSprung:
+                    break;
+                case Trassenkennzeichen.S_Form_1f:
+                    break;
+                case Trassenkennzeichen.Bloss_1f:
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void Relocate(double x, double y, double t)
@@ -167,72 +195,19 @@ namespace TrassierungInterface
         public void Interpolate(double delta = 1.0)
         {
             Transform2D transform = new Transform2D(x, y, t);
-            //if(kz == Trassenkennzeichen.KSprung) { return; }
-            if (kz != Trassenkennzeichen.Gerade && kz != Trassenkennzeichen.Kreis && kz != Trassenkennzeichen.Klotoide) { return; }
+            if (TrassenGeometrie == null) { return; }
+
             int num = (int)Math.Abs(l / delta);
             if (l < 0 && delta > 0) { delta = -delta; } //set delta negative for negative lengths
             Interpolation.X = new double[num + 1];
             Interpolation.Y = new double[num + 1];
             Interpolation.Z = new double[num + 1];
             Interpolation.S = new double[num + 1];
-            Func<double,(double, double, double)> interpolationFunc = null;
-            switch (kz)
-            {
-                case Trassenkennzeichen.Gerade:
-                    interpolationFunc = x => InterpolationClass.PointOnLine(x);
-                    break;
-                case Trassenkennzeichen.Kreis:
-                    interpolationFunc = x => InterpolationClass.PointOnCircle(x,r1);
-                    break;
-                case Trassenkennzeichen.Klotoide:
-                    interpolationFunc = x => InterpolationClass.PointOnClothoid(x, r1,r2,l);
-                    break;
-                case Trassenkennzeichen.UB_S_Form:
-                    break;
-                case Trassenkennzeichen.Bloss:
-                    break;
-                case Trassenkennzeichen.Knick:
-                    break;
-                case Trassenkennzeichen.KSprung:
-                    break;
-                case Trassenkennzeichen.S_Form_1f:
-                    break;
-                case Trassenkennzeichen.Bloss_1f:
-                    break;
-                default:
-                    break;
-            }
 
             for (int i = 0; i <= num; i++)
             {
                 Interpolation.S[i] = i * delta;
-                (Interpolation.X[i], Interpolation.Y[i], Interpolation.Z[i]) = interpolationFunc(i < num ? i * delta : l);
-                //switch (kz)
-                //{
-                //    case Trassenkennzeichen.Gerade:
-                //        (Interpolation.X[i], Interpolation.Y[i], Interpolation.Z[i]) = InterpolationClass.PointOnLine(i < num ? i * delta : l);
-                //        break;
-                //    case Trassenkennzeichen.Kreis:
-                //        (Interpolation.X[i], Interpolation.Y[i], Interpolation.Z[i]) = InterpolationClass.PointOnCircle(i < num ? i * delta : l, r1);
-                //        break;
-                //    case Trassenkennzeichen.Klotoide:
-                //        (Interpolation.X[i], Interpolation.Y[i], Interpolation.Z[i]) = InterpolationClass.PointOnClothoid(i < num ? i * delta : l, r1,r2,l);               
-                //        break;
-                //    case Trassenkennzeichen.UB_S_Form:
-                //        break;
-                //    case Trassenkennzeichen.Bloss:
-                //        break;
-                //    case Trassenkennzeichen.Knick:
-                //        break;
-                //    case Trassenkennzeichen.KSprung:
-                //        break;
-                //    case Trassenkennzeichen.S_Form_1f:
-                //        break;
-                //    case Trassenkennzeichen.Bloss_1f:
-                //        break;
-                //    default:
-                //        break;
-                //}
+                (Interpolation.X[i], Interpolation.Y[i], Interpolation.Z[i]) = TrassenGeometrie.PointAt(i < num ? i * delta : l);
                 if (transform != null) { transform.Apply(ref Interpolation.X[i], ref Interpolation.Y[i]); }
             }
             PlausibilityCheck();

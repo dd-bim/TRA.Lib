@@ -9,6 +9,128 @@ using System.Threading.Tasks;
 
 namespace TrassierungInterface
 {
+    public abstract class TrassenGeometrie
+    {
+        /// <summary>
+        /// Calculates local Point on Geometry
+        /// </summary>
+        /// <param name="s">Distance along Geometry</param>
+        /// <returns>local X-Coordinate, local Y-Coordinate, local heading</returns>
+        public abstract (double X, double Y, double t) PointAt(double s);
+    }
+    public class Gerade : TrassenGeometrie
+    {
+        public override (double X, double Y, double t) PointAt(double s)
+        {
+            return (s, 0.0, 0.0);
+        }
+    }
+    public class Kreis : TrassenGeometrie
+    {
+        double radius;
+
+        public Kreis(double radius)
+        {
+            this.radius = radius;     
+        }
+        public override (double X, double Y, double t) PointAt(double s)
+        {
+            int sig = Math.Sign(radius);
+            double r = Math.Abs(radius);
+            (double X, double Y) = Math.SinCos(s / r);
+            return (X * r, sig * ((1 - Y) * r), 0.0);
+        }
+    }
+    public class Klothoid : TrassenGeometrie
+    {
+        double r1;
+        double r2;
+        double length;
+
+        public Klothoid(double r1, double r2, double length)
+        {
+           this.r1 = r1;
+           this.r2 = r2;
+           this.length = length;
+           CalcConstants();
+        }
+
+        //Constant parameters
+        double curvature1;
+        double curvature2;
+        double gamma;
+        double Cb;
+        double Sb;
+        Complex Cs1;
+
+        //Intermediate results storage
+        double last_t;
+        double last_Sa;
+        double last_Ca;
+
+        void CalcConstants()
+        {
+            curvature1 = r1 == 0.0 ? 0 : 1 / r1;
+            curvature2 = r2 == 0.0 ? 0 : 1 / r2;
+            gamma = (curvature2 - curvature1) / length;
+            (Sb, Cb) = CalculateFresnel(curvature1 / Math.Sqrt(Math.PI * Math.Abs(gamma)));
+            // Euler Spiral
+            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, Math.Pow(curvature1, 2) / 2 / gamma));
+        }
+        public override (double X, double Y, double t) PointAt(double s)
+        {
+            // Addapted from https://github.com/stefan-urban/pyeulerspiral/blob/master/eulerspiral/eulerspiral.py
+            // original Source: https://www.cs.bgu.ac.il/~ben-shahar/ftp/papers/Edge_Completion/2003:Kimia_Frankel_and_Popescu:Euler_Spiral_for_Shape_Completion.pdf Page 165 Eq(6)
+
+            // Fresnel integrals
+            double Ca = new double();
+            double Sa = new double();
+            (Sa, Ca) = CalculateFresnel((curvature1 + gamma * s) / Math.Sqrt(Math.PI * Math.Abs(gamma)), ref last_t, ref last_Sa, ref last_Ca);
+                        
+            Complex Cs2 = Math.Sign(gamma) * ((Ca - Cb) + new Complex(0, Sa - Sb));
+            Complex Cs = Cs1 * Cs2;
+
+            //Tangent at each point
+            double theta = gamma * Math.Pow(s, 2) / 2 + curvature1 * s;
+            return (Cs.Real, Math.Sign(gamma) * Cs.Imaginary, 0.0);
+        }
+
+        // Implementing the Fresnel integrals using numerical integration
+        static (double S, double C) CalculateFresnel(double x)
+        {
+            int n = 100000; // Number of steps for the integration
+            double step = x / n;
+            double sumS = 0.0;
+            double sumC = 0.0;
+            for (int i = 1; i <= n; i++)
+            {
+                double t = i * step;
+                sumS += Math.Sin(Math.PI * t * t / 2) * step;
+                sumC += Math.Cos(Math.PI * t * t / 2) * step;
+            }
+            return (sumS, sumC);
+        }
+        static (double S, double C) CalculateFresnel(double x, ref double t, ref double sumS, ref double sumC)
+        {
+            int n = 100000; // Number of steps for the integration
+            if (t > x)
+            {
+                t = 0.0;
+                sumS = 0.0;
+                sumC = 0.0;
+            } //reset
+            double step = (x - t) / n;
+            double t_0 = t;
+            for (int i = 1; i <= n; i++)
+            {
+                t = t_0 + i * step;
+                sumS += Math.Sin(Math.PI * t * t / 2) * step;
+                sumC += Math.Cos(Math.PI * t * t / 2) * step;
+            }
+            return (sumS, sumC);
+        }
+    }
+
 
     public class InterpolationClass
     {
@@ -50,8 +172,7 @@ namespace TrassierungInterface
         {
             // Addapted from https://github.com/stefan-urban/pyeulerspiral/blob/master/eulerspiral/eulerspiral.py
             // original Source: https://www.cs.bgu.ac.il/~ben-shahar/ftp/papers/Edge_Completion/2003:Kimia_Frankel_and_Popescu:Euler_Spiral_for_Shape_Completion.pdf Page 165 Eq(6)
-            // maybe Helpfull https://math.stackexchange.com/questions/1785816/calculating-coordinates-along-a-clothoid-betwen-2-curves
-            // https://www.researchgate.net/publication/292669884_The_Clothoid_Computation_A_Simple_and_Efficient_Numerical_Algorithm
+
             if (radius1 == 0.0 && radius2 == 0.0)
             {
                 //Straight Line
@@ -85,7 +206,7 @@ namespace TrassierungInterface
                 Complex Cs = Cs1 * Cs2;
 
                 //Tangent at each point
-                double theta = gamma * Math.Pow(dist, 2) / 2 + curvature1 * dist;// - 0.5*Math.PI;
+                double theta = gamma * Math.Pow(dist, 2) / 2 + curvature1 * dist;
                 double X = Cs.Real;
                 double Y = Cs.Imaginary;
                 //return (X * Math.Cos(test) - Y * Math.Sin(test), X * Math.Sin(test) + Y * Math.Cos(test),0.0);
