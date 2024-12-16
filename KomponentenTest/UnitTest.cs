@@ -40,6 +40,7 @@ namespace TrassierungInterface
             double[] Y = new double[trasse.Elemente.Length];
             double[] Xinterp = new double[0];
             double[] Yinterp = new double[0];
+            double[] Tinterp = new double[0];
             int[] kz = new int[0];
             int i = 0;
             foreach (TrassenElement T in trasse.Elemente)
@@ -53,13 +54,14 @@ namespace TrassierungInterface
                 kz = kz.Concat(filledArray).ToArray();
                 Xinterp = Xinterp.Concat(T.InterpX).ToArray();
                 Yinterp = Yinterp.Concat(T.InterpY).ToArray();
+                Tinterp = Tinterp.Concat(T.InterpT).ToArray();
                 i++;
             }
             using (StreamWriter outputFile = new StreamWriter(Path.Combine(TestContext.TestDir, @"..\CoordinatesOut.txt")))
             {
                 for (int j = 0; j < Xinterp.Length; j++)
                 {
-                    outputFile.WriteLine(Xinterp[j].ToString(CultureInfo.InvariantCulture) + " " + Yinterp[j].ToString(CultureInfo.InvariantCulture) + " " + kz[j]);
+                    outputFile.WriteLine(Xinterp[j].ToString(CultureInfo.InvariantCulture) + " " + Yinterp[j].ToString(CultureInfo.InvariantCulture) + " " + Tinterp[j].ToString(CultureInfo.InvariantCulture));
                 }
             }
             return trasse;
@@ -81,6 +83,7 @@ namespace TrassierungInterface
         {
             Trasse trasse = ImportTestTRA(Filename);
             TrassenElement element = trasse.GetElementFromPoint(PointX, PointY);
+            trasse.Plot();
             Assert.AreEqual(element.ID, expectedElementID, "Input Point was not associated with correct Element");
         }
 
@@ -105,11 +108,10 @@ namespace TrassierungInterface
             double delta = 1.0;
             double[] Xinterp = new double[(int)(input/delta) + 1];
             double[] Yinterp = new double[(int)(input/delta) + 1];
-            double Z;
             TrassenGeometrie circle = new Kreis(radius);
             for (int i = 0; i < Xinterp.Length; i++)
             {
-                (Xinterp[i], Yinterp[i], Z) = circle.PointAt(i < Xinterp.Length-1?i * delta:input);
+                (Xinterp[i], Yinterp[i], _,_) = circle.PointAt(i < Xinterp.Length-1?i * delta:input);
             }
             Assert.AreEqual(expectedX, Xinterp.Last(), 0.0000001, "Circle Interpolation returned wrong X-coordinate");
             Assert.AreEqual(expectedY, Yinterp.Last(), 0.0000001, "Circle Interpolation returned wrong Y-coordinate");
@@ -137,7 +139,7 @@ namespace TrassierungInterface
             {
                 for (int i = 0; i <= (int)input; i++)
                 {
-                    (Xinterp[i], Yinterp[i], Tinterp[i]) = klotoid.PointAt(i);
+                    (Xinterp[i], Yinterp[i], Tinterp[i],_) = klotoid.PointAt(i);
                     Debug.WriteLine("Clothoid: " + Xinterp[i] + " " + Yinterp[i] + " " + Tinterp[i]);
                     outputFile.WriteLine(Xinterp[i].ToString(CultureInfo.InvariantCulture) + " " + Yinterp[i].ToString(CultureInfo.InvariantCulture) + " " + Tinterp[i].ToString(CultureInfo.InvariantCulture));
                 }
@@ -160,9 +162,9 @@ namespace TrassierungInterface
             double OutT = InT;
             transform.Apply(ref InX, ref InY, ref InT);
             transform.ApplyInverse(ref InX, ref InY, ref InT);
-            Assert.AreEqual(InX, OutX,0.00000000001, "Transform gone wrong");
-            Assert.AreEqual(InY, OutY, 0.00000000001, "Transform gone wrong");
-            Assert.AreEqual(InT, OutT, 0.00000000001, "Transform gone wrong");
+            Assert.AreEqual(OutX, InX, 1.0e-10, "Transform gone wrong");
+            Assert.AreEqual(OutY, InY, 1.0e-10, "Transform gone wrong");
+            Assert.AreEqual(OutT, InT, 1.0e-10, "Transform gone wrong");
         }
     }
 

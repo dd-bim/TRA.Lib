@@ -47,6 +47,7 @@ namespace TrassierungInterface
                         reader.ReadSingle();
 
                         Trasse trasse = new Trasse();
+                        trasse.Filename = Path.GetFileName(fileName);
                         trasse.Elemente = new TrassenElement[num + 1];
                         TrassenElement predecessor = null;
                         for (int i = 0; i < num + 1; i++)

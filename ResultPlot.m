@@ -12,6 +12,8 @@ filePath = 'C:\HTW\Trassierung\Ausgabe.ods';
 figure
 hold on
 plot(data(:,2),data(:,1),'.');
+h = quiver (data(:,2), data(:,1), sin (data(:,3)), cos (data(:,3)),0.01);
+set (h, "maxheadsize", 0.33);
 axis equal
 
 % ODS Import
@@ -26,7 +28,8 @@ plot(data_6240046S(:,5),data_6240046S(:,7),'-o');
 text(data_6240046S(:,5),data_6240046S(:,7), strcat("ID",num2str((1:length(data_6240046S(:,5)))')," ",odstext_6240046S(1:length(data_6240046S(:,5)),14)));
 
 
-
+figure
+plot(data(:,3))
 
 
 

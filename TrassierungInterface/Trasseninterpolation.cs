@@ -17,7 +17,7 @@ namespace TrassierungInterface
         /// </summary>
         /// <param name="s">Distance along Geometry</param>
         /// <returns>local X-Coordinate, local Y-Coordinate, local heading</returns>
-        public abstract (double X, double Y, double t) PointAt(double s);
+        public abstract (double X, double Y, double t, double k) PointAt(double s);
         /// <summary>
         /// Calculates local distance s on Geometry to given Point
         /// </summary>
@@ -29,9 +29,9 @@ namespace TrassierungInterface
     }
     public class Gerade : TrassenGeometrie
     {
-        public override (double X, double Y, double t) PointAt(double s)
+        public override (double X, double Y, double t, double k) PointAt(double s)
         {
-            return (s, 0.0, 0.0);
+            return (s, 0.0, 0.0, 0.0);
         }
 
         public override double sAt(double X, double Y, double t = double.PositiveInfinity)
@@ -42,7 +42,7 @@ namespace TrassierungInterface
             }
             else if (t == double.PositiveInfinity) //t is not used
             {
-                return Y;
+                return X;
             }
 
             Vector2 d1 = new Vector2(1, 0);
@@ -68,18 +68,18 @@ namespace TrassierungInterface
         {
             this.radius = radius;     
         }
-        public override (double X, double Y, double t) PointAt(double s)
+        public override (double X, double Y, double t, double k) PointAt(double s)
         {
             int sig = Math.Sign(radius);
             double r = Math.Abs(radius);
             (double X, double Y) = Math.SinCos(s / r);
-            return (X * r, sig * ((1 - Y) * r), s/r);
+            return (X * r, sig * ((1 - Y) * r), s/r, 1/radius);
         }
 
         public override double sAt(double X, double Y, double t = double.PositiveInfinity)
         {
             Vector2 c = new Vector2((float)radius, 0);
-            Vector2 point = new Vector2((float)X,(float)Y);
+            Vector2 point = new Vector2((float)Y,(float)X);
             Vector2 dir;
             if (t == double.PositiveInfinity) //t is not used
             {
@@ -156,9 +156,9 @@ namespace TrassierungInterface
             dir = Math.Sign(r1) == 0 ? Math.Sign(r2) : Math.Sign(r1); //Get turning-direction of the clothoid
             (Sb, Cb) = CalculateFresnel(curvature1 / Math.Sqrt(Math.PI * Math.Abs(gamma)));
             // Euler Spiral
-            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, Math.Pow(curvature1, 2) / 2 / gamma));
+            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, Math.Pow(curvature1, 2) / (2 * gamma)));
         }
-        public override (double X, double Y, double t) PointAt(double s)
+        public override (double X, double Y, double t, double k) PointAt(double s)
         {
             // Addapted from https://github.com/stefan-urban/pyeulerspiral/blob/master/eulerspiral/eulerspiral.py
             // original Source: https://www.cs.bgu.ac.il/~ben-shahar/ftp/papers/Edge_Completion/2003:Kimia_Frankel_and_Popescu:Euler_Spiral_for_Shape_Completion.pdf Page 165 Eq(6)
@@ -173,7 +173,7 @@ namespace TrassierungInterface
 
             //Tangent at point
             double theta = gamma * Math.Pow(s, 2) / 2 + curvature1 * s;
-            return (Cs.Real, dir * Math.Sign(gamma) * Cs.Imaginary, theta);
+            return (Cs.Real, dir * Math.Sign(gamma) * Cs.Imaginary, theta, curvature1 + gamma * s);
         }
 
         // Implementing the Fresnel integrals using numerical integration

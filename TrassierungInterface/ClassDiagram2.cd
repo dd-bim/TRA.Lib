@@ -14,18 +14,18 @@
       <FileName>Gradient.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="TrassierungInterface.TrassenElement">
-    <Position X="2.25" Y="0.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAQCAAABAACAIAABQgAAAEAAQCAAAACAJNdgAAAFAwA=</HashCode>
-      <FileName>Trasse.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="TrassierungInterface.GleisscherenElement">
     <Position X="5.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQgAAAAAAAQAIAAAAAAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
       <FileName>Gleisschere.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TrassierungInterface.TrassenElement">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCAAABAACAoAABQgAAAERgQCQAAQCAJJdgQAAHQwA=</HashCode>
+      <FileName>Trasse.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Enum Name="TrassierungInterface.Trassenkennzeichen">

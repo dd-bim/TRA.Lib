@@ -8,6 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using ScottPlot;
+using ScottPlot.TickGenerators.TimeUnits;
+using System.Windows.Forms;
+using System.Security.Cryptography.Xml;
 
 // AssemblyInfo.cs
 [assembly: InternalsVisibleTo("KomponentenTest")]
@@ -40,12 +44,18 @@ namespace TrassierungInterface
         public double[] S;
         /// <value>Richtung</value>
         public double[] T;
+        /// <value>Krümmung</value>
+        public double[] K;
     }
 
     public class Trasse
     {
+        public string Filename;
         public TrassenElement[] Elemente;
-
+        static Form Form;
+        static ScottPlot.WinForms.FormsPlot Plot2D;
+        static ScottPlot.Plottables.Callout selectedS;
+        ScottPlot.WinForms.FormsPlot PlotT;
         /// <summary>
         /// Iterates backwards over Elements and returns first (and nearest) Element the point is included
         /// </summary>
@@ -62,6 +72,102 @@ namespace TrassierungInterface
             }
             return null;
         }
+        public void Plot()
+        {
+            if (Form == null) {
+                Form = new() { Width = 800, Height = 500 };
+                SplitContainer splitContainer = new SplitContainer
+                {
+                    Dock = DockStyle.Fill,
+                    Orientation = System.Windows.Forms.Orientation.Horizontal,
+                    SplitterDistance = (int)(Form.ClientSize.Height * 0.7)
+                };
+                TabControl tabControl = new TabControl
+                {
+                    Dock = DockStyle.Fill                   
+                };
+                tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
+                splitContainer.Panel2.Controls.Add(tabControl);
+                Form.Controls.Add(splitContainer);
+            }
+            PixelPadding padding = new(80, 80, 30, 5);
+            if (Plot2D == null) {
+                Plot2D = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
+                Form.Controls.OfType<SplitContainer>().First<SplitContainer>().Panel1.Controls.Add(Plot2D);         
+                Plot2D.Plot.Layout.Fixed(padding);
+                Plot2D.MouseDown += Plot2D_MouseClick;
+            }
+            if (PlotT == null) {
+                TabPage tabPage = new TabPage { Text = Filename };
+                PlotT = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
+                PlotT.Plot.Layout.Fixed(padding);
+                tabPage.Controls.Add(PlotT);
+                Form.Controls.OfType<SplitContainer>().First<SplitContainer>().Panel2.Controls.OfType<TabControl>().First<TabControl>().Controls.Add(tabPage);
+            }
+            Plot2D.Plot.Axes.Link(PlotT, true, false);
+            PlotT.Plot.Axes.Link(Plot2D, true, false);                         
+            
+            foreach (TrassenElement element in Elemente)
+            {
+                var scatter = Plot2D.Plot.Add.Scatter(element.InterpY, element.InterpX);
+                scatter.LegendText = Filename;
+                var callout = Plot2D.Plot.Add.Callout(element.ID + "_" + element.KzString,
+                    textLocation: new(element.Ystart + Math.Cos(element.T-0.5*Math.PI)*10, element.Xstart + Math.Sin(element.T - 0.5 * Math.PI) * 10),
+                    tipLocation: new(element.Ystart, element.Xstart));
+                ScottPlot.Color color = scatter.MarkerFillColor;
+                callout.LabelBackgroundColor = color;
+                callout.LabelBorderColor = color.Lighten();
+                callout.ArrowLineColor = color;
+                callout.ArrowFillColor = color;
+                var scatterT = PlotT.Plot.Add.Scatter(element.InterpY, element.InterpT, color);
+                PlotT.Plot.Add.VerticalLine(element.Ystart,2, color);
+                var scatterK = PlotT.Plot.Add.ScatterLine(element.InterpY, element.InterpK, color);
+                // tell each T and K plot to use a different axis
+                scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
+                scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
+            }
+            // Set the axis scale to be equal
+            Plot2D.Plot.Axes.SquareUnits();
+            Plot2D.Plot.HideLegend();
+            Plot2D.Refresh();
+            if(!Form.Visible) Form.ShowDialog();
+            Form.Update();
+        }
+
+        private void Plot2D_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                Coordinates coordinates = Plot2D.Plot.GetCoordinates(new Pixel(e.X, e.Y));
+                TrassenElement element = GetElementFromPoint(coordinates.Y, coordinates.X);
+                if (element == null) { return; }
+                double s = element.GetSAtPoint(coordinates.Y, coordinates.X);
+                (double X, double Y, _) = element.GetPointAtS(s);
+                if (selectedS == null)
+                {
+                    selectedS = Plot2D.Plot.Add.Callout(s.ToString(), Y + 10, X + 10, Y, X);
+                }
+                else
+                {
+                    selectedS.TextCoordinates = coordinates;
+                    selectedS.TipCoordinates = new Coordinates(Y, X);
+                    selectedS.Text = s.ToString();
+                }
+                Plot2D.Refresh();
+            }
+        }
+
+        private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            String label = "";
+            TabControl control = (TabControl)sender;
+            if(control != null) { label = control.SelectedTab.Text; }
+            foreach (var plot in Plot2D.Plot.GetPlottables<ScottPlot.Plottables.Scatter>()) {
+                plot.MarkerSize = plot.LegendText == label ? 5 : 0;
+            }
+            Plot2D.Refresh();
+        }
+       
     }
 
     public class TrassenElement
@@ -121,14 +227,19 @@ namespace TrassierungInterface
         /// <value>Richtung am Elementanfang</value>
         public double T { get { return t; } }
         public int Kz { get { return (int)kz; } }
+        public string KzString { get { return kz.ToString(); } }
         /// <value>Vorgaenger Element</value>
         public TrassenElement Predecessor { get { return predecessor; } }
         /// <value>Hochwert am Elementanfang</value>
         public TrassenElement Successor { get { return successor; } }
         /// <value>X-Koordinaten der Interpolationspunkte</value>
         public double[] InterpX { get { return Interpolation.X == null? new double[0]: Interpolation.X; } }
-            /// <value>Y-Koordinaten der Interpolationspunkte</value>
+        /// <value>Y-Koordinaten der Interpolationspunkte</value>
         public double[] InterpY {get { return Interpolation.Y == null ? new double[0] : Interpolation.Y; } }
+        /// <value>Richtung der Interpolationspunkte</value>
+        public double[] InterpT { get { return Interpolation.T == null ? new double[0] : Interpolation.T; } }
+        /// <value>Krümmubng der Interpolationspunkte</value>
+        public double[] InterpK { get { return Interpolation.K == null ? new double[0] : Interpolation.K; } }
 
         public TrassenElement(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElement predecessor = null, ILogger<TrassenElement> logger = null)
         {
@@ -231,7 +342,7 @@ namespace TrassierungInterface
 
         public void Interpolate(double delta = 1.0)
         {
-            Transform2D transform = new Transform2D(x, y, t);
+            Transform2D transform = new Transform2D(x, y, 0);
             if (TrassenGeometrie == null) { TrassierungLog.Logger?.LogWarning("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", nameof(kz)); return; }
 
             int num = (int)Math.Abs(l / delta);
@@ -241,16 +352,31 @@ namespace TrassierungInterface
             Interpolation.Z = new double[num + 1];
             Interpolation.S = new double[num + 1];
             Interpolation.T = new double[num + 1];
+            Interpolation.K = new double[num + 1];
 
             for (int i = 0; i <= num; i++)
             {
                 Interpolation.S[i] = i * delta;
-                (Interpolation.X[i], Interpolation.Y[i], Interpolation.T[i]) = TrassenGeometrie.PointAt(i < num ? i * delta : l);
+                (Interpolation.X[i], Interpolation.Y[i], Interpolation.T[i], Interpolation.K[i]) = TrassenGeometrie.PointAt(i < num ? i * delta : l);
                 if (transform != null) { transform.Apply(ref Interpolation.X[i], ref Interpolation.Y[i], ref Interpolation.T[i]); }
             }
             PlausibilityCheck();
         }
+        public double GetSAtPoint(double X, double Y, double T = double.PositiveInfinity)
+        {
+            Transform2D transform = new Transform2D(x, y, t);
+            transform.ApplyInverse(ref X,ref Y,ref T);
+            return TrassenGeometrie.sAt(X, Y, T)+s;
+        }
 
+        public (double, double, double) GetPointAtS(double S)
+        {
+            (double X, double Y,_,_) = TrassenGeometrie.PointAt(S-s);
+            Transform2D transform = new Transform2D(x, y, t);
+            double T = 0.0;
+            transform.Apply(ref X, ref Y,ref T);
+            return (X, Y, T);
+        }
 
         public void print()
         {
