@@ -6,9 +6,11 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
-
-
+// AssemblyInfo.cs
+[assembly: InternalsVisibleTo("KomponentenTest")]
 
 namespace TrassierungInterface
 {
@@ -38,6 +40,28 @@ namespace TrassierungInterface
         public double[] S;
         /// <value>Richtung</value>
         public double[] T;
+    }
+
+    public class Trasse
+    {
+        public TrassenElement[] Elemente;
+
+        /// <summary>
+        /// Iterates backwards over Elements and returns first (and nearest) Element the point is included
+        /// </summary>
+        /// <param name="X">X coordinate of Point of Interest</param>
+        /// <param name="Y">Y coordinate of Point of Interest</param>
+        /// <returns></returns>
+        internal TrassenElement GetElementFromPoint(double X, double Y)
+        {
+            foreach (TrassenElement element in Elemente.Reverse())
+            {
+                Vector2 v1 = new Vector2((float)Math.Cos(element.T), (float)Math.Sin(element.T));
+                Vector2 v2 = new Vector2((float)(X - element.Xstart),(float)(Y - element.Ystart));
+                if (Vector2.Dot(v1, v2) > 0) { return element; }
+            }
+            return null;
+        }
     }
 
     public class TrassenElement
@@ -70,7 +94,6 @@ namespace TrassierungInterface
 
         /// ergaenzende Attribute
 
-        static int idx;
         /// <value>ID des Elements</value>
         int id;
         /// <value>Vorgaenger Element</value>
@@ -85,6 +108,8 @@ namespace TrassierungInterface
         Interpolation Interpolation;
 
         /// public
+        ///<value>ID des Elements innerhalb der Trasse</value>
+        public double ID { get { return id; } }
         /// <value>Rechtswert am Elementanfang</value>
         public double Ystart { get { return y; } }
         /// <value>Hochwert am Elementanfang</value>
@@ -105,7 +130,7 @@ namespace TrassierungInterface
             /// <value>Y-Koordinaten der Interpolationspunkte</value>
         public double[] InterpY {get { return Interpolation.Y == null ? new double[0] : Interpolation.Y; } }
 
-        public TrassenElement(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, TrassenElement predecessor = null, ILogger<TrassenElement> logger = null)
+        public TrassenElement(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElement predecessor = null, ILogger<TrassenElement> logger = null)
         {
             this.r1 = r1;
             this.r2 = r2;
@@ -126,7 +151,6 @@ namespace TrassierungInterface
             this.u2 = u2;
             this.c = c;
 
-            idx = idx + 1;
             id = idx;
             if (predecessor != null)
             {
@@ -208,7 +232,7 @@ namespace TrassierungInterface
         public void Interpolate(double delta = 1.0)
         {
             Transform2D transform = new Transform2D(x, y, t);
-            if (TrassenGeometrie == null) { return; }
+            if (TrassenGeometrie == null) { TrassierungLog.Logger?.LogWarning("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", nameof(kz)); return; }
 
             int num = (int)Math.Abs(l / delta);
             if (l < 0 && delta > 0) { delta = -delta; } //set delta negative for negative lengths

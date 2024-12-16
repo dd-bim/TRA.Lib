@@ -24,7 +24,7 @@ namespace TrassierungInterface
 
     public class Trassierung
     {
-        public static TrassenElement[] ImportTRA(string fileName)
+        public static Trasse ImportTRA(string fileName)
         {
             if (File.Exists(fileName))
             {
@@ -46,11 +46,12 @@ namespace TrassierungInterface
                         reader.ReadDouble();
                         reader.ReadSingle();
 
-                        TrassenElement[] trassen = new TrassenElement[num + 1];
+                        Trasse trasse = new Trasse();
+                        trasse.Elemente = new TrassenElement[num + 1];
                         TrassenElement predecessor = null;
                         for (int i = 0; i < num + 1; i++)
                         {
-                            trassen[i] = new TrassenElement(
+                            trasse.Elemente[i] = new TrassenElement(
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadDouble(),
@@ -62,16 +63,17 @@ namespace TrassierungInterface
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadSingle(),
+                            i+1,
                             predecessor
                             );
-                            predecessor = trassen[i];
+                            predecessor = trasse.Elemente[i];
                         }
                         if(reader.BaseStream.Position != reader.BaseStream.Length) { throw new SerializationException("End of Bytestream was not reached"); }
-                        return trassen;
+                        return trasse;
                     }
                 }
             }
-            return new TrassenElement[0];
+            return new Trasse();
         }
         public static void ExportTRA(TrassenElement[] trasse, string fileName)
         {
