@@ -59,6 +59,7 @@ namespace TrassierungInterface
         static ScottPlot.WinForms.FormsPlot Plot2D;
         static ScottPlot.Plottables.Callout selectedS;
         ScottPlot.WinForms.FormsPlot PlotT;
+        DataGridView gridView;
         /// <summary>
         /// Iterates backwards over Elements and returns first (and nearest) Element the point is included
         /// </summary>
@@ -85,16 +86,12 @@ namespace TrassierungInterface
                     Dock = DockStyle.Fill,
                     Orientation = System.Windows.Forms.Orientation.Horizontal,
                     SplitterDistance = (int)(Form.ClientSize.Height * 0.7)
-                };
-                TabControl tabControl = new TabControl
-                {
-                    Dock = DockStyle.Fill
-                };
-                tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
-                Panel BtnPanel = new Panel
+                };               
+                FlowLayoutPanel BtnPanel = new FlowLayoutPanel
                 {
                     Dock = DockStyle.Bottom,
                     Height = 50,
+                    FlowDirection = FlowDirection.LeftToRight,
                     Padding = new(80, 5, 80, 5)
                 };
                 CheckBox CheckShowWarnings = new CheckBox
@@ -104,25 +101,145 @@ namespace TrassierungInterface
                     Checked = true,
                 };
                 CheckShowWarnings.CheckedChanged += CheckShowWarnings_CheckedChanged;
-                BtnPanel.Controls.Add(CheckShowWarnings);
-                splitContainer.Panel2.Controls.Add(BtnPanel);
-                splitContainer.Panel2.Controls.Add(tabControl);
+                CheckBox CheckElementLabels = new CheckBox
+                {
+                    Text = "Show Element Labels",
+                    AutoSize = true,
+                    Checked = true,
+                };
+                CheckElementLabels.CheckedChanged += CheckElementLabels_CheckedChanged;
+                TabControl tabControl = new TabControl
+                {
+                    Dock = DockStyle.Fill
+                };
+                tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
                 Form.Controls.Add(splitContainer);
+                Form.Controls.Add(BtnPanel);
+                BtnPanel.Controls.Add(CheckElementLabels);
+                BtnPanel.Controls.Add(CheckShowWarnings);   
+                splitContainer.Panel2.Controls.Add(tabControl);
+                
             }
             //Add Plot for 2D overview
-            PixelPadding padding = new(80, 80, 30, 5);
+            PixelPadding padding = new(80, 80, 20, 5);
             if (Plot2D == null) {
                 Plot2D = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
                 Form.Controls.OfType<SplitContainer>().First<SplitContainer>().Panel1.Controls.Add(Plot2D);         
                 Plot2D.Plot.Layout.Fixed(padding);
+                //Plot2D.Plot.XLabel("Rechtswert Y[m]");
+                Plot2D.Plot.YLabel("Hochwert X[m]");
                 Plot2D.MouseDown += Plot2D_MouseClick;
             }
             //Add Plot for heading and curvature
             if (PlotT == null) {
-                TabPage tabPage = new TabPage { Text = Filename };
+                TabPage tabPage = new TabPage { Text = Filename};
+                SplitContainer splitContainer = new SplitContainer
+                {
+                    Dock = DockStyle.Fill,
+                    //Height = 500,
+                    Orientation = System.Windows.Forms.Orientation.Horizontal,
+                    SplitterDistance = (int)(tabPage.Height * 0.9),
+                };
+                gridView = new DataGridView
+                {
+                    Dock = DockStyle.Fill,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                };
+                gridView.Columns.AddRange(new DataGridViewColumn[]
+                {
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "ID",
+                        Name = "ID",
+                        ValueType = typeof(int),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "R1",
+                        Name = "R1",
+                        ToolTipText = "Radius am Elementanfang",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "R2",
+                        Name = "R2",
+                        ToolTipText = "Radius am Elementende",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "Rechtswert Y",
+                        Name = "Y",
+                        ToolTipText = "Rechtswert am Elementanfang",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "Hochwert X",
+                        Name = "X",
+                        ToolTipText = "Hochwert am Elementanfang",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "T",
+                        Name = "T",
+                        ToolTipText = "Richtung am Elementanfang",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "S",
+                        Name = "S",
+                        ToolTipText = "Stationswert am Elementanfang",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "Kz",
+                        Name = "Kz",
+                        ToolTipText = "Kennzeichen des Elements",
+                        ValueType = typeof(Trassenkennzeichen),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "L",
+                        Name = "L",
+                        ToolTipText = "Länge des Elements",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "U1",
+                        Name = "U1",
+                        ToolTipText = "Überhöhung am Elementanfang",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "U2",
+                        Name = "U2",
+                        ToolTipText = "Überhöhung am Elementende",
+                        ValueType = typeof(double),
+                    },
+                    new DataGridViewTextBoxColumn
+                    {
+                        HeaderText = "C",
+                        Name = "C",
+                        ToolTipText = "Abstand zur Trasse",
+                        ValueType = typeof(double),
+                    }
+                });
                 PlotT = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
+                padding = new(80, 80, 50, 5);
                 PlotT.Plot.Layout.Fixed(padding);
-                tabPage.Controls.Add(PlotT);
+                PlotT.Plot.XLabel("Rechtswert Y[m]");
+                PlotT.Plot.Axes.Left.Label.Text = "Heading [rad]";
+                PlotT.Plot.Axes.Right.Label.Text = "Curvature [1/m]";
+                splitContainer.Panel1.Controls.Add(PlotT);
+                splitContainer.Panel2.Controls.Add(gridView);
+                tabPage.Controls.Add(splitContainer);
                 Form.Controls.OfType<SplitContainer>().First<SplitContainer>().Panel2.Controls.OfType<TabControl>().First<TabControl>().Controls.Add(tabPage);
             }
             Plot2D.Plot.Axes.Link(PlotT, true, false);
@@ -147,6 +264,8 @@ namespace TrassierungInterface
                 scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
                 scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
 
+                //Raw Data to GridView
+                gridView.Rows.Add(element.ID,element.R1,element.R2,element.Ystart, element.Xstart,element.T,element.S,element.KzString,element.L,element.U1,element.U2,element.C);
                 //Warnings
                 foreach (var warning in element.GetWarnings)
                 {
@@ -159,6 +278,17 @@ namespace TrassierungInterface
             Plot2D.Refresh();
             if(!Form.Visible) Form.ShowDialog();
             Form.Update();
+        }
+
+        private void CheckElementLabels_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox box = (CheckBox)sender;
+            bool show = box.Checked;
+            foreach (var callout in Plot2D.Plot.GetPlottables<ScottPlot.Plottables.Callout>())
+            {
+                if(callout is not WarningCallout) callout.IsVisible = show;
+            }
+            Plot2D.Refresh();
         }
 
         private void CheckShowWarnings_CheckedChanged(object sender, EventArgs e)
@@ -257,7 +387,11 @@ namespace TrassierungInterface
 
         /// public
         ///<value>ID des Elements innerhalb der Trasse</value>
-        public double ID { get { return id; } }
+        public int ID { get { return id; } }
+        /// <value>Radius am Elementanfang</value>
+        public double R1 { get { return r1; } }
+        /// <value>Radius am Elementende</value>
+        public double R2 { get { return r2; } }
         /// <value>Rechtswert am Elementanfang</value>
         public double Ystart { get { return y; } }
         /// <value>Hochwert am Elementanfang</value>
@@ -266,6 +400,16 @@ namespace TrassierungInterface
         public double Yend { get { return successor.y; } }
         /// <value>Hochwert am Elementende</value>
         public double Xend { get { return successor.x; } }
+        /// <value>Station am Elementanfang</value>
+        public double S { get { return s; } }
+        /// <value>Länge des Elements</value>
+        public double L { get { return l; } }
+        /// <value>Überhöhung am Elementanfang</value>
+        public double U1 { get { return u1; } }
+        /// <value>Überhöhung am Elementende</value>
+        public double U2 { get { return u2; } }
+        /// <value>Abstand zu Trasse</value>
+        public double C { get { return c; } }
         /// <value>Richtung am Elementanfang</value>
         public double T { get { return t; } }
         public int Kz { get { return (int)kz; } }
@@ -447,15 +591,18 @@ namespace TrassierungInterface
 #if USE_SCOTTPLOT
     public class WarningCallout : ScottPlot.Plottables.Callout
     {
+        static double Xlast; //prevent multiple callouts at same location
         public WarningCallout(string text, double X, double Y) 
         {
             ScottPlot.Color color = ScottPlot.Color.FromSDColor(System.Drawing.Color.Yellow);
+            ScottPlot.Color LineColor = ScottPlot.Color.FromSDColor(System.Drawing.Color.Red);
             Text = text;
-            TextCoordinates = new Coordinates(Y + 10, X + 10);
             TipCoordinates = new Coordinates(Y, X);
-            ArrowLineColor = color;
+            TextCoordinates = new Coordinates(Y + 10, (X != Xlast?X:X = X-5) + 10);
+            Xlast = X;
+            ArrowLineColor = LineColor;
             ArrowFillColor = color;
-            TextBorderColor = color;
+            TextBorderColor = LineColor;
             TextBackgroundColor = color.Lighten();
         }
     }

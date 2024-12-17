@@ -213,7 +213,36 @@ namespace TrassierungInterface
 
         public override double sAt(double X, double Y, double t = double.PositiveInfinity)
         {
-            throw new NotImplementedException();
+            double threshold = 0.001;
+            double delta = 1.0;
+            double X_ = 0.0;
+            double Y_ = 0.0;
+            double t_ = 0.0;
+            double k = 0.0;
+            double s = 0.0;
+            double d = double.PositiveInfinity; //distance between point and normal
+            Vector2 v1, v2;
+            int maxIterations = 1000;
+            int i = 0;
+            while (i < maxIterations && d > threshold)
+            {
+                (X_, Y_, t_, k) = PointAt(s);
+                v1 = new Vector2((float)Math.Sin(t_), (float)Math.Cos(t_));
+                v2 = new Vector2((float)(X - X_), (float)(Y - Y_));
+                //v2 = new Vector2((float)(Y - Y_), (float)(X - X_));
+                double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
+                if (Math.Sign(scalarCross) != Math.Sign(delta))
+                //if (Math.Sign(Vector2.Dot(v2, v1)) != Math.Sign(delta))
+                {
+                    delta = -0.5 * delta;
+                }
+                // Compute d by cross product
+                
+                d = Math.Abs(scalarCross) / (float)v1.Length();
+                s = s + delta;
+                i++;
+            }
+            return s;
         }
     }
    
