@@ -156,7 +156,7 @@ namespace TrassierungInterface
             dir = Math.Sign(r1) == 0 ? Math.Sign(r2) : Math.Sign(r1); //Get turning-direction of the clothoid
             (Sb, Cb) = CalculateFresnel(curvature1 / Math.Sqrt(Math.PI * Math.Abs(gamma)));
             // Euler Spiral
-            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, Math.Pow(curvature1, 2) / (2 * gamma)));
+            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, -Math.Sign(gamma)*(curvature1 * curvature1) / (2 * gamma)));
         }
         public override (double X, double Y, double t, double k) PointAt(double s)
         {

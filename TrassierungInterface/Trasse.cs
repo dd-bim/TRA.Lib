@@ -12,6 +12,9 @@ using ScottPlot;
 using ScottPlot.TickGenerators.TimeUnits;
 using System.Windows.Forms;
 using System.Security.Cryptography.Xml;
+using System.Reflection.PortableExecutable;
+using System.Drawing;
+using System.Reflection.Emit;
 
 // AssemblyInfo.cs
 [assembly: InternalsVisibleTo("KomponentenTest")]
@@ -72,6 +75,7 @@ namespace TrassierungInterface
             }
             return null;
         }
+#if USE_SCOTTPLOT
         public void Plot()
         {
             if (Form == null) {
@@ -84,12 +88,28 @@ namespace TrassierungInterface
                 };
                 TabControl tabControl = new TabControl
                 {
-                    Dock = DockStyle.Fill                   
+                    Dock = DockStyle.Fill
                 };
                 tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
+                Panel BtnPanel = new Panel
+                {
+                    Dock = DockStyle.Bottom,
+                    Height = 50,
+                    Padding = new(80, 5, 80, 5)
+                };
+                CheckBox CheckShowWarnings = new CheckBox
+                {
+                    Text = "Show Warnings",
+                    AutoSize = true,
+                    Checked = true,
+                };
+                CheckShowWarnings.CheckedChanged += CheckShowWarnings_CheckedChanged;
+                BtnPanel.Controls.Add(CheckShowWarnings);
+                splitContainer.Panel2.Controls.Add(BtnPanel);
                 splitContainer.Panel2.Controls.Add(tabControl);
                 Form.Controls.Add(splitContainer);
             }
+            //Add Plot for 2D overview
             PixelPadding padding = new(80, 80, 30, 5);
             if (Plot2D == null) {
                 Plot2D = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
@@ -97,6 +117,7 @@ namespace TrassierungInterface
                 Plot2D.Plot.Layout.Fixed(padding);
                 Plot2D.MouseDown += Plot2D_MouseClick;
             }
+            //Add Plot for heading and curvature
             if (PlotT == null) {
                 TabPage tabPage = new TabPage { Text = Filename };
                 PlotT = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
@@ -125,6 +146,12 @@ namespace TrassierungInterface
                 // tell each T and K plot to use a different axis
                 scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
                 scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
+
+                //Warnings
+                foreach (var warning in element.GetWarnings)
+                {
+                    Plot2D.Plot.Add.Plottable(warning);
+                }
             }
             // Set the axis scale to be equal
             Plot2D.Plot.Axes.SquareUnits();
@@ -132,6 +159,17 @@ namespace TrassierungInterface
             Plot2D.Refresh();
             if(!Form.Visible) Form.ShowDialog();
             Form.Update();
+        }
+
+        private void CheckShowWarnings_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox box = (CheckBox)sender;
+            bool show = box.Checked;
+            foreach (var warning in Plot2D.Plot.GetPlottables<WarningCallout>())
+            {
+                warning.IsVisible = show;
+            }
+            Plot2D.Refresh();
         }
 
         private void Plot2D_MouseClick(object sender, MouseEventArgs e)
@@ -167,7 +205,8 @@ namespace TrassierungInterface
             }
             Plot2D.Refresh();
         }
-       
+#endif
+
     }
 
     public class TrassenElement
@@ -212,6 +251,9 @@ namespace TrassierungInterface
         GleisscherenElement[] Gleisscheren;
         /// <value>Interpolationsobjekt</value>
         Interpolation Interpolation;
+#if USE_SCOTTPLOT
+        List<WarningCallout> WarningCallouts = new() { };
+#endif
 
         /// public
         ///<value>ID des Elements innerhalb der Trasse</value>
@@ -238,8 +280,12 @@ namespace TrassierungInterface
         public double[] InterpY {get { return Interpolation.Y == null ? new double[0] : Interpolation.Y; } }
         /// <value>Richtung der Interpolationspunkte</value>
         public double[] InterpT { get { return Interpolation.T == null ? new double[0] : Interpolation.T; } }
-        /// <value>Krümmubng der Interpolationspunkte</value>
+        /// <value>Krümmung der Interpolationspunkte</value>
         public double[] InterpK { get { return Interpolation.K == null ? new double[0] : Interpolation.K; } }
+#if USE_SCOTTPLOT
+        /// <value>List of Warning Callouts to show on Plot</value>
+        public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
+#endif
 
         public TrassenElement(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElement predecessor = null, ILogger<TrassenElement> logger = null)
         {
@@ -309,8 +355,9 @@ namespace TrassierungInterface
         /// <summary>
         /// Plausibility Check
         /// </summary>
-        bool PlausibilityCheck()
+        public bool PlausibilityCheck(bool bCheckRadii = false)
         {
+            WarningCallouts.Clear();
             //Radii
             if (kz == Trassenkennzeichen.Gerade && r1 != 0 & r2 != 0) { TrassierungLog.Logger?.LogWarning("given Radii are not matching to KZ as it is 'Gerade''", nameof(kz)); }
             if (kz == Trassenkennzeichen.Kreis && r1 != r2) { TrassierungLog.Logger?.LogWarning("given Radii are not equal for KZ is 'Kreis''", nameof(kz)); }
@@ -329,20 +376,34 @@ namespace TrassierungInterface
             {
                 //Connectivity
                 if (Math.Abs(Interpolation.X.Last() - successor.x) > tolerance && Math.Abs(Interpolation.Y.Last() - successor.y) > tolerance){
-                    TrassierungLog.Logger?.LogWarning("Last interpolated Element(ID" + id.ToString() + "_" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x,2) + Math.Pow(Interpolation.Y.Last() - successor.y,2)).ToString()); 
+                    TrassierungLog.Logger?.LogWarning("Last interpolated Element(ID" + id.ToString() + "_" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x,2) + Math.Pow(Interpolation.Y.Last() - successor.y,2)).ToString());
+                    AddWarningCallout("coordinate difference \n" + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x, 2) + Math.Pow(Interpolation.Y.Last() - successor.y, 2)).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
-                //Continuity
+                //Continuity of Heading
                 if (Math.Abs(Interpolation.T.Last() - successor.T) > tolerance)
                 {
                     TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") heading differs from successors start heading by " + (Interpolation.T.Last() - successor.T).ToString());
+                    AddWarningCallout("heading difference \n" + (Interpolation.T.Last() - successor.T).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
+                }
+                //Continuity of Radii(Curvature)
+                if (bCheckRadii && Math.Abs(Interpolation.K.Last() == 0?0:1/ Interpolation.K.Last() - successor.r1) > tolerance)
+                {
+                    TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") radius differs from successors start radius by " + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString());
+                    AddWarningCallout("curvature difference \n" + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
             }
-                return true;
+            return true;
+        }
+        void AddWarningCallout(string text, double X, double Y)
+        {
+#if USE_SCOTTPLOT
+            WarningCallouts.Add(new WarningCallout(text,X, Y));
+#endif
         }
 
         public void Interpolate(double delta = 1.0)
         {
-            Transform2D transform = new Transform2D(x, y, 0);
+            Transform2D transform = new Transform2D(x, y, t);
             if (TrassenGeometrie == null) { TrassierungLog.Logger?.LogWarning("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", nameof(kz)); return; }
 
             int num = (int)Math.Abs(l / delta);
@@ -383,4 +444,20 @@ namespace TrassierungInterface
             Console.WriteLine("R1:" + r1 + " R2:" + r2 + " Y:" + y + " X:" + x + " T:" + t + " S:" + s + " Kz:" + kz.ToString() + " L:" + l + " U1:" + u1 + " U2:" + u2 + " C:" + c);
         }
     }
+#if USE_SCOTTPLOT
+    public class WarningCallout : ScottPlot.Plottables.Callout
+    {
+        public WarningCallout(string text, double X, double Y) 
+        {
+            ScottPlot.Color color = ScottPlot.Color.FromSDColor(System.Drawing.Color.Yellow);
+            Text = text;
+            TextCoordinates = new Coordinates(Y + 10, X + 10);
+            TipCoordinates = new Coordinates(Y, X);
+            ArrowLineColor = color;
+            ArrowFillColor = color;
+            TextBorderColor = color;
+            TextBackgroundColor = color.Lighten();
+        }
+    }
+#endif
 }
