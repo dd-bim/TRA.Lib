@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -24,7 +25,7 @@ namespace TrassierungInterface
 
     public class Trassierung
     {
-        public static Trasse ImportTRA(string fileName)
+        public static TRATrasse ImportTRA(string fileName)
         {
             if (File.Exists(fileName))
             {
@@ -46,13 +47,22 @@ namespace TrassierungInterface
                         reader.ReadDouble();
                         reader.ReadSingle();
 
-                        Trasse trasse = new Trasse();
-                        trasse.Filename = Path.GetFileName(fileName);
-                        trasse.Elemente = new TrassenElement[num + 1];
-                        TrassenElement predecessor = null;
+                        //Search for existing trasse
+                        TRATrasse trasse = (TRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Contains(Path.GetFileName(fileName).Split('.')[0]));
+                        if (trasse != null)
+                        {
+                            TrassierungLog.Logger?.LogInformation("A existing TRA-Trasse was found, esisting TRA Data is overwritten", nameof(trasse));
+                        }
+                        else { 
+                            trasse = new TRATrasse();
+                            trasse.Filename = Path.GetFileName(fileName);
+                        }
+                        
+                        trasse.Elemente = new TrassenElementExt[num + 1];
+                        TrassenElementExt predecessor = null;
                         for (int i = 0; i < num + 1; i++)
                         {
-                            trasse.Elemente[i] = new TrassenElement(
+                            trasse.Elemente[i] = new TrassenElementExt(
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadDouble(),
@@ -74,14 +84,14 @@ namespace TrassierungInterface
                     }
                 }
             }
-            return new Trasse();
+            return new TRATrasse();
         }
         public static void ExportTRA(TrassenElement[] trasse, string fileName)
         {
             
         }
 
-        public static (GradientElement[], GleisscherenElement[]) ImportGRA(string fileName)
+        public static (GRATrasse, GleisscherenElement[]) ImportGRA(string fileName)
         {
             if (File.Exists(fileName))
             {
@@ -98,16 +108,32 @@ namespace TrassierungInterface
                         reader.ReadDouble();
                         num_GS = reader.ReadInt32();
 
-                        GradientElement[] gradienten = new GradientElement[num_NW];
+                        //Search for existing trasse
+                        GRATrasse trasse = (GRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Contains(Path.GetFileName(fileName).Split('.')[0]));
+                        if (trasse != null)
+                        {
+                            TrassierungLog.Logger?.LogInformation("A existing Trasse was found: " + (trasse is TRATrasse ? "GRA Data is added to TRATrasse, " : "") + "existing GRA Data is overwritten", nameof(trasse));
+                        }
+                        else 
+                        { 
+                            trasse = new GRATrasse();
+                            trasse.Filename = Path.GetFileName(fileName);
+                        }
+                        
+                        trasse.GradientenElemente = new GradientElementExt[num_NW];
+                        GradientElementExt predecessor = null;
                         for (int i = 0; i < num_NW; i++)
                         {
-                            gradienten[i] = new GradientElement(
+                            trasse.GradientenElemente[i] = new GradientElementExt(
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadDouble(),
-                            reader.ReadInt32()
+                            reader.ReadInt32(),
+                            i+1,
+                            predecessor
                             );
+                            predecessor = trasse.GradientenElemente[i];
                         }
                         GleisscherenElement[] gleisscheren = new GleisscherenElement[num_GS];
                         for (int i = 0; i < num_GS; i++)
@@ -121,11 +147,11 @@ namespace TrassierungInterface
                             );
                         }
                         if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new SerializationException("End of Bytestream was not reached"); }
-                        return (gradienten, gleisscheren);
+                        return (trasse, gleisscheren);
                     }
                 }
             }
-            return (new GradientElement[0],new GleisscherenElement[0]);
+            return (null,new GleisscherenElement[0]);
         }
         public static void ExportGRA(GradientElement[] gradient, GleisscherenElement[] gleisschere, string fileName)
         {

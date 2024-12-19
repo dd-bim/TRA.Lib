@@ -33,9 +33,9 @@ namespace TrassierungInterface
         [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046R.TRA", DisplayName = "6240046R.TRA")]
         [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", DisplayName = "6240046S.TRA")]
         [DataRow("C:\\HTW\\Trassierung\\Infos\\Achse.TRA", DisplayName = "Achse.TRA")]
-        public Trasse ImportTestTRA(string Filename)
+        public TRATrasse ImportTestTRA(string Filename)
         {
-            Trasse trasse = Trassierung.ImportTRA(Filename);
+            TRATrasse trasse = Trassierung.ImportTRA(Filename);
             double[] X = new double[trasse.Elemente.Length];
             double[] Y = new double[trasse.Elemente.Length];
             double[] Xinterp = new double[0];
@@ -43,7 +43,7 @@ namespace TrassierungInterface
             double[] Tinterp = new double[0];
             int[] kz = new int[0];
             int i = 0;
-            foreach (TrassenElement T in trasse.Elemente)
+            foreach (TrassenElementExt T in trasse.Elemente)
             {
                 T.Interpolate();
                 //T.print(); 
@@ -70,10 +70,12 @@ namespace TrassierungInterface
         [DataRow("C:\\HTW\\Trassierung\\Infos\\6240045L.GRA", DisplayName = "6240045L.GRA")]
         [DataRow("C:\\HTW\\Trassierung\\Infos\\6240045R.GRA", DisplayName = "6240045R.GRA")]
         [DataRow("C:\\HTW\\Trassierung\\Infos\\Gradiente.GRA", DisplayName = "Gradiente.GRA")]
-        public void ImportTestGRA(string Filename)
+        public GRATrasse ImportTestGRA(string Filename)
         {
-            (GradientElement[] TEST, GleisscherenElement[] TEST2) = Trassierung.ImportGRA(Filename);
-            foreach (GradientElement T in TEST) { T.print(); }
+            GRATrasse trasse;
+            (trasse, GleisscherenElement[] TEST2) = Trassierung.ImportGRA(Filename);
+            foreach (GradientElementExt T in trasse.GradientenElemente) { T.print(); }
+            return trasse;
         }
         [TestMethod]
         [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046L.TRA",5.4221e+06,5.6488e+06,26,DisplayName = "6240046L.TRA")]
@@ -81,17 +83,17 @@ namespace TrassierungInterface
         [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", 5.4221e+06, 5.6488e+06,16, DisplayName = "6240046S.TRA")]
         public void TestGetTrassenelementFromPoint(string Filename,double PointY, double PointX, int expectedElementID)
         {
-            Trasse trasse = ImportTestTRA(Filename);
-            TrassenElement element = trasse.GetElementFromPoint(PointX, PointY);
+            TRATrasse trasse = ImportTestTRA(Filename);
+            TrassenElementExt element = trasse.GetElementFromPoint(PointX, PointY);
             trasse.Plot();
             Assert.AreEqual(element.ID, expectedElementID, "Input Point was not associated with correct Element");
         }
 
         [TestMethod]
-        [DataRow(10.0,5.0,5.0,11.78097245, DisplayName = "Get s along Circle from Point (135°)")]
-        [DataRow(0.0, 5.0, 5.0, 3.926990817, DisplayName = "Get s along Circle from Point (45°)")]
-        [DataRow(5.0, -10.0, 5.0, 23.5619449, DisplayName = "Get s along Circle from Point (270°)")]
-        [DataRow(-10.0, 5.0, -5.0, 11.78097245, DisplayName = "Get s along Circle from Point (-135°)")]
+        [DataRow(5.0, 10.0,5.0,11.78097245, DisplayName = "Get s along Circle from Point (135°)")]
+        [DataRow(5.0, 0.0, 5.0, 3.926990817, DisplayName = "Get s along Circle from Point (45°)")]
+        [DataRow(-10.0, 5.0, 5.0, 23.5619449, DisplayName = "Get s along Circle from Point (270°)")]
+        [DataRow(5.0, -10.0, -5.0, 11.78097245, DisplayName = "Get s along Circle from Point (-135°)")]
         public void SalongCircle(double PointX, double PointY, double radius, double expectedS)
         {
             TrassenGeometrie geometry = new Kreis(radius);
@@ -165,6 +167,22 @@ namespace TrassierungInterface
             Assert.AreEqual(OutX, InX, 1.0e-10, "Transform gone wrong");
             Assert.AreEqual(OutY, InY, 1.0e-10, "Transform gone wrong");
             Assert.AreEqual(OutT, InT, 1.0e-10, "Transform gone wrong");
+        }
+        [TestMethod]
+        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046L.TRA", "C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", "C:\\HTW\\Trassierung\\Infos\\6240045L.GRA", DisplayName = "3D Interpolation 6240046L.TRA")]
+        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046R.TRA", "C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", "C:\\HTW\\Trassierung\\Infos\\6240045R.GRA", DisplayName = "3D Interpolation 6240046R.TRA")]
+        public void TestImportTrasse(string FilenameTRA_LR, string FilenameTRA_S, string FilenameGRA_LR)
+        {
+            TRATrasse trasseLR = Trassierung.ImportTRA(FilenameTRA_LR);
+            TRATrasse trasseS = Trassierung.ImportTRA(FilenameTRA_S);
+            GRATrasse trasseGRA;
+            (trasseGRA, _) = Trassierung.ImportGRA(FilenameGRA_LR);
+            trasseLR.SetTrasseS = trasseS;
+            trasseLR.AssignGRA(trasseGRA);
+            trasseLR.Interpolate3D(null,10);
+            trasseLR.Plot();
+            trasseS.Interpolate();
+            trasseS.Plot();
         }
     }
 

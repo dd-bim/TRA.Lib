@@ -6,30 +6,33 @@ using System.Threading.Tasks;
 
 namespace TrassierungInterface
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GradientElement
     {
         /// <value>Station NW</value>
-        double S;
+        protected double s;
         /// <value>Hoehe NW</value>
-        double H;
+        protected double h;
         /// <value>Ausrundungsradius</value>
-        double R;
+        protected double r;
         /// <value>Tangentenlaenge</value>
-        double T;
+        protected double t;
         /// <value>Punktnummer</value>
-        long Pkt;
+        protected int pkt;
 
         public GradientElement(double s, double h, double r, double t, long pkt)
         {
-            S = s;
-            H = h;
-            R = r;
-            T = t;
-            Pkt = pkt;
+            this.s = s;
+            this.h = h;
+            this.r = r;
+            this.t = t;
+            this.pkt = (int)(pkt / 1000);
         }
         public void print()
         {
-            Console.WriteLine("S:" + S + " H:" + H + " R:" + R + " T:" + T + " Pkt:" + Pkt);
+            Console.WriteLine("S:" + s + " H:" + h + " R:" + r + " T:" + t + " Pkt:" + pkt);
         }
     }
 }

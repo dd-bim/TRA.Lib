@@ -78,8 +78,8 @@ namespace TrassierungInterface
 
         public override double sAt(double X, double Y, double t = double.PositiveInfinity)
         {
-            Vector2 c = new Vector2((float)radius, 0);
-            Vector2 point = new Vector2((float)Y,(float)X);
+            Vector2 c = new Vector2(0, (float)radius);
+            Vector2 point = new Vector2((float)X,(float)Y);
             Vector2 dir;
             if (t == double.PositiveInfinity) //t is not used
             {
@@ -108,7 +108,7 @@ namespace TrassierungInterface
             // Calculate nearest intersection point
             Vector2 intersection = point + (float)(Math.Abs(t1) < Math.Abs(t2) ? t1:t2) * dir;
             intersection = intersection - c; //relative to center
-            double s_ = radius > 0 ? Math.PI - Math.Atan2(intersection.Y, intersection.X) : Math.Atan2(intersection.Y, intersection.X);
+            double s_ = radius > 0 ? Math.PI - Math.Atan2(intersection.X, intersection.Y) : Math.Atan2(intersection.X, intersection.Y);
             return s_ * Math.Abs(radius);
         }
     }
