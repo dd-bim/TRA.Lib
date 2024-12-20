@@ -208,6 +208,7 @@ namespace TrassierungInterface
             for (int i = 1; i <= n; i++)
             {
                 t = t_0 + i * step;
+                double sin, cos;
                 (sin, cos) = Math.SinCos(Math.PI * t * t / 2);
                 sumS += sin * step;
                 sumC += cos * step;
