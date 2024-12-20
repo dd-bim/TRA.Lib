@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace TrassierungInterface
 {
     /// <summary>
-    /// 
+    /// Base Datastructure for a GRA-File
     /// </summary>
     public class GradientElement
     {

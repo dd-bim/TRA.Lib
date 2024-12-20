@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace TrassierungInterface
 {
+    /// <summary>
+    /// Extended GradientElement providing functionality for calculating heights defined by the base <seealso cref="GradientElement"/>
+    /// </summary>
+    /// <remarks> For caluclations see Gruber, Franz Josef ; Joeckel, Rainer ; Austen, Gerrit: Formelsammlung für das Vermessungswesen. Berlin Heidelberg New York: Springer-Verlag, 2014 S.152.</remarks>
+
     public class GradientElementExt : GradientElement
     {
         /// <value>ID des Elements</value>
@@ -19,18 +20,18 @@ namespace TrassierungInterface
         public double X = double.NaN;
         /// <value>Rechtswert</value>
         public double Y = double.NaN;
-        /// <value>Längsneigung (vom predecessor kommend)</value>
+        /// <value>Längsneigung[‰] (vom predecessor kommend)</value>
         double s1;
-        /// <value>Längsneigung (zum successor)</value>
+        /// <value>Längsneigung[‰] (zum successor)</value>
         double s2;
-        /// <value>Auf die Horizontale reduzierte Tangentenlänge</value>
-        double T_;
 
         //Constants
         /// <value>Höhe am Ausrundungsanfang</value>
         double h_A;
         /// <value>Stationswert am Ausrundungsanfang</value>
         double x_A;
+        /// <value>Höhe am Ausrundungsende</value>
+        double h_E;
         /// <value>Stationswert am Ausrundungsende</value>
         double x_E;
 
@@ -53,7 +54,7 @@ namespace TrassierungInterface
             {
                 this.predecessor = predecessor;
                 predecessor.successor = this;
-                s1 = (base.h - predecessor.h) / (S - predecessor.S) * 100;
+                s1 = (h - predecessor.h) / (S - predecessor.S) * 1000;
                 predecessor.s2 = s1;
                 predecessor.CalcConstants();
             }
@@ -68,22 +69,38 @@ namespace TrassierungInterface
         }
         void CalcConstants()
         {
-            h_A = h - t * (s1 / 100);
+            h_A = h - t * (s1 / 1000);
             x_A = S - t;
+            h_E = h + t * (s2 / 1000);
             x_E = S + t;
         }
         
-        public double GetHAtS(double s)
+        /// <summary>
+        /// Calculates Heigth at mileage s
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns>Height and Slope at s</returns>
+        public (double, double) GetHAtS(double s)
         {
             if (s < S)
             {
-                if (s <= x_A) { return h_A + s1 * (S - s) / 100; }
-                return h_A + (s1 / 100) * (s - S) + (r > 0?Math.Pow(s - S, 2) / (2 * r):0);
+                if (s <= x_A)
+                {
+                    return (h_A + s1 * (s- x_A) / 1000,s1); //s is before start of "Ausrundung"
+                }
+                else
+                {
+                    return (h_A + (s1 / 1000) * (s - x_A) + (r != 0 ? Math.Pow(s - x_A, 2) / (2 * r) : 0),
+                        r != 0 ?((s-x_A+(s1*r)/1000)/r)*1000:s1);
+                }
             }
             else
             {
-                if (s >= x_E) { return h_A + s2 * (s - S) / 100; }
-                return h_A + (s2 / 100) * (S - s) + (r != 0 ? Math.Pow(S-s, 2) / (2 * r) : 0);
+                if (s >= x_E) { 
+                    return (h_E + s2 * (s - x_E) / 1000,s2); //s is behind end of "Ausrundung"
+                }
+                return (h_E + (s2 / 1000) * (s - x_E) + (r != 0 ? Math.Pow(s - x_E, 2) / (2 * r) : 0), 
+                    r != 0 ? ((s - x_A + (s1 * r) / 1000) / r)*1000:s2);
             }
         }
     }

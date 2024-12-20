@@ -20,8 +20,10 @@ namespace TrassierungInterface
         public double[] S;
         /// <value>Richtung</value>
         public double[] T;
-        /// <value>Krümmung</value>
+        /// <value>Krümmung[1/m]</value>
         public double[] K;
+        /// <value>Steigung[‰]</value>
+        public double[] s;
     }
 
     public class TrassenElementExt : TrassenElement
@@ -41,6 +43,8 @@ namespace TrassierungInterface
         Interpolation Interpolation;
 #if USE_SCOTTPLOT
         List<WarningCallout> WarningCallouts = new() { };
+        /// <value>Arrows for visualisation of ProjectionS</value>
+        internal List<ProjectionArrow> projections = new() { };
 #endif
 
         /// public
@@ -86,8 +90,10 @@ namespace TrassierungInterface
         public double[] InterpT { get { return Interpolation.T == null ? new double[0] : Interpolation.T; } }
         /// <value>Krümmung der Interpolationspunkte</value>
         public double[] InterpK { get { return Interpolation.K == null ? new double[0] : Interpolation.K; } }
+        /// <value>Steigung der Interpolationspunkte[‰]</value>
+        public double[] InterpSlope { get { return Interpolation.s == null ? new double[0] : Interpolation.s; } }
 #if USE_SCOTTPLOT
-        /// <value>List of Warning Callouts to show on Plot</value>
+            /// <value>List of Warning Callouts to show on Plot</value>
         public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
 #endif
         public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElementExt predecessor = null, ILogger<TrassenElementExt> logger = null)
@@ -209,7 +215,7 @@ namespace TrassierungInterface
             return ref Interpolation;
         }
         
-        public double GetSAtPoint(double X, double Y, double T = double.PositiveInfinity)
+        public double GetSAtPoint(double X, double Y, double T = double.NaN)
         {
             Transform2D transform = new Transform2D(x, y, t);
             transform.ApplyInverse(ref X, ref Y, ref T);

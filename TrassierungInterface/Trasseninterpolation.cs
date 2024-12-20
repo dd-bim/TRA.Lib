@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace TrassierungInterface
         /// <param name="Y"></param>
         /// <param name="t">if t is given, intersection is calculated in direction t starting from the given point, otherwise calculation is perpendicular to geometry,</param>
         /// <returns></returns>
-        public abstract double sAt(double X, double Y, double t = double.PositiveInfinity);
+        public abstract double sAt(double X, double Y, double t = double.NaN);
     }
     public class Gerade : TrassenGeometrie
     {
@@ -34,13 +35,13 @@ namespace TrassierungInterface
             return (s, 0.0, 0.0, 0.0);
         }
 
-        public override double sAt(double X, double Y, double t = double.PositiveInfinity)
+        public override double sAt(double X, double Y, double t = double.NaN)
         {
             if (t == 0)// Lines are parallel or identical;
             {
-                return double.NegativeInfinity;
+                return double.NaN;
             }
-            else if (t == double.PositiveInfinity) //t is not used
+            else if (Double.IsNaN(t)) //t is not used
             {
                 return X;
             }
@@ -76,12 +77,12 @@ namespace TrassierungInterface
             return (X * r, sig * ((1 - Y) * r), s/r, 1/radius);
         }
 
-        public override double sAt(double X, double Y, double t = double.PositiveInfinity)
+        public override double sAt(double X, double Y, double t = double.NaN)
         {
             Vector2 c = new Vector2(0, (float)radius);
             Vector2 point = new Vector2((float)X,(float)Y);
             Vector2 dir;
-            if (t == double.PositiveInfinity) //t is not used
+            if (Double.IsNaN(t)) //t is not used
             {
                 dir = point - c;
             }
@@ -186,8 +187,10 @@ namespace TrassierungInterface
             for (int i = 1; i <= n; i++)
             {
                 double t = i * step;
-                sumS += Math.Sin(Math.PI * t * t / 2) * step;
-                sumC += Math.Cos(Math.PI * t * t / 2) * step;
+                double sin, cos;
+                (sin, cos) = Math.SinCos(Math.PI * t * t / 2);
+                sumS += sin * step;
+                sumC += cos * step;
             }
             return (sumS, sumC);
         }
@@ -205,15 +208,16 @@ namespace TrassierungInterface
             for (int i = 1; i <= n; i++)
             {
                 t = t_0 + i * step;
-                sumS += Math.Sin(Math.PI * t * t / 2) * step;
-                sumC += Math.Cos(Math.PI * t * t / 2) * step;
+                (sin, cos) = Math.SinCos(Math.PI * t * t / 2);
+                sumS += sin * step;
+                sumC += cos * step;
             }
             return (sumS, sumC);
         }
 
-        public override double sAt(double X, double Y, double t = double.PositiveInfinity)
+        public override double sAt(double X, double Y, double t = double.NaN)
         {
-            double threshold = 0.001;
+            double threshold = 0.00001;
             double delta = 1.0;
             double X_ = 0.0;
             double Y_ = 0.0;
@@ -222,25 +226,51 @@ namespace TrassierungInterface
             double s = 0.0;
             double d = double.PositiveInfinity; //distance between point and normal
             Vector2 v1, v2;
+            Vector2 vt = new();
+            int prevSign = 0;
+            if (!Double.IsNaN(t))
+            {
+                double x, y;
+                (x, y) = Math.SinCos(t);
+                vt = new Vector2((float)y,(float)x);
+                prevSign = Math.Sign(X * vt.Y - Y * vt.X);
+            }
+            
             int maxIterations = 1000;
             int i = 0;
             while (i < maxIterations && d > threshold)
             {
-                (X_, Y_, t_, k) = PointAt(s);
-                v1 = new Vector2((float)Math.Sin(t_), (float)Math.Cos(t_));
-                v2 = new Vector2((float)(X - X_), (float)(Y - Y_));
-                //v2 = new Vector2((float)(Y - Y_), (float)(X - X_));
-                double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
-                if (Math.Sign(scalarCross) != Math.Sign(delta))
-                //if (Math.Sign(Vector2.Dot(v2, v1)) != Math.Sign(delta))
+                (X_, Y_, t_, k) = PointAt(s);              
+                v2 = new Vector2((float)(X - X_), (float)(Y - Y_)); //vector from current position to Point of interest
+                if (Double.IsNaN(t))
                 {
-                    delta = -0.5 * delta;
+                    v1 = new Vector2((float)Math.Sin(t_), (float)Math.Cos(t_)); //normal at current position
+                    double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
+                    if (Math.Sign(scalarCross) != Math.Sign(delta))
+                    {
+                        delta = -0.5 * delta;
+                    }
+                    // Compute d by cross product               
+                    d = Math.Abs(scalarCross) / (float)v1.Length();
                 }
-                // Compute d by cross product
-                
-                d = Math.Abs(scalarCross) / (float)v1.Length();
+                else
+                {
+                    double scalarCross = v2.X * vt.Y - v2.Y * vt.X;
+                    if (Math.Sign(scalarCross) != prevSign)
+                    {
+                        delta = -0.5 * delta;
+                        prevSign = Math.Sign(scalarCross);
+                    }
+                    double ang = Math.Acos(Vector2.Dot(vt, v2 / v2.Length()));
+                    d = (ang > 0.5*Math.PI ? Math.PI-ang : ang)*v2.Length();
+                }
                 s = s + delta;
                 i++;
+            }
+            if (i == maxIterations) 
+            {
+                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + this.ToString());
+                return double.NaN;
             }
             return s;
         }
