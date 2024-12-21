@@ -12,7 +12,7 @@ namespace TrassierungInterface
     public static class TrassierungLog
     {
         private static ILoggerFactory _loggerFactory; 
-        public static void Init(ILoggerFactory loggerFactory)
+        public static void AssignLogger(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory; 
             Logger = _loggerFactory.CreateLogger("TrassierungLogger"); 

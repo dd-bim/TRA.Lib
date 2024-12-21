@@ -42,6 +42,8 @@ namespace TrassierungInterface
         public double H { get { return h; } }
         /// <value>Punktnummer am NW</value>
         public double Pkt { get { return pkt; } }
+        /// <value>ID des Elements</value>
+        public double ID { get { return id; } }
         /// <value>Vorgaenger Element</value>
         public GradientElementExt Predecessor { get { return predecessor; } }
         /// <value>Hochwert am Elementanfang</value>

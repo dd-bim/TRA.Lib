@@ -1,13 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace TrassierungInterface
 {
@@ -24,7 +16,7 @@ namespace TrassierungInterface
         /// </summary>
         /// <param name="X"></param>
         /// <param name="Y"></param>
-        /// <param name="t">if t is given, intersection is calculated in direction t starting from the given point, otherwise calculation is perpendicular to geometry,</param>
+        /// <param name="t">if t is given, intersection is calculated in direction t starting from the given point, otherwise calculation is perpendicular to geometry</param>
         /// <returns></returns>
         public abstract double sAt(double X, double Y, double t = double.NaN);
     }
@@ -57,7 +49,6 @@ namespace TrassierungInterface
                 return double.NegativeInfinity;
             }
             double t_ = (p2.X * d2.Y - p2.Y * d2.X) / determinant;
-            //Vector2 intersection = d1 * (float)t_; //Not nesseccary as d1 is (1,0)
             return t_;
         }
     }
@@ -73,12 +64,15 @@ namespace TrassierungInterface
         {
             int sig = Math.Sign(radius);
             double r = Math.Abs(radius);
+            if (r == 0) { return(s, 0.0, 0.0, 0.0); } //Gerade
             (double X, double Y) = Math.SinCos(s / r);
             return (X * r, sig * ((1 - Y) * r), s/r, 1/radius);
         }
 
         public override double sAt(double X, double Y, double t = double.NaN)
         {
+            if(radius == 0) return new Gerade().sAt(X, Y,t); //use this calculation if radius is 0;
+
             Vector2 c = new Vector2(0, (float)radius);
             Vector2 point = new Vector2((float)X,(float)Y);
             Vector2 dir;
@@ -100,7 +94,7 @@ namespace TrassierungInterface
             double discriminant = b * b - 4 * a * cValue; 
             if (discriminant < 0) // No real intersection
             {
-                return double.NegativeInfinity; 
+                return double.NaN; 
             }           
             // Calculate t values for intersection points
             double t1 = (-b + Math.Sqrt(discriminant)) / (2 * a); 
@@ -119,11 +113,17 @@ namespace TrassierungInterface
         double r2;
         double length;
 
+        /// <summary>
+        /// Define Clothoid
+        /// </summary>
+        /// <param name="r1">First radius NaN is interpreted as zero(straight)</param>
+        /// <param name="r2">Second radius NaN is interpreted as zero(straight)</param>
+        /// <param name="length">Length of the Clothoid. NaN and 0 is results in stragiht line (radii have no effect)</param>
         public Klothoid(double r1, double r2, double length)
         {
-           this.r1 = r1;
-           this.r2 = r2;
-           this.length = length;
+           this.r1 = Double.IsNaN(r1) ? 0 : r1; //interpreting NaN radius as zero (straight line)
+           this.r2 = Double.IsNaN(r2) ? 0 : r2; //interpreting NaN radius as zero (straight line)
+           this.length = Double.IsNaN(length) ? 0 : length;
            CalcConstants();
         }
 
@@ -148,11 +148,11 @@ namespace TrassierungInterface
             curvature2 = r2 == 0.0 ? 0 : Math.Abs(1 / r2);
             if (Math.Sign(r1*r2) == -1)
             {
-                gamma = -(curvature2 + curvature1) / length;
+                gamma = length != 0? -(curvature2 + curvature1) / length : 0;
             }
             else
             {
-                gamma = (curvature2 - curvature1) / length;
+                gamma = length != 0 ? (curvature2 - curvature1) / length : 0;
             }
             dir = Math.Sign(r1) == 0 ? Math.Sign(r2) : Math.Sign(r1); //Get turning-direction of the clothoid
             (Sb, Cb) = CalculateFresnel(curvature1 / Math.Sqrt(Math.PI * Math.Abs(gamma)));
@@ -161,6 +161,9 @@ namespace TrassierungInterface
         }
         public override (double X, double Y, double t, double k) PointAt(double s)
         {
+            if(r1 == 0.0 && r2 == 0.0) { return new Gerade().PointAt(s); }
+            if (r1 == r2) { return new Kreis(r1).PointAt(s); }
+
             // Addapted from https://github.com/stefan-urban/pyeulerspiral/blob/master/eulerspiral/eulerspiral.py
             // original Source: https://www.cs.bgu.ac.il/~ben-shahar/ftp/papers/Edge_Completion/2003:Kimia_Frankel_and_Popescu:Euler_Spiral_for_Shape_Completion.pdf Page 165 Eq(6)
 
@@ -218,6 +221,7 @@ namespace TrassierungInterface
 
         public override double sAt(double X, double Y, double t = double.NaN)
         {
+            if (Double.IsNaN(X) || Double.IsNaN(Y)) return double.NaN;
             double threshold = 0.00001;
             double delta = 1.0;
             double X_ = 0.0;

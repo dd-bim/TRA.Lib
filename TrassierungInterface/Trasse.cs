@@ -27,7 +27,11 @@ namespace TrassierungInterface
     public class GRATrasse : Trasse
     {
         public GradientElementExt[] GradientenElemente;
-
+        /// <summary>
+        /// Find nearest GradientElement(NW) to milage s
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns>GradientElement(NW)</returns>
         internal GradientElementExt GetGradientElementFromS(double s)
         {
             if (GradientenElemente == null)
