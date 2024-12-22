@@ -24,6 +24,29 @@ namespace TrassierungInterface
         public double[] K;
         /// <value>Steigung[‰]</value>
         public double[] s;
+
+        public Interpolation(int num = 0)
+        {
+            X = new double[num];
+            Y = new double[num];
+            S = new double[num];
+            T = new double[num];
+            K = new double[num];
+            //Only 3D Interpolation
+            H = null;
+            s = null;
+        }
+        public void Concat(Interpolation interp)
+        {           
+            X = X.Concat(interp.X).ToArray();
+            Y = Y.Concat(interp.Y).ToArray();            
+            S = S.Concat(interp.S).ToArray();
+            T = T.Concat(interp.T).ToArray();
+            K = K.Concat(interp.K).ToArray();
+
+            if (interp.H != null) { if (H == null) { H = new double[interp.H.Length]; } H = H.Concat(interp.H).ToArray(); }
+            if (interp.s != null){ if (s == null) { s = new double[interp.H.Length]; } s = s.Concat(interp.s).ToArray(); }
+        }
     }
 
     public class TrassenElementExt : TrassenElement
@@ -41,12 +64,13 @@ namespace TrassierungInterface
         GleisscherenElement[] Gleisscheren;
         /// <value>Interpolationsobjekt</value>
         Interpolation Interpolation;
+
 #if USE_SCOTTPLOT
         List<WarningCallout> WarningCallouts = new() { };
         /// <value>Arrows for visualisation of ProjectionS</value>
         internal List<ProjectionArrow> projections = new() { };
 #endif
-
+     
         /// public
         ///<value>ID des Elements innerhalb der Trasse</value>
         public int ID { get { return id; } }
@@ -80,20 +104,22 @@ namespace TrassierungInterface
         public TrassenElementExt Predecessor { get { return predecessor; } }
         /// <value>Hochwert am Elementanfang</value>
         public TrassenElementExt Successor { get { return successor; } }
-        /// <value>X-Koordinaten der Interpolationspunkte</value>
-        public double[] InterpX { get { return Interpolation.X == null ? new double[0] : Interpolation.X; } }
-        /// <value>Y-Koordinaten der Interpolationspunkte</value>
-        public double[] InterpY { get { return Interpolation.Y == null ? new double[0] : Interpolation.Y; } }
-        /// <value>Höhe der Interpolationspunkte</value>
-        public double[] InterpH { get { return Interpolation.H == null ? new double[0] : Interpolation.H; } }
-        /// <value>Richtung der Interpolationspunkte</value>
-        public double[] InterpT { get { return Interpolation.T == null ? new double[0] : Interpolation.T; } }
-        /// <value>Krümmung der Interpolationspunkte</value>
-        public double[] InterpK { get { return Interpolation.K == null ? new double[0] : Interpolation.K; } }
-        /// <value>Steigung der Interpolationspunkte[‰]</value>
-        public double[] InterpSlope { get { return Interpolation.s == null ? new double[0] : Interpolation.s; } }
+        /// <value>Returns Interpolationresult</value>
+        public Interpolation InterpolationResult { get { return Interpolation; } }
+        ///// <value>X-Koordinaten der Interpolationspunkte</value>
+        //public double[] InterpX { get { return Interpolation.X == null ? new double[0] : Interpolation.X; } }
+        ///// <value>Y-Koordinaten der Interpolationspunkte</value>
+        //public double[] InterpY { get { return Interpolation.Y == null ? new double[0] : Interpolation.Y; } }
+        ///// <value>Höhe der Interpolationspunkte</value>
+        //public double[] InterpH { get { return Interpolation.H == null ? new double[0] : Interpolation.H; } }
+        ///// <value>Richtung der Interpolationspunkte</value>
+        //public double[] InterpT { get { return Interpolation.T == null ? new double[0] : Interpolation.T; } }
+        ///// <value>Krümmung der Interpolationspunkte</value>
+        //public double[] InterpK { get { return Interpolation.K == null ? new double[0] : Interpolation.K; } }
+        ///// <value>Steigung der Interpolationspunkte[‰]</value>
+        //public double[] InterpSlope { get { return Interpolation.s == null ? new double[0] : Interpolation.s; } }
 #if USE_SCOTTPLOT
-            /// <value>List of Warning Callouts to show on Plot</value>
+        /// <value>List of Warning Callouts to show on Plot</value>
         public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
 #endif
         public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElementExt predecessor = null, ILogger<TrassenElementExt> logger = null)
@@ -199,11 +225,7 @@ namespace TrassierungInterface
 
             int num = (int)Math.Abs(l / delta);
             if (l < 0 && delta > 0) { delta = -delta; } //set delta negative for negative lengths
-            Interpolation.X = new double[num + 1];
-            Interpolation.Y = new double[num + 1];
-            Interpolation.S = new double[num + 1];
-            Interpolation.T = new double[num + 1];
-            Interpolation.K = new double[num + 1];
+            Interpolation = new Interpolation(num + 1);
 
             for (int i = 0; i <= num; i++)
             {

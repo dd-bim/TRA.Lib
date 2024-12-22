@@ -148,23 +148,30 @@ namespace TrassierungInterface
             return null;
         }
 
-        public void Interpolate(double delta = 1.0)
+        public Interpolation Interpolate(double delta = 1.0)
         {
+            Interpolation interpolation = new Interpolation(0);
             foreach (TrassenElementExt element in Elemente)
             {
-                element.Interpolate(delta);
+                interpolation.Concat(element.Interpolate(delta));
             }
+            return interpolation;
         }
-        public void Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0)
+        public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0)
         {
+            Interpolation interp = new Interpolation(0);
             TRATrasse trasseS = stationierungsTrasse != null ? stationierungsTrasse : TrasseS; //if a valid trasse is provided use that one, else try to use a previously assigned
+            if (GradientenElemente == null)
+            {
+                TrassierungLog.Logger?.LogError("Can not calculate Heights for Interpolation as there are no Gradient Elements loaded for this Trasse. Please add Gradients by calling AssignGRA()", nameof(Interpolate3D));
+            }
             foreach (TrassenElementExt element in Elemente)
             {
                 ref Interpolation Interpolation = ref element.Interpolate(delta);
                 if (GradientenElemente == null)
                 {
-                    TrassierungLog.Logger?.LogError("Can not calculate Heights for Interpolation as there are no Gradient Elements loaded for this Trasse. Please add Gradients by calling AssignGRA()", nameof(Interpolate3D));
-                    return;
+                    interp.Concat(Interpolation);
+                    continue;
                 }
                 int num = Interpolation.X.Length;
                 Interpolation.H = new double[num];
@@ -194,7 +201,9 @@ namespace TrassierungInterface
                     GradientElementExt gradient = GetGradientElementFromS(s);
                     (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN,double.NaN));
                 }
+                interp.Concat(Interpolation);
             }
+            return interp;
         }
 
 #if USE_SCOTTPLOT
@@ -414,23 +423,31 @@ namespace TrassierungInterface
 
             foreach (TrassenElementExt element in Elemente)
             {
-                var scatter = Plot2D.Plot.Add.Scatter(element.InterpY, element.InterpX);
+                Interpolation interpolation = element.InterpolationResult;
+                var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
                 scatter.LegendText = Filename;
                 ScottPlot.Color color = scatter.MarkerFillColor;
                 ElementMarker marker = new(element, color);
                 Plot2D.Plot.Add.Plottable(marker);
                
-                var scatterT = PlotT.Plot.Add.Scatter(element.InterpY, element.InterpT, color);
+                var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
+                //scatterT.LegendText = "Heading";
                 PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color);
-                var scatterK = PlotT.Plot.Add.ScatterLine(element.InterpY, element.InterpK, color);
+                var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, color);
+                //scatterK.LegendText = "Curvature";
                 // tell each T and K plot to use a different axis
                 scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
                 scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
 
-                var scatterH = PlotG.Plot.Add.Scatter(element.InterpY, element.InterpH, color);
-                scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
-                var scatterSlope = PlotG.Plot.Add.ScatterLine(element.InterpY, element.InterpSlope, color);
-                scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
+                if (interpolation.H != null && interpolation.s != null)
+                {
+                    var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H, color);
+                    //scatterH.LegendText = "Elevation";
+                    scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
+                    var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s, color);
+                    //scatterSlope.LegendText = "Slope";
+                    scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
+                }
 
                 //Raw Data to GridView
                 gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C);
@@ -468,7 +485,7 @@ namespace TrassierungInterface
             Plot2D.Plot.Axes.SquareUnits();
             Plot2D.Plot.HideLegend();
             Plot2D.Refresh();
-            if (!Form.Visible) Form.ShowDialog();
+            if (!Form.Visible) Form.Show();// ShowDialog();
             Form.Update();
         }
 
