@@ -22,17 +22,6 @@ namespace TRA.Tool
         private void CenterElements()
         {
             label_Trasse.Left = (ClientSize.Width - label_Trasse.Width) / 2;
-            //int totalControlWidth = flowLayoutPanel.Controls.Cast<Control>().Sum(c => c.Width + flowLayoutPanel.Margin.Horizontal);
-            //int availableWidth = flowLayoutPanel.ClientSize.Width;
-            //if (totalControlWidth < availableWidth)
-            //{
-            //    int padding = (availableWidth - totalControlWidth) / 2;
-            //    flowLayoutPanel.Padding = new Padding(padding, flowLayoutPanel.Padding.Top, padding, flowLayoutPanel.Padding.Bottom);
-            //}
-            //else
-            //{
-            //    flowLayoutPanel.Padding = new Padding(0);
-            //}
         }
         private void Tb_TRA_DragEnter(object sender, DragEventArgs e)
         {
@@ -66,8 +55,11 @@ namespace TRA.Tool
                 TextBox tb = (TextBox)sender;
                 if (tb != null && fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
                 {
+                    TreeNode previousNode = (TreeNode)tb.Tag;
+                    if (previousNode != null) { previousNode.BackColor = Color.Empty; }
                     tb.Tag = node;
                     tb.Text = fileInfo.Name;
+                    node.BackColor = BackColor;
                 }
             }
         }
@@ -103,13 +95,16 @@ namespace TRA.Tool
                 TextBox tb = (TextBox)sender;
                 if (tb != null && fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase))
                 {
+                    TreeNode previousNode = (TreeNode)tb.Tag;
+                    if (previousNode != null) { previousNode.BackColor = Color.Empty; }
                     tb.Tag = node;
                     tb.Text = fileInfo.Name;
+                    node.BackColor = BackColor;
                 }
             }
         }
 
-        private void tb_TRA_TextChanged(object sender, EventArgs e)
+        private void tb_XRA_TextChanged(object sender, EventArgs e)
         {
             List<TextBox> textBoxes = new List<TextBox> { tb_TRA_L, tb_TRA_S, tb_TRA_R, tb_GRA_L, tb_GRA_R };
             textBoxes.Remove(sender as TextBox);
@@ -126,8 +121,11 @@ namespace TRA.Tool
                 {
                     if (n.Tag.ToString().EndsWith(filename, StringComparison.OrdinalIgnoreCase))
                     {
+                        TreeNode previousNode = (TreeNode)tb.Tag;
+                        if (previousNode != null) { previousNode.BackColor = Color.Empty; }
                         tb.Tag = n;
                         tb.Text = filename;
+                        n.BackColor = BackColor;
                         return;
                     }
                 }
@@ -176,6 +174,7 @@ namespace TRA.Tool
                 trasseR.Interpolate3D(null, 10);
                 trasseR.Plot();
             }
+
         }
     }
 }

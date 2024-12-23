@@ -113,7 +113,7 @@ namespace TRA.Tool
             tb_TRA_S.ReadOnly = true;
             tb_TRA_S.Size = new Size(140, 23);
             tb_TRA_S.TabIndex = 9;
-            tb_TRA_S.TextChanged += tb_TRA_TextChanged;
+            tb_TRA_S.TextChanged += tb_XRA_TextChanged;
             tb_TRA_S.DragDrop += Tb_TRA_DragDrop;
             tb_TRA_S.DragEnter += Tb_TRA_DragEnter;
             // 
@@ -137,7 +137,7 @@ namespace TRA.Tool
             tb_TRA_L.ReadOnly = true;
             tb_TRA_L.Size = new Size(139, 23);
             tb_TRA_L.TabIndex = 0;
-            tb_TRA_L.TextChanged += tb_TRA_TextChanged;
+            tb_TRA_L.TextChanged += tb_XRA_TextChanged;
             tb_TRA_L.DragDrop += Tb_TRA_DragDrop;
             tb_TRA_L.DragEnter += Tb_TRA_DragEnter;
             // 
@@ -150,7 +150,7 @@ namespace TRA.Tool
             tb_TRA_R.ReadOnly = true;
             tb_TRA_R.Size = new Size(141, 23);
             tb_TRA_R.TabIndex = 2;
-            tb_TRA_R.TextChanged += tb_TRA_TextChanged;
+            tb_TRA_R.TextChanged += tb_XRA_TextChanged;
             tb_TRA_R.DragDrop += Tb_TRA_DragDrop;
             tb_TRA_R.DragEnter += Tb_TRA_DragEnter;
             // 
@@ -207,7 +207,7 @@ namespace TRA.Tool
             tb_GRA_L.ReadOnly = true;
             tb_GRA_L.Size = new Size(139, 23);
             tb_GRA_L.TabIndex = 10;
-            tb_GRA_L.TextChanged += tb_TRA_TextChanged;
+            tb_GRA_L.TextChanged += tb_XRA_TextChanged;
             tb_GRA_L.DragDrop += Tb_GRA_DragDrop;
             tb_GRA_L.DragEnter += Tb_GRA_DragEnter;
             // 
@@ -220,7 +220,7 @@ namespace TRA.Tool
             tb_GRA_R.ReadOnly = true;
             tb_GRA_R.Size = new Size(141, 23);
             tb_GRA_R.TabIndex = 11;
-            tb_GRA_R.TextChanged += tb_TRA_TextChanged;
+            tb_GRA_R.TextChanged += tb_XRA_TextChanged;
             tb_GRA_R.DragDrop += Tb_GRA_DragDrop;
             tb_GRA_R.DragEnter += Tb_GRA_DragEnter;
             // 
@@ -228,7 +228,7 @@ namespace TRA.Tool
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ActiveCaption;
+            BackColor = Color.LightBlue;
             BorderStyle = BorderStyle.FixedSingle;
             Controls.Add(tableLayoutPanel1);
             Controls.Add(panel1);
