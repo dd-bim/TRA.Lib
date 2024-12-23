@@ -58,10 +58,6 @@ namespace TrassierungInterface
         TrassenElementExt predecessor;
         /// <value>Nachfolger Element</value>
         TrassenElementExt successor;
-        /// <value>Gradienten des Trassenelements</value>
-        GradientElement[] Gradienten;
-        /// <value>Gleisscheren des Trassenelements</value>
-        GleisscherenElement[] Gleisscheren;
         /// <value>Interpolationsobjekt</value>
         Interpolation Interpolation;
 
@@ -106,18 +102,7 @@ namespace TrassierungInterface
         public TrassenElementExt Successor { get { return successor; } }
         /// <value>Returns Interpolationresult</value>
         public Interpolation InterpolationResult { get { return Interpolation; } }
-        ///// <value>X-Koordinaten der Interpolationspunkte</value>
-        //public double[] InterpX { get { return Interpolation.X == null ? new double[0] : Interpolation.X; } }
-        ///// <value>Y-Koordinaten der Interpolationspunkte</value>
-        //public double[] InterpY { get { return Interpolation.Y == null ? new double[0] : Interpolation.Y; } }
-        ///// <value>Höhe der Interpolationspunkte</value>
-        //public double[] InterpH { get { return Interpolation.H == null ? new double[0] : Interpolation.H; } }
-        ///// <value>Richtung der Interpolationspunkte</value>
-        //public double[] InterpT { get { return Interpolation.T == null ? new double[0] : Interpolation.T; } }
-        ///// <value>Krümmung der Interpolationspunkte</value>
-        //public double[] InterpK { get { return Interpolation.K == null ? new double[0] : Interpolation.K; } }
-        ///// <value>Steigung der Interpolationspunkte[‰]</value>
-        //public double[] InterpSlope { get { return Interpolation.s == null ? new double[0] : Interpolation.s; } }
+        
 #if USE_SCOTTPLOT
         /// <value>List of Warning Callouts to show on Plot</value>
         public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
