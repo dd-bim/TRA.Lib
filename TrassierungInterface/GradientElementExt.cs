@@ -76,7 +76,7 @@ namespace TrassierungInterface
             h_E = h + t * (s2 / 1000);
             x_E = S + t;
         }
-        
+
         /// <summary>
         /// Calculates Heigth at mileage s
         /// </summary>
@@ -88,21 +88,22 @@ namespace TrassierungInterface
             {
                 if (s <= x_A)
                 {
-                    return (h_A + s1 * (s- x_A) / 1000,s1); //s is before start of "Ausrundung"
+                    return (h_A + s1 * (s - x_A) / 1000, s1); //s is before start of "Ausrundung"
                 }
                 else
                 {
                     return (h_A + (s1 / 1000) * (s - x_A) + (r != 0 ? Math.Pow(s - x_A, 2) / (2 * r) : 0),
-                        r != 0 ?((s-x_A+(s1*r)/1000)/r)*1000:s1);
+                        r != 0 ? ((s - x_A + (s1 * r) / 1000) / r) * 1000 : s1);
                 }
             }
             else
             {
-                if (s >= x_E) { 
-                    return (h_E + s2 * (s - x_E) / 1000,s2); //s is behind end of "Ausrundung"
+                if (s >= x_E)
+                {
+                    return (h_E + s2 * (s - x_E) / 1000, s2); //s is behind end of "Ausrundung"
                 }
-                return (h_E + (s2 / 1000) * (s - x_E) + (r != 0 ? Math.Pow(s - x_E, 2) / (2 * r) : 0), 
-                    r != 0 ? ((s - x_A + (s1 * r) / 1000) / r)*1000:s2);
+                return (h_E + (s2 / 1000) * (s - x_E) + (r != 0 ? Math.Pow(s - x_E, 2) / (2 * r) : 0),
+                    r != 0 ? ((s - x_A + (s1 * r) / 1000) / r) * 1000 : s2);
             }
         }
     }

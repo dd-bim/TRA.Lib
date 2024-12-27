@@ -1,15 +1,7 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using TrassierungInterface;
-using ScottPlot.WinForms;
-using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic.Logging;
-using ScottPlot;
+using System.Diagnostics;
 using System.Globalization;
-using System.Xml.Linq;
-using ScottPlot.Colormaps;
 
 namespace TrassierungInterface
 {
@@ -45,7 +37,7 @@ namespace TrassierungInterface
             {
                 (Xinterp[i], Yinterp[i], _, _) = gerade.PointAt(i < Xinterp.Length - 1 ? i * delta : input);
             }
-            if(Double.IsNaN(Xinterp.Last()) || Double.IsNaN(Xinterp.Last())) 
+            if (Double.IsNaN(Xinterp.Last()) || Double.IsNaN(Xinterp.Last()))
             {
                 Assert.IsTrue(Double.IsNaN(input), "Line Interpolation returned NaN-coordinate");
                 return;
@@ -97,8 +89,8 @@ namespace TrassierungInterface
         [DataRow(64.81533, 3221.20091, 1573.91942, 64.81533, DisplayName = "Clothoid curvature decrease2")]
         [DataRow(80, 0, 500, 80, double.NegativeInfinity, double.NegativeInfinity, 0.0800006569, DisplayName = "Clothoid curvature increase2")] //R.Ullrich EVT_3_Uebergangsboegen
         [DataRow(Double.NaN, -50, 100, 100, double.NaN, double.NaN, DisplayName = "Clothoid s = NaN")]
-        [DataRow(100, 0, 0, 100, 100,0,DisplayName = "Zero Radii")]
-        [DataRow(100, 0, 0, 0, 100, 0,0, DisplayName = "Zero Length")]
+        [DataRow(100, 0, 0, 100, 100, 0, DisplayName = "Zero Radii")]
+        [DataRow(100, 0, 0, 0, 100, 0, 0, DisplayName = "Zero Length")]
         // TODO: Testdata for Clothoids needed including expected X and Y
         public void InterpolationClothoid(double input, double radius1, double radius2, double length, double expectedX = double.NegativeInfinity, double expectedY = double.NegativeInfinity, double expectedTangent = double.NegativeInfinity)
         {
@@ -131,14 +123,14 @@ namespace TrassierungInterface
         #region Geometry Projection Tests
         [TestMethod]
         [TestCategory("GeometryProjection")]
-        [DataRow(100, 50,double.NaN, 100, DisplayName = "ProjectionGerade")]
-        [DataRow(100, 50, -Math.PI/4, 150, DisplayName = "ProjectionGerade intesecting t = 45°")]
+        [DataRow(100, 50, double.NaN, 100, DisplayName = "ProjectionGerade")]
+        [DataRow(100, 50, -Math.PI / 4, 150, DisplayName = "ProjectionGerade intesecting t = 45°")]
         [DataRow(100, 50, 0, double.NaN, DisplayName = "ProjectionGerade intesecting t = 0°")]
         [DataRow(double.NaN, 50, double.NaN, double.NaN, DisplayName = "ProjectionGerade NaN")]
         public void ProjectionGerade(double X, double Y, double t, double expecteds)
         {
             TrassenGeometrie gerade = new Gerade();
-            double s = gerade.sAt(X, Y,t);
+            double s = gerade.sAt(X, Y, t);
             if (Double.IsNaN(s))
             {
                 Assert.IsTrue(Double.IsNaN(expecteds), "Line Projection returned wrong s-value");
@@ -150,7 +142,7 @@ namespace TrassierungInterface
         [TestMethod]
         [TestCategory("GeometryProjection")]
         [DataRow(100, 0, double.NaN, 100, Math.PI / 4 * 100, DisplayName = "Projection quater Circle")]
-        [DataRow(100, 0, Math.PI/2,100, Math.PI / 2 * 100, DisplayName = "Projection quater Circle t = 90°")]
+        [DataRow(100, 0, Math.PI / 2, 100, Math.PI / 2 * 100, DisplayName = "Projection quater Circle t = 90°")]
         [DataRow(100, 0, Math.PI / 2.0001, 100, double.NaN, DisplayName = "Projection quater Circle t = 89°")]
         [DataRow(5.0, 10.0, double.NaN, 5.0, 11.78097245, DisplayName = "Get s along Circle from Point (135°)")]
         [DataRow(5.0, 0.0, double.NaN, 5.0, 3.926990817, DisplayName = "Get s along Circle from Point (45°)")]
@@ -161,7 +153,7 @@ namespace TrassierungInterface
         public void ProjectionCircle(double X, double Y, double t, double radius, double expecteds)
         {
             TrassenGeometrie kreis = new Kreis(radius);
-            double s = kreis.sAt(X, Y,t);
+            double s = kreis.sAt(X, Y, t);
             if (Double.IsNaN(s))
             {
                 Assert.IsTrue(Double.IsNaN(expecteds), "Circle Projection returned wrong s-value");
@@ -177,7 +169,7 @@ namespace TrassierungInterface
         // TODO: Testdata for Clothoids needed
         public void ProjectionClothoid(double X, double Y, double t, double radius1, double radius2, double length, double expecteds)
         {
-            TrassenGeometrie klothoid = new Klothoid(radius1,radius2,length);
+            TrassenGeometrie klothoid = new Klothoid(radius1, radius2, length);
             double s = klothoid.sAt(X, Y, t);
             if (Double.IsNaN(s))
             {
@@ -201,7 +193,7 @@ namespace TrassierungInterface
             trasse.Interpolate();
             foreach (TrassenElementExt T in trasse.Elemente)
             {
-                T.print(); 
+                T.ToString();
             }
             return trasse;
         }
@@ -214,8 +206,9 @@ namespace TrassierungInterface
         {
             GRATrasse trasse;
             (trasse, GleisscherenElement[] gleisschere) = Trassierung.ImportGRA(Filename);
-            foreach (GradientElementExt T in trasse.GradientenElemente) {
-                T.print(); 
+            foreach (GradientElementExt T in trasse.GradientenElemente)
+            {
+                T.print();
             }
             return trasse;
         }
@@ -224,10 +217,10 @@ namespace TrassierungInterface
         #region Element Estimation Tests
         [TestMethod]
         [TestCategory("ElementEstimation")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046L.TRA",5.4221e+06,5.6488e+06,26,DisplayName = "6240046L.TRA")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046R.TRA",5.4221e+06,5.6488e+06,26,DisplayName = "6240046R.TRA")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", 5.4221e+06, 5.6488e+06,16, DisplayName = "6240046S.TRA")]
-        public void GetTRAElementFromPoint(string Filename,double PointY, double PointX, int expectedElementID)
+        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046L.TRA", 5.4221e+06, 5.6488e+06, 26, DisplayName = "6240046L.TRA")]
+        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046R.TRA", 5.4221e+06, 5.6488e+06, 26, DisplayName = "6240046R.TRA")]
+        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", 5.4221e+06, 5.6488e+06, 16, DisplayName = "6240046S.TRA")]
+        public void GetTRAElementFromPoint(string Filename, double PointY, double PointX, int expectedElementID)
         {
             TRATrasse trasse = Trassierung.ImportTRA(Filename);
             TrassenElementExt element = trasse.GetElementFromPoint(PointX, PointY);
@@ -241,7 +234,7 @@ namespace TrassierungInterface
         public void GetGRAElementFromPoint(string Filename, double s, int expectedElementID)
         {
             GRATrasse trasse;
-            (trasse,_)= Trassierung.ImportGRA(Filename);
+            (trasse, _) = Trassierung.ImportGRA(Filename);
             GradientElementExt element = trasse.GetGradientElementFromS(s);
             Assert.AreEqual(expectedElementID, element.ID, "Station value was not associated with correct Element");
         }
@@ -280,9 +273,9 @@ namespace TrassierungInterface
             TRATrasse trasseS = Trassierung.ImportTRA(FilenameTRA_S);
             GRATrasse trasseGRA;
             (trasseGRA, _) = Trassierung.ImportGRA(FilenameGRA_LR);
-            trasseLR.SetTrasseS = trasseS;
+            trasseLR.AssignTrasseS(trasseS);
             trasseLR.AssignGRA(trasseGRA);
-            trasseLR.Interpolate3D(null,10);
+            trasseLR.Interpolate3D(null, 10);
             trasseLR.Plot();
             trasseS.Interpolate();
             trasseS.Plot();

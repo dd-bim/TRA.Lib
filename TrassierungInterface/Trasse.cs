@@ -1,14 +1,13 @@
 ﻿
 
 using Microsoft.Extensions.Logging;
+using ScottPlot;
+using SkiaSharp;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using ScottPlot;
-using System.Drawing;
-using System.Linq;
-using SkiaSharp;
-using System.Xml.Linq;
-//using OpenTK;
 
 // AssemblyInfo.cs
 [assembly: InternalsVisibleTo("KomponentenTest")]
@@ -18,7 +17,7 @@ namespace TrassierungInterface
     public class Trasse
     {
         public static List<Trasse> LoadedTrassen = new List<Trasse> { };
-        public string Filename = "2";
+        public string Filename = "";
         public Trasse()
         {
             LoadedTrassen.Add(this);
@@ -42,7 +41,7 @@ namespace TrassierungInterface
             {
                 if (element.S > s)
                 {
-                    if (element.Predecessor == null || ((element.S - s) < (s- element.Predecessor.S))) { return element; } //if no successor exists or s is nearer on element than on successor
+                    if (element.Predecessor == null || ((element.S - s) < (s - element.Predecessor.S))) { return element; } //if no successor exists or s is nearer on element than on successor
                     else { return element.Predecessor; }
                 }
             }
@@ -58,7 +57,11 @@ namespace TrassierungInterface
         /// <summary>
         /// Assign a stationing/mileage Trasse. Used to project coordinates to TrasseS and get Station values S of the mileage(TrasseS).
         /// </summary>
-        public TRATrasse SetTrasseS { set { TrasseS = value; CalcGradientCoordinates(); } }
+        public void AssignTrasseS(TRATrasse TrasseS) 
+        { 
+            this.TrasseS = TrasseS;
+            CalcGradientCoordinates();  
+        }
 
         /// <summary>
         /// Set an array of GradientElements to this Trasse, exisiting GradientElements are overwritten!
@@ -76,7 +79,10 @@ namespace TrassierungInterface
         /// <param name="GRATrasse"></param>
         public void AssignGRA(GRATrasse GRATrasse)
         {
-            AssignGRA(ref GRATrasse.GradientenElemente);
+            if (GRATrasse != null)
+            {
+                AssignGRA(ref GRATrasse.GradientenElemente);
+            }
         }
 
         /// <summary>
@@ -199,11 +205,42 @@ namespace TrassierungInterface
                         s = Interpolation.S[i];
                     }
                     GradientElementExt gradient = GetGradientElementFromS(s);
-                    (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN,double.NaN));
+                    (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
                 }
                 interp.Concat(Interpolation);
             }
             return interp;
+        }
+
+        public void SaveCSV(StreamWriter outputFile)
+        {
+            CultureInfo info = CultureInfo.CurrentCulture;
+            using (outputFile)
+            {
+                string[] titles = { "R1", "R2", "Y", "X", "T", "S", "Kz", "L", "U1", "U2", "C", "H", "s" };
+                outputFile.WriteLine(string.Join(info.TextInfo.ListSeparator, titles));
+                foreach (TrassenElementExt ele in Elemente)
+                {
+                    outputFile.WriteLine(ele.ToString());
+                    Interpolation interp = ele.InterpolationResult;
+                    if (interp.Y != null)
+                    {
+                        for (int i = 0; i < ele.InterpolationResult.Y.Length; i++)
+                        {
+                            string[] values = { "", "", interp.Y[i].ToString(info), interp.X[i].ToString(info), interp.T[i].ToString(info), interp.S[i].ToString(info), interp.K[i].ToString(info) };
+                            if (interp.H != null)
+                            {
+                                values = values.Concat(new string[] { "", "", "", "", interp.H[i].ToString(info), interp.s[i].ToString(info) }).ToArray();
+                            }
+                            else
+                            {
+                                values = values.Concat(new string[] { "", "", "", "", "", "" }).ToArray();
+                            }
+                            outputFile.WriteLine(string.Join(info.TextInfo.ListSeparator, values));
+                        }
+                    }
+                }
+            }
         }
 
 #if USE_SCOTTPLOT
@@ -429,7 +466,7 @@ namespace TrassierungInterface
                 ScottPlot.Color color = scatter.MarkerFillColor;
                 ElementMarker marker = new(element, color);
                 Plot2D.Plot.Add.Plottable(marker);
-               
+
                 var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
                 //scatterT.LegendText = "Heading";
                 PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color);
@@ -586,7 +623,7 @@ namespace TrassierungInterface
             End = new Coordinates(element.Ystart + Math.Sin(element.T + 0.5 * Math.PI) * 10, element.Xstart + Math.Cos(element.T + 0.5 * Math.PI) * 10);
             this.Color = Color;
             this.LabelText = element.ID.ToString() + "_" + element.KzString; ;
-            this.LabelRotation = (float)(element.T*(180/Math.PI));
+            this.LabelRotation = (float)(element.T * (180 / Math.PI));
             LabelAlignment = Alignment.LowerLeft;
         }
 

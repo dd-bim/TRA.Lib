@@ -1,21 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace TrassierungInterface
 {
     public static class TrassierungLog
     {
-        private static ILoggerFactory _loggerFactory; 
+        private static ILoggerFactory _loggerFactory;
         public static void AssignLogger(ILoggerFactory loggerFactory)
         {
-            _loggerFactory = loggerFactory; 
-            Logger = _loggerFactory.CreateLogger("TrassierungLogger"); 
+            _loggerFactory = loggerFactory;
+            Logger = _loggerFactory.CreateLogger("TrassierungLogger");
         }
         public static ILogger Logger
         {
@@ -53,11 +48,12 @@ namespace TrassierungInterface
                         {
                             TrassierungLog.Logger?.LogInformation("A existing TRA-Trasse was found, esisting TRA Data is overwritten", nameof(trasse));
                         }
-                        else { 
+                        else
+                        {
                             trasse = new TRATrasse();
                             trasse.Filename = Path.GetFileName(fileName);
                         }
-                        
+
                         trasse.Elemente = new TrassenElementExt[num + 1];
                         TrassenElementExt predecessor = null;
                         for (int i = 0; i < num + 1; i++)
@@ -74,12 +70,12 @@ namespace TrassierungInterface
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadSingle(),
-                            i+1,
+                            i + 1,
                             predecessor
                             );
                             predecessor = trasse.Elemente[i];
                         }
-                        if(reader.BaseStream.Position != reader.BaseStream.Length) { throw new SerializationException("End of Bytestream was not reached"); }
+                        if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new SerializationException("End of Bytestream was not reached"); }
                         return trasse;
                     }
                 }
@@ -88,7 +84,7 @@ namespace TrassierungInterface
         }
         public static void ExportTRA(TrassenElement[] trasse, string fileName)
         {
-            
+
         }
 
         public static (GRATrasse, GleisscherenElement[]) ImportGRA(string fileName)
@@ -114,12 +110,12 @@ namespace TrassierungInterface
                         {
                             TrassierungLog.Logger?.LogInformation("A existing Trasse was found: " + (trasse is TRATrasse ? "GRA Data is added to TRATrasse, " : "") + "existing GRA Data is overwritten", nameof(trasse));
                         }
-                        else 
-                        { 
+                        else
+                        {
                             trasse = new GRATrasse();
                             trasse.Filename = Path.GetFileName(fileName);
                         }
-                        
+
                         trasse.GradientenElemente = new GradientElementExt[num_NW];
                         GradientElementExt predecessor = null;
                         for (int i = 0; i < num_NW; i++)
@@ -130,7 +126,7 @@ namespace TrassierungInterface
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadInt32(),
-                            i+1,
+                            i + 1,
                             predecessor
                             );
                             predecessor = trasse.GradientenElemente[i];
@@ -151,7 +147,7 @@ namespace TrassierungInterface
                     }
                 }
             }
-            return (null,new GleisscherenElement[0]);
+            return (null, new GleisscherenElement[0]);
         }
         public static void ExportGRA(GradientElement[] gradient, GleisscherenElement[] gleisschere, string fileName)
         {

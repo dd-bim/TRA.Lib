@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using ScottPlot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace TrassierungInterface
 {
@@ -37,16 +33,31 @@ namespace TrassierungInterface
             s = null;
         }
         public void Concat(Interpolation interp)
-        {           
+        {
             X = X.Concat(interp.X).ToArray();
-            Y = Y.Concat(interp.Y).ToArray();            
+            Y = Y.Concat(interp.Y).ToArray();
             S = S.Concat(interp.S).ToArray();
             T = T.Concat(interp.T).ToArray();
             K = K.Concat(interp.K).ToArray();
 
-            if (interp.H != null) { if (H == null) { H = new double[interp.H.Length]; } H = H.Concat(interp.H).ToArray(); }
-            if (interp.s != null){ if (s == null) { s = new double[interp.H.Length]; } s = s.Concat(interp.s).ToArray(); }
+            if (interp.H != null) 
+            { 
+                if (H == null) 
+                { 
+                    H = new double[0]; 
+                } 
+                H = H.Concat(interp.H).ToArray(); 
+            }
+            if (interp.s != null) 
+            { 
+                if (s == null) 
+                { 
+                    s = new double[0]; 
+                } 
+                s = s.Concat(interp.s).ToArray(); 
+            }
         }
+        
     }
 
     public class TrassenElementExt : TrassenElement
@@ -66,7 +77,7 @@ namespace TrassierungInterface
         /// <value>Arrows for visualisation of ProjectionS</value>
         internal List<ProjectionArrow> projections = new() { };
 #endif
-     
+
         /// public
         ///<value>ID des Elements innerhalb der Trasse</value>
         public int ID { get { return id; } }
@@ -102,13 +113,13 @@ namespace TrassierungInterface
         public TrassenElementExt Successor { get { return successor; } }
         /// <value>Returns Interpolationresult</value>
         public Interpolation InterpolationResult { get { return Interpolation; } }
-        
+
 #if USE_SCOTTPLOT
         /// <value>List of Warning Callouts to show on Plot</value>
         public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
 #endif
         public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElementExt predecessor = null, ILogger<TrassenElementExt> logger = null)
-            : base(r1,r2,y,x, t, s, kz, l, u1, u2,c)
+            : base(r1, r2, y, x, t, s, kz, l, u1, u2, c)
         {
             id = idx;
             if (predecessor != null)
@@ -221,7 +232,7 @@ namespace TrassierungInterface
             PlausibilityCheck();
             return ref Interpolation;
         }
-        
+
         public double GetSAtPoint(double X, double Y, double T = double.NaN)
         {
             Transform2D transform = new Transform2D(x, y, t);
@@ -242,7 +253,13 @@ namespace TrassierungInterface
             return (X, Y, T);
         }
 
-        public void print()
+        public override string ToString()
+        {
+            CultureInfo info = CultureInfo.CurrentCulture;
+            string[] values = { r1.ToString(info),r1.ToString(info),y.ToString(info),x.ToString(info),t.ToString(info),s.ToString(info),kz.ToString(),l.ToString(info),u1.ToString(info),u2.ToString(info),c.ToString(info) };
+            return String.Join(info.TextInfo.ListSeparator, values);
+        }
+        public void Print()
         {
             Console.WriteLine("R1:" + r1 + " R2:" + r2 + " Y:" + y + " X:" + x + " T:" + t + " S:" + s + " Kz:" + kz.ToString() + " L:" + l + " U1:" + u1 + " U2:" + u2 + " C:" + c);
         }

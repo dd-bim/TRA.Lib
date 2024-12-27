@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+﻿
 
 namespace TRA.Tool
 {
@@ -32,7 +32,8 @@ namespace TRA.Tool
         {
             label_Trasse = new Label();
             panel1 = new Panel();
-            btn_Load = new Button();
+            btn_Save = new Button();
+            btn_Interpolate = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
             tb_TRA_S = new TextBox();
             label_TRA_L = new Label();
@@ -44,6 +45,7 @@ namespace TRA.Tool
             label_GRA_L = new Label();
             tb_GRA_L = new TextBox();
             tb_GRA_R = new TextBox();
+            folderBrowserDialog_CSV = new FolderBrowserDialog();
             panel1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
@@ -60,22 +62,33 @@ namespace TRA.Tool
             // 
             // panel1
             // 
-            panel1.Controls.Add(btn_Load);
+            panel1.Controls.Add(btn_Save);
+            panel1.Controls.Add(btn_Interpolate);
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 121);
             panel1.Name = "panel1";
             panel1.Size = new Size(438, 27);
             panel1.TabIndex = 1;
             // 
-            // btn_Load
+            // btn_Save
             // 
-            btn_Load.Location = new Point(108, 4);
-            btn_Load.Name = "btn_Load";
-            btn_Load.Size = new Size(76, 20);
-            btn_Load.TabIndex = 0;
-            btn_Load.Text = "Load";
-            btn_Load.UseVisualStyleBackColor = true;
-            btn_Load.Click += btn_Load_Click;
+            btn_Save.Location = new Point(190, 4);
+            btn_Save.Name = "btn_Save";
+            btn_Save.Size = new Size(95, 20);
+            btn_Save.TabIndex = 1;
+            btn_Save.Text = "SaveCSV";
+            btn_Save.UseVisualStyleBackColor = true;
+            btn_Save.Click += btn_Save_Click;
+            // 
+            // btn_Interpolate
+            // 
+            btn_Interpolate.Location = new Point(108, 4);
+            btn_Interpolate.Name = "btn_Interpolate";
+            btn_Interpolate.Size = new Size(76, 20);
+            btn_Interpolate.TabIndex = 0;
+            btn_Interpolate.Text = "Interpolate";
+            btn_Interpolate.UseVisualStyleBackColor = true;
+            btn_Interpolate.Click += btn_Interpolate_Click;
             // 
             // tableLayoutPanel1
             // 
@@ -256,6 +269,8 @@ namespace TRA.Tool
         private Label label_GRA_L;
         private TextBox tb_GRA_L;
         private TextBox tb_GRA_R;
-        private Button btn_Load;
+        private Button btn_Interpolate;
+        private Button btn_Save;
+        private FolderBrowserDialog folderBrowserDialog_CSV;
     }
 }

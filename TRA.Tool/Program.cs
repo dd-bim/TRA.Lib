@@ -1,7 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using TrassierungInterface;
-
 namespace TRA.Tool
 {
     internal static class Program
@@ -18,7 +14,7 @@ namespace TRA.Tool
 
             Application.Run(new MainForm());
 
-            
+
         }
 
 

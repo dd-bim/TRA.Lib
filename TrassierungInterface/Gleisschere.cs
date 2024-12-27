@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace TrassierungInterface
 {
@@ -30,13 +25,13 @@ namespace TrassierungInterface
             RE1 = re1;
             RA = ra;
             RE2 = re2;
-            Ueberhoeung2 = ueberhoeung2*10;
-            if (3000 <= ueberhoeung1 && ueberhoeung1 <= 3999){ Kz = Trassenkennzeichen.UB_S_Form; }
+            Ueberhoeung2 = ueberhoeung2 * 10;
+            if (3000 <= ueberhoeung1 && ueberhoeung1 <= 3999) { Kz = Trassenkennzeichen.UB_S_Form; }
             else if (7000 <= ueberhoeung1 && ueberhoeung1 <= 7999) { Kz = Trassenkennzeichen.S_Form_1f; }
             else if (4000 <= ueberhoeung1 && ueberhoeung1 <= 4999) { Kz = Trassenkennzeichen.Bloss; }
             else if (8000 <= ueberhoeung1 && ueberhoeung1 <= 8999) { Kz = Trassenkennzeichen.Bloss_1f; }
             else { Kz = Trassenkennzeichen.Gerade; }
-            Ueberhoeung1 = ueberhoeung1 - (int)Kz*1000;
+            Ueberhoeung1 = ueberhoeung1 - (int)Kz * 1000;
         }
         public void print()
         {

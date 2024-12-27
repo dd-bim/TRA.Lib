@@ -58,23 +58,23 @@ namespace TrassierungInterface
 
         public Kreis(double radius)
         {
-            this.radius = radius;     
+            this.radius = radius;
         }
         public override (double X, double Y, double t, double k) PointAt(double s)
         {
             int sig = Math.Sign(radius);
             double r = Math.Abs(radius);
-            if (r == 0) { return(s, 0.0, 0.0, 0.0); } //Gerade
+            if (r == 0) { return (s, 0.0, 0.0, 0.0); } //Gerade
             (double X, double Y) = Math.SinCos(s / r);
-            return (X * r, sig * ((1 - Y) * r), s/r, 1/radius);
+            return (X * r, sig * ((1 - Y) * r), s / r, 1 / radius);
         }
 
         public override double sAt(double X, double Y, double t = double.NaN)
         {
-            if(radius == 0) return new Gerade().sAt(X, Y,t); //use this calculation if radius is 0;
+            if (radius == 0) return new Gerade().sAt(X, Y, t); //use this calculation if radius is 0;
 
             Vector2 c = new Vector2(0, (float)radius);
-            Vector2 point = new Vector2((float)X,(float)Y);
+            Vector2 point = new Vector2((float)X, (float)Y);
             Vector2 dir;
             if (Double.IsNaN(t)) //t is not used
             {
@@ -84,24 +84,24 @@ namespace TrassierungInterface
             {
                 dir = new Vector2((float)Math.Cos(t), (float)Math.Sin(t));
             }
-            
+
             // Calculate quadratic equation coefficients
             double a = dir.X * dir.X + dir.Y * dir.Y;
-            double b = 2 * (dir.X * (X - c.X) + dir.Y * (Y - c.Y)); 
-            double cValue = (X - c.X) * (X - c.X) + (Y - c.Y) * (Y - c.Y) - radius * radius; 
-            
+            double b = 2 * (dir.X * (X - c.X) + dir.Y * (Y - c.Y));
+            double cValue = (X - c.X) * (X - c.X) + (Y - c.Y) * (Y - c.Y) - radius * radius;
+
             // Calculate discriminant
-            double discriminant = b * b - 4 * a * cValue; 
+            double discriminant = b * b - 4 * a * cValue;
             if (discriminant < 0) // No real intersection
             {
-                return double.NaN; 
-            }           
+                return double.NaN;
+            }
             // Calculate t values for intersection points
-            double t1 = (-b + Math.Sqrt(discriminant)) / (2 * a); 
-            double t2 = (-b - Math.Sqrt(discriminant)) / (2 * a); 
-            
+            double t1 = (-b + Math.Sqrt(discriminant)) / (2 * a);
+            double t2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+
             // Calculate nearest intersection point
-            Vector2 intersection = point + (float)(Math.Abs(t1) < Math.Abs(t2) ? t1:t2) * dir;
+            Vector2 intersection = point + (float)(Math.Abs(t1) < Math.Abs(t2) ? t1 : t2) * dir;
             intersection = intersection - c; //relative to center
             double s_ = radius > 0 ? Math.PI - Math.Atan2(intersection.X, intersection.Y) : Math.Atan2(intersection.X, intersection.Y);
             return s_ * Math.Abs(radius);
@@ -121,10 +121,10 @@ namespace TrassierungInterface
         /// <param name="length">Length of the Clothoid. NaN and 0 is results in stragiht line (radii have no effect)</param>
         public Klothoid(double r1, double r2, double length)
         {
-           this.r1 = Double.IsNaN(r1) ? 0 : r1; //interpreting NaN radius as zero (straight line)
-           this.r2 = Double.IsNaN(r2) ? 0 : r2; //interpreting NaN radius as zero (straight line)
-           this.length = Double.IsNaN(length) ? 0 : length;
-           CalcConstants();
+            this.r1 = Double.IsNaN(r1) ? 0 : r1; //interpreting NaN radius as zero (straight line)
+            this.r2 = Double.IsNaN(r2) ? 0 : r2; //interpreting NaN radius as zero (straight line)
+            this.length = Double.IsNaN(length) ? 0 : length;
+            CalcConstants();
         }
 
         //Constant parameters
@@ -146,9 +146,9 @@ namespace TrassierungInterface
             // using absolute values is not the elegant way but, simplfies calculations for sign-combinations of the radii
             curvature1 = r1 == 0.0 ? 0 : Math.Abs(1 / r1);
             curvature2 = r2 == 0.0 ? 0 : Math.Abs(1 / r2);
-            if (Math.Sign(r1*r2) == -1)
+            if (Math.Sign(r1 * r2) == -1)
             {
-                gamma = length != 0? -(curvature2 + curvature1) / length : 0;
+                gamma = length != 0 ? -(curvature2 + curvature1) / length : 0;
             }
             else
             {
@@ -157,11 +157,11 @@ namespace TrassierungInterface
             dir = Math.Sign(r1) == 0 ? Math.Sign(r2) : Math.Sign(r1); //Get turning-direction of the clothoid
             (Sb, Cb) = CalculateFresnel(curvature1 / Math.Sqrt(Math.PI * Math.Abs(gamma)));
             // Euler Spiral
-            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, -Math.Sign(gamma)*(curvature1 * curvature1) / (2 * gamma)));
+            Cs1 = Math.Sqrt(Math.PI / Math.Abs(gamma)) * Complex.Exp(new Complex(0, -Math.Sign(gamma) * (curvature1 * curvature1) / (2 * gamma)));
         }
         public override (double X, double Y, double t, double k) PointAt(double s)
         {
-            if(r1 == 0.0 && r2 == 0.0) { return new Gerade().PointAt(s); }
+            if (r1 == 0.0 && r2 == 0.0) { return new Gerade().PointAt(s); }
             if (r1 == r2) { return new Kreis(r1).PointAt(s); }
 
             // Addapted from https://github.com/stefan-urban/pyeulerspiral/blob/master/eulerspiral/eulerspiral.py
@@ -171,7 +171,7 @@ namespace TrassierungInterface
             double Ca = new double();
             double Sa = new double();
             (Sa, Ca) = CalculateFresnel((curvature1 + gamma * s) / Math.Sqrt(Math.PI * Math.Abs(gamma)), ref last_t, ref last_Sa, ref last_Ca);
-                        
+
             Complex Cs2 = Math.Sign(gamma) * ((Ca - Cb) + new Complex(0, Sa - Sb));
             Complex Cs = Cs1 * Cs2;
 
@@ -237,15 +237,15 @@ namespace TrassierungInterface
             {
                 double x, y;
                 (x, y) = Math.SinCos(t);
-                vt = new Vector2((float)y,(float)x);
+                vt = new Vector2((float)y, (float)x);
                 prevSign = Math.Sign(X * vt.Y - Y * vt.X);
             }
-            
+
             int maxIterations = 1000;
             int i = 0;
             while (i < maxIterations && d > threshold)
             {
-                (X_, Y_, t_, k) = PointAt(s);              
+                (X_, Y_, t_, k) = PointAt(s);
                 v2 = new Vector2((float)(X - X_), (float)(Y - Y_)); //vector from current position to Point of interest
                 if (Double.IsNaN(t))
                 {
@@ -267,12 +267,12 @@ namespace TrassierungInterface
                         prevSign = Math.Sign(scalarCross);
                     }
                     double ang = Math.Acos(Vector2.Dot(vt, v2 / v2.Length()));
-                    d = (ang > 0.5*Math.PI ? Math.PI-ang : ang)*v2.Length();
+                    d = (ang > 0.5 * Math.PI ? Math.PI - ang : ang) * v2.Length();
                 }
                 s = s + delta;
                 i++;
             }
-            if (i == maxIterations) 
+            if (i == maxIterations)
             {
                 TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + this.ToString());
                 return double.NaN;
@@ -280,7 +280,7 @@ namespace TrassierungInterface
             return s;
         }
     }
-   
+
 
     public class Transform2D
     {
