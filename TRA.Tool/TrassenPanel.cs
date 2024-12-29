@@ -1,4 +1,5 @@
 ﻿
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Windows.Forms;
@@ -174,22 +175,50 @@ namespace TRA.Tool
 
         private void btn_Interpolate_Click(object sender, EventArgs e)
         {
+            //trasseS.Interpolate(1);
+            //trasseS.Plot();
+            //trasseL.Interpolate3D(null, 10);
+            //trasseL.Plot();
+            //trasseR.Interpolate3D(null, 10);
+            //trasseR.Plot();
             if (trasseS != null)
             {
-                trasseS.Interpolate(1);
-                trasseS.Plot();
+                BackgroundWorker backgroundWorker = new BackgroundWorker();
+                backgroundWorker.DoWork += (sender, e) =>
+                {
+                    trasseS.Interpolate(1);
+                };
+                backgroundWorker.RunWorkerCompleted += (sender, e) =>
+                {
+                    trasseS.Plot();
+                };
+                backgroundWorker.RunWorkerAsync();
             }
             if (trasseL != null)
             {
-                trasseL.Interpolate3D(null, 10.0);
-                trasseL.Plot();
+                BackgroundWorker backgroundWorker = new BackgroundWorker();
+                backgroundWorker.DoWork += (sender, e) =>
+                {
+                    trasseL.Interpolate3D(null, 10);
+                };
+                backgroundWorker.RunWorkerCompleted += (sender, e) =>
+                {
+                    trasseL.Plot();
+                };
+                backgroundWorker.RunWorkerAsync();
             }
             if (trasseR != null)
             {
-                trasseR.Interpolate3D(null, 10.0);
-                trasseR.Plot();
+                BackgroundWorker backgroundWorker = new BackgroundWorker();
+                backgroundWorker.DoWork += (sender, e) =>
+                {
+                    trasseR.Interpolate3D(null, 10);
+                };
+                backgroundWorker.RunWorkerCompleted += (sender, e) => { trasseR.Plot(); };
+                backgroundWorker.RunWorkerAsync();
             }
         }
+
 
         private void btn_Save_Click(object sender, EventArgs e)
         {

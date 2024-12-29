@@ -165,49 +165,58 @@ namespace TrassierungInterface
         }
         public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0)
         {
-            Interpolation interp = new Interpolation(0);
+            Task[] tasks = new Task[Elemente.Length];
             TRATrasse trasseS = stationierungsTrasse != null ? stationierungsTrasse : TrasseS; //if a valid trasse is provided use that one, else try to use a previously assigned
             if (GradientenElemente == null)
             {
                 TrassierungLog.Logger?.LogError("Can not calculate Heights for Interpolation as there are no Gradient Elements loaded for this Trasse. Please add Gradients by calling AssignGRA()", nameof(Interpolate3D));
             }
+            int n = 0;
             foreach (TrassenElementExt element in Elemente)
             {
-                ref Interpolation Interpolation = ref element.Interpolate(delta);
-                if (GradientenElemente == null)
+                tasks[n] = Task.Run(() => 
                 {
-                    interp.Concat(Interpolation);
-                    continue;
-                }
-                int num = Interpolation.X.Length;
-                Interpolation.H = new double[num];
-                Interpolation.s = new double[num];
-                for (int i = 0; i < num; i++)
-                {
-                    double s;
-                    if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
+                    ref Interpolation Interpolation = ref element.Interpolate(delta);
+                    if (GradientenElemente == null)
                     {
-                        TrassenElementExt stationierungsElement = trasseS.GetElementFromPoint(Interpolation.X[i], Interpolation.Y[i]);
-                        s = (stationierungsElement != null ? stationierungsElement.GetSAtPoint(Interpolation.X[i], Interpolation.Y[i]) : double.NaN);
-                        if (Double.IsNaN(s)) { Interpolation.H[i] = double.NaN; continue; }
-#if USE_SCOTTPLOT
-                        //Visualisation
-                        if (stationierungsElement != null)
+                        return;
+                    }
+                    int num = Interpolation.X.Length;
+                    Interpolation.H = new double[num];
+                    Interpolation.s = new double[num];
+                    for (int i = 0; i < num; i++)
+                    {
+                        double s;
+                        if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                         {
-                            double X_, Y_;
-                            (X_, Y_, _) = stationierungsElement.GetPointAtS(s);
-                            element.projections.Add(new ProjectionArrow(new Coordinates(Interpolation.Y[i], Interpolation.X[i]), new Coordinates(Y_, X_)));
-                        }
+                            TrassenElementExt stationierungsElement = trasseS.GetElementFromPoint(Interpolation.X[i], Interpolation.Y[i]);
+                            s = (stationierungsElement != null ? stationierungsElement.GetSAtPoint(Interpolation.X[i], Interpolation.Y[i]) : double.NaN);
+                            if (Double.IsNaN(s)) { Interpolation.H[i] = double.NaN; continue; }
+#if USE_SCOTTPLOT
+                            //Visualisation
+                            if (stationierungsElement != null)
+                            {
+                                double X_, Y_;
+                                (X_, Y_, _) = stationierungsElement.GetPointAtS(s);
+                                element.projections.Add(new ProjectionArrow(new Coordinates(Interpolation.Y[i], Interpolation.X[i]), new Coordinates(Y_, X_)));
+                            }
 #endif
+                        }
+                        else //if no trasseS provided use original value S
+                        {
+                            s = Interpolation.S[i];
+                        }
+                        GradientElementExt gradient = GetGradientElementFromS(s);
+                        (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
                     }
-                    else //if no trasseS provided use original value S
-                    {
-                        s = Interpolation.S[i];
-                    }
-                    GradientElementExt gradient = GetGradientElementFromS(s);
-                    (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
-                }
-                interp.Concat(Interpolation);
+                });
+                n++;
+            }
+            Task.WaitAll(tasks);
+            Interpolation interp = new Interpolation(0);
+            foreach (TrassenElementExt element in Elemente)
+            {
+                interp.Concat(element.InterpolationResult);
             }
             return interp;
         }
@@ -461,20 +470,24 @@ namespace TrassierungInterface
             foreach (TrassenElementExt element in Elemente)
             {
                 Interpolation interpolation = element.InterpolationResult;
-                var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
-                scatter.LegendText = Filename;
-                ScottPlot.Color color = scatter.MarkerFillColor;
+                ScottPlot.Color color = new();
+                if (interpolation.X != null && interpolation.Y != null)
+                {
+                    var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
+                    scatter.LegendText = Filename;
+                    color = scatter.MarkerFillColor;
+
+                    var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
+                    //scatterT.LegendText = "Heading";
+                    PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color);
+                    var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, color);
+                    //scatterK.LegendText = "Curvature";
+                    // tell each T and K plot to use a different axis
+                    scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
+                    scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
+                }
                 ElementMarker marker = new(element, color);
                 Plot2D.Plot.Add.Plottable(marker);
-
-                var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
-                //scatterT.LegendText = "Heading";
-                PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color);
-                var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, color);
-                //scatterK.LegendText = "Curvature";
-                // tell each T and K plot to use a different axis
-                scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
-                scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
 
                 if (interpolation.H != null && interpolation.s != null)
                 {
