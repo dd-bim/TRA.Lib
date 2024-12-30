@@ -190,6 +190,7 @@ namespace TrassierungInterface
                         if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                         {
                             TrassenElementExt stationierungsElement = trasseS.GetElementFromPoint(Interpolation.X[i], Interpolation.Y[i]);
+                            if(stationierungsElement != null) { stationierungsElement = stationierungsElement.Clone(); }
                             s = (stationierungsElement != null ? stationierungsElement.GetSAtPoint(Interpolation.X[i], Interpolation.Y[i]) : double.NaN);
                             if (Double.IsNaN(s)) { Interpolation.H[i] = double.NaN; continue; }
 #if USE_SCOTTPLOT
@@ -207,6 +208,7 @@ namespace TrassierungInterface
                             s = Interpolation.S[i];
                         }
                         GradientElementExt gradient = GetGradientElementFromS(s);
+                        if(gradient != null) { gradient = gradient.Clone(); }
                         (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
                     }
                 });

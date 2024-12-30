@@ -4,7 +4,7 @@ namespace TrassierungInterface
     /// <summary>
     /// Base Datastructure for a GRA-File
     /// </summary>
-    public class GradientElement
+    public class GradientElement : ICloneable
     {
         /// <value>Station NW</value>
         protected double s;
@@ -25,6 +25,12 @@ namespace TrassierungInterface
             this.t = t;
             this.pkt = (int)(pkt / 1000);
         }
+
+        public object Clone()
+        {
+            return new GradientElement(s, h, r, t, pkt);    
+        }
+
         public void print()
         {
             Console.WriteLine("S:" + s + " H:" + h + " R:" + r + " T:" + t + " Pkt:" + pkt);

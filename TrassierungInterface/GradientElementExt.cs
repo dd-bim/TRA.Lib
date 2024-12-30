@@ -61,6 +61,17 @@ namespace TrassierungInterface
                 predecessor.CalcConstants();
             }
         }
+        public new GradientElementExt Clone()
+        {
+            return new GradientElementExt(s, h, r, t, pkt, id,null) { 
+                predecessor = this.predecessor, 
+                successor = this.successor,
+                h_A = this.h_A,
+                x_A = this.x_A,
+                h_E = this.h_E, 
+                x_E = this.x_E,
+            };
+        }
         public bool PlausibilityCheck(bool bCheckRadii = false)
         {
             double tolerance = 0.00000001;

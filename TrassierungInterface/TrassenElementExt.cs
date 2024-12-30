@@ -157,6 +157,10 @@ namespace TrassierungInterface
                     break;
             }
         }
+        public new TrassenElementExt Clone()
+        {
+            return new TrassenElementExt(r1, r2, y, x, t, s, (int)kz, l, u1, u2, c, id, null) { predecessor = this.predecessor, successor = this.successor };
+        }
         public void Relocate(double x, double y, double t)
         {
             this.x = x;

@@ -14,7 +14,7 @@ namespace TrassierungInterface
         S_Form_1f, //S-Form (1f geschw.)
         Bloss_1f    //Bloss (1f geschw.)
     }
-    public class TrassenElement
+    public class TrassenElement : ICloneable
     {
         ///TRA-Attribute
         /// <value>Radius am Elementanfang</value>
@@ -60,6 +60,11 @@ namespace TrassierungInterface
             this.u1 = u1;
             this.u2 = u2;
             this.c = c;
+        }
+
+        public object Clone()
+        {
+            return new TrassenElement(r1, r2, y, x, t, s, (int)kz, l, u1, u2, c);
         }
     }
 }
