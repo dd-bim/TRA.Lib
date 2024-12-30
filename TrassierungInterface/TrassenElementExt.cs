@@ -118,7 +118,7 @@ namespace TrassierungInterface
         /// <value>List of Warning Callouts to show on Plot</value>
         public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
 #endif
-        public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElementExt predecessor = null, ILogger<TrassenElementExt> logger = null)
+        public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElementExt predecessor = null)
             : base(r1, r2, y, x, t, s, kz, l, u1, u2, c)
         {
             id = idx;
