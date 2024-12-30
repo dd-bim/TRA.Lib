@@ -275,7 +275,7 @@ namespace TrassierungInterface
             (trasseGRA, _) = Trassierung.ImportGRA(FilenameGRA_LR);
             trasseLR.AssignTrasseS(trasseS);
             trasseLR.AssignGRA(trasseGRA);
-            trasseLR.Interpolate3D(null, 10);
+            trasseLR.Interpolate3D(null, 5);
             trasseLR.Plot();
             trasseS.Interpolate();
             trasseS.Plot();
