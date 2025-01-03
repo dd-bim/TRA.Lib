@@ -1,13 +1,14 @@
 ﻿
 
 using Microsoft.Extensions.Logging;
-using ScottPlot;
-using SkiaSharp;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+#if USE_SCOTTPLOT
+using ScottPlot;
+using SkiaSharp;
+#endif
+
 
 // AssemblyInfo.cs
 [assembly: InternalsVisibleTo("KomponentenTest")]
@@ -552,7 +553,7 @@ namespace TrassierungInterface
         {
             CheckBox box = (CheckBox)sender;
             bool show = box.Checked;
-            foreach (var warning in Plot2D.Plot.GetPlottables<WarningCallout>())
+            foreach (var warning in Plot2D.Plot.GetPlottables<GeometryWarning>())
             {
                 warning.IsVisible = show;
             }
@@ -596,6 +597,7 @@ namespace TrassierungInterface
         }
 #endif
     }
+#if USE_SCOTTPLOT
     class ProjectionArrow : ScottPlot.Plottables.Arrow
     {
         public ProjectionArrow(Coordinates pos, Coordinates tip) : base()
@@ -674,4 +676,5 @@ namespace TrassierungInterface
             LabelStyle.Render(rp.Canvas, pxLine.Center, paint);
         }
     }
+#endif
 }

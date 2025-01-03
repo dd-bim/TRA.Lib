@@ -71,6 +71,7 @@ namespace TrassierungInterface
                             reader.ReadDouble(),
                             reader.ReadSingle(),
                             i + 1,
+                            trasse,
                             predecessor
                             );
                             predecessor = trasse.Elemente[i];
@@ -127,6 +128,7 @@ namespace TrassierungInterface
                             reader.ReadDouble(),
                             reader.ReadInt32(),
                             i + 1,
+                            trasse,
                             predecessor
                             );
                             predecessor = trasse.GradientenElemente[i];

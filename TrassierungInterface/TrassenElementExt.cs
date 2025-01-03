@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using ScottPlot;
 using System.Globalization;
+#if USE_SCOTTPLOT
+using ScottPlot;
+#endif
 
 namespace TrassierungInterface
 {
@@ -62,6 +64,9 @@ namespace TrassierungInterface
 
     public class TrassenElementExt : TrassenElement
     {
+        /// <value>Trasse this Element belongs to</value>
+        internal Trasse owner;
+        /// <value>Geometry of this element</value>
         TrassenGeometrie TrassenGeometrie;
         /// <value>ID des Elements</value>
         int id;
@@ -72,8 +77,9 @@ namespace TrassierungInterface
         /// <value>Interpolationsobjekt</value>
         Interpolation Interpolation;
 
+        List<GeometryWarning> WarningCallouts = new() { };
+
 #if USE_SCOTTPLOT
-        List<WarningCallout> WarningCallouts = new() { };
         /// <value>Arrows for visualisation of ProjectionS</value>
         internal List<ProjectionArrow> projections = new() { };
 #endif
@@ -114,11 +120,9 @@ namespace TrassierungInterface
         /// <value>Returns Interpolationresult</value>
         public Interpolation InterpolationResult { get { return Interpolation; } }
 
-#if USE_SCOTTPLOT
-        /// <value>List of Warning Callouts to show on Plot</value>
-        public WarningCallout[] GetWarnings { get { return WarningCallouts.ToArray(); } }
-#endif
-        public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, TrassenElementExt predecessor = null)
+        /// <value>List of Warnings/ Callouts to show on Plot if compiled with SCOTTPLOT</value>
+        public GeometryWarning[] GetWarnings { get { return WarningCallouts.ToArray(); } }
+        public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, Trasse owner, TrassenElementExt predecessor = null)
             : base(r1, r2, y, x, t, s, kz, l, u1, u2, c)
         {
             id = idx;
@@ -127,6 +131,7 @@ namespace TrassierungInterface
                 this.predecessor = predecessor;
                 predecessor.successor = this;
             }
+            this.owner = owner;
             PlausibilityCheck();
 
             switch (this.kz)
@@ -171,16 +176,16 @@ namespace TrassierungInterface
         {
             WarningCallouts.Clear();
             //Radii
-            if (kz == Trassenkennzeichen.Gerade && r1 != 0 & r2 != 0) { TrassierungLog.Logger?.LogWarning("given Radii are not matching to KZ as it is 'Gerade''", nameof(kz)); }
-            if (kz == Trassenkennzeichen.Kreis && r1 != r2) { TrassierungLog.Logger?.LogWarning("given Radii are not equal for KZ is 'Kreis''", nameof(kz)); }
+            if (kz == Trassenkennzeichen.Gerade && r1 != 0 & r2 != 0) { AddWarningCallout("given Radii are not matching to KZ as it is 'Gerade''", Xstart, Ystart); }
+            if (kz == Trassenkennzeichen.Kreis && r1 != r2) { AddWarningCallout("given Radii are not equal for KZ is 'Kreis''", Xstart, Ystart); }
             //Connectivity by Station & Length
             if (predecessor != null)
             {
-                if (predecessor.s + predecessor.l != s) { TrassierungLog.Logger?.LogWarning("predecessor length missmatch. elements are not connected", nameof(l)); }
+                if (predecessor.s + predecessor.l != s) { AddWarningCallout("predecessor length missmatch. elements are not connected", Xstart, Ystart); }
             }
             if (successor != null)
             {
-                if (s + l != successor.s) { TrassierungLog.Logger?.LogWarning("length missmatch. element is not connected to successor", nameof(l)); }
+                if (s + l != successor.s) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
             }
             //Connectivity & continuity by Interpolation
             double tolerance = 0.00000001;
@@ -189,19 +194,19 @@ namespace TrassierungInterface
                 //Connectivity
                 if (Math.Abs(Interpolation.X.Last() - successor.x) > tolerance && Math.Abs(Interpolation.Y.Last() - successor.y) > tolerance)
                 {
-                    TrassierungLog.Logger?.LogWarning("Last interpolated Element(ID" + id.ToString() + "_" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x, 2) + Math.Pow(Interpolation.Y.Last() - successor.y, 2)).ToString());
+                    //TrassierungLog.Logger?.LogWarning("Last interpolated Element(ID" + id.ToString() + "_" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x, 2) + Math.Pow(Interpolation.Y.Last() - successor.y, 2)).ToString());
                     AddWarningCallout("coordinate difference \n" + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x, 2) + Math.Pow(Interpolation.Y.Last() - successor.y, 2)).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
                 //Continuity of Heading
                 if (Math.Abs(Interpolation.T.Last() - successor.T) > tolerance)
                 {
-                    TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") heading differs from successors start heading by " + (Interpolation.T.Last() - successor.T).ToString());
+                    //TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") heading differs from successors start heading by " + (Interpolation.T.Last() - successor.T).ToString());
                     AddWarningCallout("heading difference \n" + (Interpolation.T.Last() - successor.T).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
                 //Continuity of Radii(Curvature)
                 if (bCheckRadii && Math.Abs(Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1) > tolerance)
                 {
-                    TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") radius differs from successors start radius by " + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString());
+                    //TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") radius differs from successors start radius by " + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString());
                     AddWarningCallout("curvature difference \n" + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
             }
@@ -209,15 +214,13 @@ namespace TrassierungInterface
         }
         void AddWarningCallout(string text, double X, double Y)
         {
-#if USE_SCOTTPLOT
-            WarningCallouts.Add(new WarningCallout(text, X, Y));
-#endif
+            WarningCallouts.Add(new GeometryWarning(text, X, Y,this));
         }
 
         public ref Interpolation Interpolate(double delta = 1.0)
         {
             Transform2D transform = new Transform2D(x, y, t);
-            if (TrassenGeometrie == null) { TrassierungLog.Logger?.LogWarning("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", nameof(kz)); return ref Interpolation; }
+            if (TrassenGeometrie == null) { AddWarningCallout("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", Xstart,Ystart); return ref Interpolation; }
 
             int num = (int)Math.Abs(l / delta);
             if (l < 0 && delta > 0) { delta = -delta; } //set delta negative for negative lengths
@@ -265,10 +268,10 @@ namespace TrassierungInterface
         }
     }
 #if USE_SCOTTPLOT
-    public class WarningCallout : ScottPlot.Plottables.Callout
+    public class GeometryWarning : ScottPlot.Plottables.Callout
     {
         static double Xlast; //prevent multiple callouts at same location
-        public WarningCallout(string text, double X, double Y)
+        public GeometryWarning(string text, double X, double Y, object owner)
         {
             ScottPlot.Color color = ScottPlot.Color.FromSDColor(System.Drawing.Color.Yellow);
             ScottPlot.Color LineColor = ScottPlot.Color.FromSDColor(System.Drawing.Color.Red);
@@ -280,6 +283,21 @@ namespace TrassierungInterface
             ArrowFillColor = color;
             TextBorderColor = LineColor;
             TextBackgroundColor = color.Lighten();
+            TrassenElementExt trasse = (TrassenElementExt)owner;
+            string ownerString = trasse != null && trasse.owner != null ? trasse.owner.Filename + "_" + trasse.ID : null;
+            TrassierungLog.Logger?.LogWarning(ownerString + " " + Text, owner) ;
+        }
+    }
+#else
+ public class GeometryWarning 
+    {
+    public string Text;
+    public GeometryWarning(string text, double X, double Y, object owner)
+        {
+            Text = text;
+            TrassenElementExt trasse = (TrassenElementExt)owner;
+            string ownerString = trasse != null ? trasse.owner.Filename + "_" + trasse.ID : null;
+            TrassierungLog.Logger?.LogWarning(ownerString + " " + Text, owner) ;
         }
     }
 #endif

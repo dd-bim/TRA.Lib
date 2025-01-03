@@ -4,15 +4,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<UseWindowsForms>true</UseWindowsForms>
 	<TargetFramework>net6.0-windows</TargetFramework>
+	<Configurations>Debug;Release;Release_NO_SCOTTPLOT</Configurations>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NO_SCOTTPLOT|AnyCPU'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT</DefineConstants>
-  </PropertyGroup>
-
+	<DefineConstants>$(DefineConstants);USE_SCOTTPLOT</DefineConstants>
+	</PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);USE_SCOTTPLOT</DefineConstants>
   </PropertyGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />

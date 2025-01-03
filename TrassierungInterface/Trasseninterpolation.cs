@@ -274,7 +274,7 @@ namespace TrassierungInterface
             }
             if (i == maxIterations)
             {
-                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + this.ToString());
+                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry", this);
                 return double.NaN;
             }
             return s;

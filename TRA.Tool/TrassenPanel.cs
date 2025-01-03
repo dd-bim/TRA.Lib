@@ -177,17 +177,23 @@ namespace TRA.Tool
             if (trasseS != null)
             {
                 trasseS.Interpolate(1);
+#if USE_SCOTTPLOT
                 trasseS.Plot();
+#endif
             }
             if (trasseL != null)
             {
                 trasseL.Interpolate3D(null, 10.0);
+#if USE_SCOTTPLOT
                 trasseL.Plot();
+#endif
             }
             if (trasseR != null)
             {
                 trasseR.Interpolate3D(null, 10.0);
+#if USE_SCOTTPLOT
                 trasseR.Plot();
+#endif
             }
         }
 

@@ -276,11 +276,15 @@ namespace TrassierungInterface
             trasseLR.AssignTrasseS(trasseS);
             trasseLR.AssignGRA(trasseGRA);
             trasseLR.Interpolate3D(null, 5);
+#if USE_SCOTTPLOT
             trasseLR.Plot();
+#endif
             trasseS.Interpolate();
+#if USE_SCOTTPLOT
             trasseS.Plot();
+#endif
         }
-        #endregion
+#endregion
     }
 
 
