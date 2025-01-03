@@ -1,5 +1,5 @@
 ﻿
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     /// <summary>
     /// Base Datastructure for a GRA-File

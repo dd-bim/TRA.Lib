@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     /// <summary>
     /// Extended GradientElement providing functionality for calculating heights defined by the base <seealso cref="GradientElement"/>
@@ -10,6 +10,7 @@ namespace TrassierungInterface
 
     public class GradientElementExt : GradientElement
     {
+        Trasse owner;
         /// <value>ID des Elements</value>
         int id;
         /// <value>Vorgaenger Element</value>
@@ -49,7 +50,7 @@ namespace TrassierungInterface
         /// <value>Hochwert am Elementanfang</value>
         public GradientElementExt Successor { get { return successor; } }
 
-        public GradientElementExt(double s, double h, double r, double t, long pkt, int idx, GradientElementExt predecessor = null) : base(s, h, r, t, pkt)
+        public GradientElementExt(double s, double h, double r, double t, long pkt, int idx, Trasse owner, GradientElementExt predecessor = null) : base(s, h, r, t, pkt)
         {
             id = idx;
             if (predecessor != null)
@@ -60,6 +61,7 @@ namespace TrassierungInterface
                 predecessor.s2 = s1;
                 predecessor.CalcConstants();
             }
+            this.owner = owner;
         }
         
         public bool PlausibilityCheck(bool bCheckRadii = false)

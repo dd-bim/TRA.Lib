@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Numerics;
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     public abstract class TrassenGeometrie
     {
@@ -274,7 +274,7 @@ namespace TrassierungInterface
             }
             if (i == maxIterations)
             {
-                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + this.ToString());
+                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry", this);
                 return double.NaN;
             }
             return s;

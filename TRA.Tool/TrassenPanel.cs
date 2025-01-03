@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Windows.Forms;
-using TrassierungInterface;
+using TRA_Lib;
 
 namespace TRA.Tool
 {
@@ -188,10 +188,12 @@ namespace TRA.Tool
                 {
                     trasseS.Interpolate(1);
                 };
+#if USE_SCOTTPLOT
                 backgroundWorker.RunWorkerCompleted += (sender, e) =>
                 {
                     trasseS.Plot();
                 };
+#endif
                 backgroundWorker.RunWorkerAsync();
             }
             if (trasseL != null)
@@ -201,10 +203,12 @@ namespace TRA.Tool
                 {
                     trasseL.Interpolate3D(null, 10);
                 };
+#if USE_SCOTTPLOT
                 backgroundWorker.RunWorkerCompleted += (sender, e) =>
                 {
                     trasseL.Plot();
                 };
+#endif
                 backgroundWorker.RunWorkerAsync();
             }
             if (trasseR != null)
@@ -214,8 +218,11 @@ namespace TRA.Tool
                 {
                     trasseR.Interpolate3D(null, 10);
                 };
+#if USE_SCOTTPLOT
                 backgroundWorker.RunWorkerCompleted += (sender, e) => { trasseR.Plot(); };
+#endif
                 backgroundWorker.RunWorkerAsync();
+
             }
         }
 

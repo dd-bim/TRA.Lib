@@ -1,6 +1,6 @@
 ﻿
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     public enum Trassenkennzeichen
     {

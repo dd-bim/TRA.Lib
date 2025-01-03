@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TrassierungInterface\TrassierungInterface.csproj" />
+    <ProjectReference Include="..\TRA.Lib\TRA.Lib.csproj" />
   </ItemGroup>
 
 </Project>
