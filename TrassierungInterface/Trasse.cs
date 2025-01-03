@@ -190,8 +190,15 @@ namespace TrassierungInterface
                         if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                         {
                             TrassenElementExt stationierungsElement = trasseS.GetElementFromPoint(Interpolation.X[i], Interpolation.Y[i]);
-                            if(stationierungsElement != null) { stationierungsElement = stationierungsElement.Clone(); }
-                            s = (stationierungsElement != null ? stationierungsElement.GetSAtPoint(Interpolation.X[i], Interpolation.Y[i]) : double.NaN);
+                            if (stationierungsElement != null) 
+                            {
+                                stationierungsElement = stationierungsElement.Clone();
+                                s = stationierungsElement.GetSAtPoint(Interpolation.X[i], Interpolation.Y[i]);
+                            } 
+                            else 
+                            {
+                                s = double.NaN;
+                            }
                             if (Double.IsNaN(s)) { Interpolation.H[i] = double.NaN; continue; }
 #if USE_SCOTTPLOT
                             //Visualisation
@@ -208,8 +215,14 @@ namespace TrassierungInterface
                             s = Interpolation.S[i];
                         }
                         GradientElementExt gradient = GetGradientElementFromS(s);
-                        if(gradient != null) { gradient = gradient.Clone(); }
-                        (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
+                        if (gradient != null)
+                        {
+                            (Interpolation.H[i], Interpolation.s[i]) = gradient.GetHAtS(s);
+                        }
+                        else
+                        {
+                            (Interpolation.H[i], Interpolation.s[i]) = (double.NaN, double.NaN);
+                        }
                     }
                 });
                 n++;
