@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Numerics;
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     public abstract class TrassenGeometrie
     {

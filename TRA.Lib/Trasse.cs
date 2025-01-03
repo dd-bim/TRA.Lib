@@ -13,7 +13,7 @@ using SkiaSharp;
 // AssemblyInfo.cs
 [assembly: InternalsVisibleTo("KomponentenTest")]
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     public class Trasse
     {

@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     public static class TrassierungLog
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     /// <summary>
     /// Extended GradientElement providing functionality for calculating heights defined by the base <seealso cref="GradientElement"/>

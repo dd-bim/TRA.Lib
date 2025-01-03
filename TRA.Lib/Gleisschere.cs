@@ -1,6 +1,6 @@
 ﻿
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     /// <summary>
     /// https://www.akgsoftware.de/docs/de/infravision/b62/akgcad/webhelp/glossary/gl_gleisschere.html

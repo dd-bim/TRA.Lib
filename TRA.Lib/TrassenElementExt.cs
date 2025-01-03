@@ -4,7 +4,7 @@ using System.Globalization;
 using ScottPlot;
 #endif
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     public struct Interpolation
     {

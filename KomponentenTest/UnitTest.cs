@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace TrassierungInterface
+namespace TRA_Lib
 {
     [TestClass]
     public class UnitTest
