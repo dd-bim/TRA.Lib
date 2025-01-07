@@ -11,7 +11,7 @@ using SkiaSharp;
 
 
 // AssemblyInfo.cs
-[assembly: InternalsVisibleTo("KomponentenTest")]
+[assembly: InternalsVisibleTo("TRA.Lib_TEST")]
 
 namespace TRA_Lib
 {

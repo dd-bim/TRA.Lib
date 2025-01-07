@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TRA.Lib", "TRA.Lib\TRA.Lib.csproj", "{A448E700-2628-4CC2-BCFB-279E4AD1C947}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KomponentenTest", "KomponentenTest\KomponentenTest.csproj", "{FE34EA33-4E84-46C2-81EB-8E5B38E5026F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TRA.Lib_TEST", "KomponentenTest\TRA.Lib_TEST.csproj", "{FE34EA33-4E84-46C2-81EB-8E5B38E5026F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TRA.Tool", "TRA.Tool\TRA.Tool.csproj", "{F38EBE68-F8A7-4CF1-BBF6-DA860B3468E0}"
 EndProject
