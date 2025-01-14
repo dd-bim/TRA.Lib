@@ -8,21 +8,17 @@ namespace TRA.Tool
 {
     public partial class TrassenPanel : UserControl
     {
-        TRATrasse trasseS = null;
-        TRATrasse trasseL = null;
-        TRATrasse trasseR = null;
+        internal TRATrasse trasseS = null;
+        internal TRATrasse trasseL = null;
+        internal TRATrasse trasseR = null;
         GRATrasse gradientL = null;
         GRATrasse gradientR = null;
 
         public TrassenPanel()
         {
             InitializeComponent();
-            Resize += (s, e) => CenterElements();
         }
-        private void CenterElements()
-        {
-            label_Trasse.Left = (ClientSize.Width - label_Trasse.Width) / 2;
-        }
+
         private void Tb_TRA_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data != null && e.Data.GetData(typeof(TreeNode)) != null)//.GetDataPresent(DataFormats.StringFormat))
@@ -111,7 +107,8 @@ namespace TRA.Tool
             TreeNode node = (sender as TextBox).Tag as TreeNode;
             string path = node.Tag.ToString();
             FileInfo fileInfo = new FileInfo(path);
-
+            //Autofill
+            //try to find Files following a L.TRA, S.TRA, R.TRA, L.GRA, R.GRA naming convention
             TreeNode[] treeNodes = node.Parent.Nodes.Cast<TreeNode>().ToArray();
             foreach (TextBox tb in textBoxes)
             {
@@ -126,7 +123,25 @@ namespace TRA.Tool
                         tb.Tag = n;
                         tb.Text = filename;
                         n.BackColor = BackColor;
-                        return;
+                        break;
+                    }
+                }
+            }
+            //try to find Files with same name but different ending, to set TRA/GRA pais.
+            foreach (TextBox tb in textBoxes.FindAll(x => x.Name.EndsWith((sender as TextBox).Name.Substring(4, 4))))
+            {
+                if (tb.Text != "") continue;
+                string filename = fileInfo.Name.Remove(fileInfo.Name.Length - 3) + tb.Name.Substring(3, 3);
+                foreach (TreeNode n in treeNodes)
+                {
+                    if (n.Tag.ToString().EndsWith(filename, StringComparison.OrdinalIgnoreCase))
+                    {
+                        TreeNode previousNode = (TreeNode)tb.Tag;
+                        if (previousNode != null) { previousNode.BackColor = Color.Empty; }
+                        tb.Tag = n;
+                        tb.Text = filename;
+                        n.BackColor = BackColor;
+                        break;
                     }
                 }
             }
@@ -174,6 +189,7 @@ namespace TRA.Tool
 
         private void btn_Interpolate_Click(object sender, EventArgs e)
         {
+
             if (trasseS != null)
             {
                 trasseS.Interpolate(1);
@@ -199,8 +215,11 @@ namespace TRA.Tool
 
         private void btn_Save_Click(object sender, EventArgs e)
         {
-            FileInfo fileInfo = new FileInfo((tb_TRA_L.Tag as TreeNode).Tag.ToString());
-            folderBrowserDialog_CSV.InitialDirectory = fileInfo.DirectoryName;
+            if (tb_TRA_L.Tag != null)
+            {
+                FileInfo fileInfo = new FileInfo((tb_TRA_L.Tag as TreeNode).Tag.ToString());
+                folderBrowserDialog_CSV.InitialDirectory = fileInfo.DirectoryName;
+            }
             DialogResult result = folderBrowserDialog_CSV.ShowDialog();
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog_CSV.SelectedPath))
             {
@@ -255,5 +274,9 @@ namespace TRA.Tool
             }
         }
 
+        private void label_Trasse_MouseDown(object sender, MouseEventArgs e)
+        {
+            DoDragDrop(this, DragDropEffects.Move);
+        }
     }
 }

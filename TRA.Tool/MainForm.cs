@@ -1,12 +1,14 @@
 
+using LowDistortionProjection;
 using Microsoft.Extensions.Logging;
+using System;
 using TRA_Lib;
 
 namespace TRA.Tool
 {
     public partial class MainForm : Form
     {
-        private ILogger<MainForm> logger;
+        ILogger<MainForm> logger;
         public MainForm()
         {
             InitializeComponent();
@@ -22,7 +24,16 @@ namespace TRA.Tool
             // Create logger
             logger = loggerFactory.CreateLogger<MainForm>();
             TrassierungLog.AssignLogger(loggerFactory);
+            SrsLogger.Instance.ConfigureLogger(logger);
 
+            // Create a Panel to indicate the drop location
+            dropIndicatorPanel = new Panel
+            {
+                Size = new Size(flowLayoutPanel.Width, 2),
+                BackColor = Color.DimGray,
+                Visible = false
+            };
+            flowLayoutPanel.Controls.Add(dropIndicatorPanel);
         }
 
         private void LoadRootDirectories()
@@ -76,12 +87,109 @@ namespace TRA.Tool
             TreeNode node = (TreeNode)e.Item;
             if (node.Tag != null)
             {
-                DoDragDrop(node,
-                    DragDropEffects.Copy);
+                DoDragDrop(node, DragDropEffects.Copy);
             }
         }
 
+        private void FlowLayoutPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(UserControl)))
+            {
+                e.Effect = DragDropEffects.Move;
+            }
+        }
+        private void FlowLayoutPanel_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+            Point point = flowLayoutPanel.PointToClient(new Point(e.X, e.Y));
+            Control item = flowLayoutPanel.GetChildAtPoint(point);
+            // Display the drop indicator panel at the appropriate position
+            if (item != null && item != flowLayoutPanel)
+            {
+                int index = flowLayoutPanel.Controls.GetChildIndex(item);
+                if (flowLayoutPanel.Controls.IndexOf(dropIndicatorPanel) != index)
+                {
+                    flowLayoutPanel.Controls.SetChildIndex(dropIndicatorPanel, index + 1);
+                    dropIndicatorPanel.Visible = true;
+                    flowLayoutPanel.Invalidate();
+                }
+            }
+            else
+            {
+                dropIndicatorPanel.Visible = false;
+            }
+        }
+        private void FlowLayoutPanel_DragDrop(object sender, DragEventArgs e)
+        {
+            UserControl control = null;
+            if (e.Data.GetDataPresent(typeof(TrassenPanel)))
+            {
+                control = e.Data.GetData(typeof(TrassenPanel)) as TrassenPanel;
+            }
+            else if (e.Data.GetDataPresent(typeof(InterpolationPanel)))
+            {
+                control = e.Data.GetData(typeof(InterpolationPanel)) as InterpolationPanel;
+            }
+            else if (e.Data.GetDataPresent(typeof(TransformPanel)))
+            {
+                control = e.Data.GetData(typeof(TransformPanel)) as TransformPanel;
+            }
+            FlowLayoutPanel panel = sender as FlowLayoutPanel;
+            if (control != null && panel != null)
+            {
+                Point point = panel.PointToClient(new Point(e.X, e.Y));
+                Control item = panel.GetChildAtPoint(point);
+                int index = panel.Controls.IndexOf(item);
+                if (index >= 0)
+                {
+                    panel.Controls.SetChildIndex(control, index);
+                }
+                else
+                {
+                    panel.Controls.SetChildIndex(control, panel.Controls.Count - 2);
+                }
+            }
+            dropIndicatorPanel.Visible = false;
+        }
 
+        private void btn_AddTrassenPanel_Click(object sender, EventArgs e)
+        {
+            FlowLayoutPanel panel = ((Control)sender).Parent.Parent as FlowLayoutPanel;
+            if (panel != null)
+            {
+                TrassenPanel control = new TrassenPanel();
+                panel.Controls.Add(control);
+                control.Dock = DockStyle.Top;
+                panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
+                panel.Invalidate();
+            }
+        }
+
+        private void btn_AddInterpolation_Click(object sender, EventArgs e)
+        {
+            FlowLayoutPanel panel = ((Control)sender).Parent.Parent as FlowLayoutPanel;
+            if (panel != null)
+            {
+                InterpolationPanel control = new InterpolationPanel();
+                panel.Controls.Add(control);
+                control.Dock = DockStyle.Top;
+                panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
+                panel.Invalidate();
+            }
+        }
+
+        private void btn_AddTransformation_Click(object sender, EventArgs e)
+        {
+            FlowLayoutPanel panel = ((Control)sender).Parent.Parent as FlowLayoutPanel;
+            if (panel != null)
+            {
+                TransformPanel control = new TransformPanel();
+                panel.Controls.Add(control);
+                control.Dock = DockStyle.Top;
+                panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
+                panel.Invalidate();
+            }
+        }
     }
 
     public class TextBoxLogger : ILogger

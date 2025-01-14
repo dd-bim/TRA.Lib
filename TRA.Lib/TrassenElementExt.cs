@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Globalization;
+
 #if USE_SCOTTPLOT
+using SkiaSharp;
 using ScottPlot;
 #endif
 
@@ -162,11 +164,14 @@ namespace TRA_Lib
                     break;
             }
         }
-        public void Relocate(double x, double y, double t)
+        public void Relocate(double x, double y, double t = double.NaN)
         {
             this.x = x;
             this.y = y;
-            this.t = t;
+            if (!double.IsNaN(t))
+            {
+                this.t = t;
+            }
             PlausibilityCheck();
         }
         /// <summary>
@@ -287,6 +292,7 @@ namespace TRA_Lib
             string ownerString = trasse != null && trasse.owner != null ? trasse.owner.Filename + "_" + trasse.ID : null;
             TrassierungLog.Logger?.LogWarning(ownerString + " " + Text, owner) ;
         }
+
     }
 #else
  public class GeometryWarning 

@@ -614,15 +614,24 @@ namespace TRA_Lib
     }
     class ElementMarker : LabelStyleProperties, IPlottable, IHasLine, IHasMarker, IHasLegendText
     {
-        public Coordinates Start { get; set; }
-        public Coordinates End { get; set; }
-
+        public Coordinates Start { 
+            get {
+                return new Coordinates(element.Ystart - Math.Sin(element.T + 0.5 * Math.PI) * 10, element.Xstart - Math.Cos(element.T + 0.5 * Math.PI) * 10);
+            }
+        }
+        public Coordinates End
+        {
+            get
+            {
+                return new Coordinates(element.Ystart + Math.Sin(element.T + 0.5 * Math.PI) * 10, element.Xstart + Math.Cos(element.T + 0.5 * Math.PI) * 10);
+            }
+        }
+        TrassenElementExt element;
         public override LabelStyle LabelStyle { get; set; } = new() { FontSize = 14 };
         double t;
         public ElementMarker(TrassenElementExt element, ScottPlot.Color Color)
         {
-            Start = new Coordinates(element.Ystart - Math.Sin(element.T + 0.5 * Math.PI) * 10, element.Xstart - Math.Cos(element.T + 0.5 * Math.PI) * 10);
-            End = new Coordinates(element.Ystart + Math.Sin(element.T + 0.5 * Math.PI) * 10, element.Xstart + Math.Cos(element.T + 0.5 * Math.PI) * 10);
+            this.element = element;
             this.Color = Color;
             this.LabelText = element.ID.ToString() + "_" + element.KzString; ;
             this.LabelRotation = (float)(element.T * (180 / Math.PI));

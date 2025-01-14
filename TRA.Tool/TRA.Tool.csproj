@@ -18,7 +18,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MaxRev.Gdal.Core" Version="3.10.0.306" />
+    <PackageReference Include="MaxRev.Gdal.WindowsRuntime.Minimal" Version="3.10.0.306" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TRA.Lib\TRA.Lib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="LowDistortionProjection">
+      <HintPath>..\..\LowDistortionProjection\LowDistortionProjection\bin\Debug\netstandard2.1\LowDistortionProjection.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

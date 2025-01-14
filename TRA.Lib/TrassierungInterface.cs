@@ -43,7 +43,7 @@ namespace TRA_Lib
                         reader.ReadSingle();
 
                         //Search for existing trasse
-                        TRATrasse trasse = (TRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Contains(Path.GetFileName(fileName).Split('.')[0]));
+                        TRATrasse trasse = (TRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Contains(Path.GetFileName(fileName)));// Split('.')[0]));
                         if (trasse != null)
                         {
                             TrassierungLog.Logger?.LogInformation("A existing TRA-Trasse was found, esisting TRA Data is overwritten", nameof(trasse));
