@@ -4,7 +4,11 @@ using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Collections.Specialized;
+
 #if USE_SCOTTPLOT
+using ScottPlot.Plottables;
+using OpenTK.Platform.Windows;
 using ScottPlot;
 using SkiaSharp;
 #endif
@@ -188,18 +192,7 @@ namespace TRA_Lib
                     double s;
                     if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                     {
-                        TrassenElementExt stationierungsElement = trasseS.GetElementFromPoint(Interpolation.X[i], Interpolation.Y[i]);
-                        s = (stationierungsElement != null ? stationierungsElement.GetSAtPoint(Interpolation.X[i], Interpolation.Y[i]) : double.NaN);
-                        if (Double.IsNaN(s)) { Interpolation.H[i] = double.NaN; continue; }
-#if USE_SCOTTPLOT
-                        //Visualisation
-                        if (stationierungsElement != null)
-                        {
-                            double X_, Y_;
-                            (X_, Y_, _) = stationierungsElement.GetPointAtS(s);
-                            element.projections.Add(new ProjectionArrow(new Coordinates(Interpolation.Y[i], Interpolation.X[i]), new Coordinates(Y_, X_)));
-                        }
-#endif
+                        (s,_,_,_) = trasseS.ProjectPoints(Interpolation.X[i], Interpolation.Y[i], element.projections);
                     }
                     else //if no trasseS provided use original value S
                     {
@@ -211,6 +204,50 @@ namespace TRA_Lib
                 interp.Concat(Interpolation);
             }
             return interp;
+        }
+        /// <summary>
+        /// Project an Array of X,Y coordinates on elements geoemtry
+        /// </summary>
+        /// <param name="X">array of X-coordinates</param>
+        /// <param name="Y">array of Y-coordinates</param>
+        /// <returns>mean deviation(distance) from point to geometry</returns>
+        public float ProjectPoints(double[] X, double[] Y)
+        {
+            int num = Math.Min(X.Length, Y.Length);
+            float deviation = 0;
+            double dist = 0;    
+            for (int i =0;i<num; i++)
+            {
+               (_,dist,_,_) = ProjectPoints(X[i], Y[i]);
+               deviation += (float)dist;
+            }
+            return deviation / num;
+        }
+        /// <summary>
+        /// Projecting a Point on this trasse
+        /// </summary>
+        /// <param name="X">X-Coordinate</param>
+        /// <param name="Y">Y-Coordinate</param>
+        /// <returns>s(Milage),distance,X-Coordinate of the projection,Y-Coordinate of the projection</returns>
+        internal (double,double,double,double) ProjectPoints(double X, double Y, List<ProjectionArrow> projections = null)
+        {
+            TrassenElementExt element = GetElementFromPoint(X, Y);
+            double s = (element != null ? element.GetSAtPoint(X, Y) : double.NaN);
+            double X_, Y_;
+            if (element != null && !Double.IsNaN(s))
+            {
+                (X_, Y_, _) = element.GetPointAtS(s);
+#if USE_SCOTTPLOT    
+                if (projections == null)
+                {
+                    projections = element.projections;
+                }
+                projections.Add(new ProjectionArrow(new Coordinates(Y, X), new Coordinates(Y_, X_)));
+#endif
+                return (s,Math.Sqrt(Math.Pow(X - X_, 2) + Math.Pow(Y - Y_, 2)), X_, Y_);
+            }
+            return (double.NaN,double.NaN, double.NaN, double.NaN);
+
         }
 
         public void SaveCSV(StreamWriter outputFile)
@@ -248,6 +285,8 @@ namespace TRA_Lib
         static Form Form;
         /// <value>Plot for a 2D overview of all plotted trassen</value>
         static ScottPlot.WinForms.FormsPlot Plot2D;
+        /// <value>List of all Plottables of this element</value>
+        List<IPlottable> Plottables = new();
         /// <value>Callout for right-click selected Coordinate and s-projection</value>
         static ScottPlot.Plottables.Callout selectedS;
         /// <value>Plot for TRA-Details heading and hurvature </value>
@@ -459,19 +498,30 @@ namespace TRA_Lib
             Plot2D.Plot.Axes.Link(PlotG, true, false);
             PlotG.Plot.Axes.Link(Plot2D, true, false);
 
+            gridView.Rows.Clear();
+            //Remove previous Plottables from Plots
+            foreach (IPlottable plottable in Plottables)
+            {
+                Plot2D.Plot.Remove(plottable);
+                PlotT.Plot.Remove(plottable);
+                PlotG.Plot.Remove(plottable);
+            }
+           
             foreach (TrassenElementExt element in Elemente)
             {
                 Interpolation interpolation = element.InterpolationResult;
                 var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
+                Plottables.Add(scatter);
                 scatter.LegendText = Filename;
                 ScottPlot.Color color = scatter.MarkerFillColor;
                 ElementMarker marker = new(element, color);
-                Plot2D.Plot.Add.Plottable(marker);
-
+                Plottables.Add(Plot2D.Plot.Add.Plottable(marker));
                 var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
+                Plottables.Add(scatterT);
                 //scatterT.LegendText = "Heading";
-                PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color);
+                Plottables.Add(PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color));
                 var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, color);
+                Plottables.Add(scatterK);
                 //scatterK.LegendText = "Curvature";
                 // tell each T and K plot to use a different axis
                 scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
@@ -480,9 +530,11 @@ namespace TRA_Lib
                 if (interpolation.H != null && interpolation.s != null)
                 {
                     var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H, color);
+                    Plottables.Add(scatterH);
                     //scatterH.LegendText = "Elevation";
                     scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
                     var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s, color);
+                    Plottables.Add(scatterSlope);
                     //scatterSlope.LegendText = "Slope";
                     scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
                 }
@@ -490,7 +542,8 @@ namespace TRA_Lib
                 //Raw Data to GridView
                 gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C);
                 //Warnings
-                foreach (var warning in element.GetWarnings)
+                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
+                foreach (var warning in element.WarningCallouts)
                 {
                     Plot2D.Plot.Add.Plottable(warning);
                 }
@@ -498,7 +551,7 @@ namespace TRA_Lib
                 foreach (ProjectionArrow projection in element.projections)
                 {
                     projection.IsVisible = false;
-                    Plot2D.Plot.Add.Plottable(projection);
+                    Plottables.Add(Plot2D.Plot.Add.Plottable(projection));
                 }
             }
             if (GradientenElemente != null)
@@ -507,6 +560,7 @@ namespace TRA_Lib
                 {
                     if (element.Y == double.NaN) continue;
                     var vline = PlotG.Plot.Add.VerticalLine(element.Y);
+                    Plottables.Add(vline);
                     vline.Text = " NW " + element.Pkt.ToString() + " " + element.H.ToString() + "m";
                     vline.LabelRotation = -90;
                     vline.ManualLabelAlignment = Alignment.UpperLeft;
@@ -516,7 +570,7 @@ namespace TRA_Lib
             }
             else
             {
-                PlotG.Plot.Add.Annotation("No Gradient Data available");
+                Plottables.Add(PlotG.Plot.Add.Annotation("No Gradient Data available"));
             }
 
             // Set the axis scale to be equal
@@ -527,6 +581,49 @@ namespace TRA_Lib
             Form.Update();
         }
 
+        public void UpdatePlot()
+        {
+            if (gridView != null)
+            {
+                gridView.Rows.Clear();
+                foreach (TrassenElementExt element in Elemente)
+                {
+                    gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C);
+                }
+            }
+
+        }
+        private void Warning_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        { 
+            switch (e.Action) 
+            { 
+                case NotifyCollectionChangedAction.Add: 
+                    foreach(var item in e.NewItems)
+                    {
+                        Plot2D.Plot.Add.Plottable(item as GeometryWarning);
+                    }
+                    break; 
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var item in e.OldItems)
+                    {
+                        Plot2D.Plot.Remove(item as GeometryWarning);
+                    }
+                    break; 
+                case NotifyCollectionChangedAction.Replace:
+                    int i = 0;
+                    foreach (var item in e.OldItems)
+                    {
+                        Plot2D.Plot.Remove(item as GeometryWarning);
+                        Plot2D.Plot.Add.Plottable(e.NewItems[i] as GeometryWarning);
+                        i++;
+                    }
+                    break; 
+                case NotifyCollectionChangedAction.Move: 
+                    break; 
+                case NotifyCollectionChangedAction.Reset:       
+                    break; 
+            }
+        }
         private void CheckProjections_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox box = (CheckBox)sender;
@@ -559,7 +656,7 @@ namespace TRA_Lib
             }
             Plot2D.Refresh();
         }
-
+        
         private void Plot2D_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left && Control.ModifierKeys.HasFlag(Keys.Control))

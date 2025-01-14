@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 #if USE_SCOTTPLOT
 using SkiaSharp;
@@ -8,6 +10,17 @@ using ScottPlot;
 
 namespace TRA_Lib
 {
+    /// <summary>
+    /// A Collection triggering the Remove Action for all Items on Clearing
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class CustomObservableCollection<T> : ObservableCollection<T> 
+    {
+        protected override void ClearItems() { 
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
+            base.ClearItems(); 
+        } 
+    }
     public struct Interpolation
     {
         /// <value>Hochwert</value>
@@ -79,7 +92,8 @@ namespace TRA_Lib
         /// <value>Interpolationsobjekt</value>
         Interpolation Interpolation;
 
-        List<GeometryWarning> WarningCallouts = new() { };
+        /// <value>List of Warnings. Callouts to show on Plot if compiled with SCOTTPLOT</value>
+        internal CustomObservableCollection<GeometryWarning> WarningCallouts = new() { };
 
 #if USE_SCOTTPLOT
         /// <value>Arrows for visualisation of ProjectionS</value>
@@ -123,7 +137,7 @@ namespace TRA_Lib
         public Interpolation InterpolationResult { get { return Interpolation; } }
 
         /// <value>List of Warnings/ Callouts to show on Plot if compiled with SCOTTPLOT</value>
-        public GeometryWarning[] GetWarnings { get { return WarningCallouts.ToArray(); } }
+        //public GeometryWarning[] GetWarnings { get { return WarningCallouts.ToArray(); } }
         public TrassenElementExt(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c, int idx, Trasse owner, TrassenElementExt predecessor = null)
             : base(r1, r2, y, x, t, s, kz, l, u1, u2, c)
         {

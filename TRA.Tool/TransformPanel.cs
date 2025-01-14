@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using TRA_Lib;
 using Microsoft.Extensions.Logging;
+using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace TRA.Tool
 {
@@ -58,6 +60,7 @@ namespace TRA.Tool
             FlowLayoutPanel owner = Parent as FlowLayoutPanel;
             if (owner == null) { return; }
             int idx = owner.Controls.GetChildIndex(this) - 1;
+            
             while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanel))
             {
                 if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
@@ -95,7 +98,36 @@ namespace TRA.Tool
                         }
                     }
 
-                    //panel.trasseL.Plot();
+                    if (panel.trasseL != null) { 
+                        foreach (TrassenElementExt element in panel.trasseL.Elemente)
+                        {
+                            Interpolation interp = element.InterpolationResult;
+                            float deviation = panel.trasseL.ProjectPoints(interp.X, interp.Y);
+                            string ownerString = panel.trasseL.Filename + "_" + element.ID;
+                            TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
+                        }
+                        panel.trasseL.Plot();
+                    }
+                    if (panel.trasseS != null) {
+                        foreach (TrassenElementExt element in panel.trasseS.Elemente)
+                        {
+                            Interpolation interp = element.InterpolationResult;
+                            float deviation = panel.trasseS.ProjectPoints(interp.X, interp.Y);
+                            string ownerString = panel.trasseS.Filename + "_" + element.ID;
+                            TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
+                        }
+                        panel.trasseS.Plot();
+                    }
+                    if (panel.trasseR != null) { 
+                        foreach (TrassenElementExt element in panel.trasseR.Elemente)
+                        {
+                            Interpolation interp = element.InterpolationResult;
+                            float deviation = panel.trasseR.ProjectPoints(interp.X, interp.Y);
+                            string ownerString = panel.trasseR.Filename + "_" + element.ID;
+                            TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
+                        }
+                        panel.trasseR.Plot();
+                    }
                 }
                 idx--;
             }
