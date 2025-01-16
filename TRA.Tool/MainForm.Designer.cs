@@ -138,9 +138,9 @@
             // 
             // btn_AddTransformation
             // 
-            btn_AddTransformation.Location = new Point(336, 3);
+            btn_AddTransformation.Location = new Point(360, 3);
             btn_AddTransformation.Name = "btn_AddTransformation";
-            btn_AddTransformation.Size = new Size(62, 52);
+            btn_AddTransformation.Size = new Size(110, 52);
             btn_AddTransformation.TabIndex = 2;
             btn_AddTransformation.Text = "+ Transformation";
             btn_AddTransformation.UseVisualStyleBackColor = true;
@@ -149,9 +149,9 @@
             // btn_AddTrassenPanel
             // 
             btn_AddTrassenPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btn_AddTrassenPanel.Location = new Point(200, 3);
+            btn_AddTrassenPanel.Location = new Point(128, 3);
             btn_AddTrassenPanel.Name = "btn_AddTrassenPanel";
-            btn_AddTrassenPanel.Size = new Size(62, 52);
+            btn_AddTrassenPanel.Size = new Size(110, 52);
             btn_AddTrassenPanel.TabIndex = 0;
             btn_AddTrassenPanel.Text = "+ Trasse";
             btn_AddTrassenPanel.UseVisualStyleBackColor = true;
@@ -160,9 +160,9 @@
             // btn_AddInterpolation
             // 
             btn_AddInterpolation.Anchor = AnchorStyles.Top;
-            btn_AddInterpolation.Location = new Point(268, 3);
+            btn_AddInterpolation.Location = new Point(244, 3);
             btn_AddInterpolation.Name = "btn_AddInterpolation";
-            btn_AddInterpolation.Size = new Size(62, 52);
+            btn_AddInterpolation.Size = new Size(110, 52);
             btn_AddInterpolation.TabIndex = 1;
             btn_AddInterpolation.Text = "+ Interpolation";
             btn_AddInterpolation.UseVisualStyleBackColor = true;

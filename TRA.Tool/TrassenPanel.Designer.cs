@@ -73,7 +73,7 @@ namespace TRA.Tool
             // 
             // btn_Save
             // 
-            btn_Save.Location = new Point(190, 4);
+            btn_Save.Location = new Point(85, 3);
             btn_Save.Name = "btn_Save";
             btn_Save.Size = new Size(95, 20);
             btn_Save.TabIndex = 1;
@@ -83,7 +83,9 @@ namespace TRA.Tool
             // 
             // btn_Interpolate
             // 
-            btn_Interpolate.Location = new Point(108, 4);
+            btn_Interpolate.Anchor = AnchorStyles.Left;
+            btn_Interpolate.Enabled = false;
+            btn_Interpolate.Location = new Point(3, 3);
             btn_Interpolate.Name = "btn_Interpolate";
             btn_Interpolate.Size = new Size(76, 20);
             btn_Interpolate.TabIndex = 0;
