@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using ScottPlot.Finance;
 
 #if USE_SCOTTPLOT
 using SkiaSharp;
@@ -236,21 +237,56 @@ namespace TRA_Lib
             WarningCallouts.Add(new GeometryWarning(text, X, Y,this));
         }
 
-        public ref Interpolation Interpolate(double delta = 1.0)
+        /// <summary>
+        /// Interpolate the underlying geometry
+        /// </summary>
+        /// <param name="delta">distance along geometry between interpolation points</param>
+        /// <param name="allowedTolerance">maximal allowed distance between geometry and interpolated polyline, if set to zero this value is ignored</param>
+        /// <returns>Interpolation: array of coordinates, along with heading and curvature for each point</returns>
+        public ref Interpolation Interpolate(double delta = 1.0, double allowedTolerance = 0.001)
         {
             Transform2D transform = new Transform2D(x, y, t);
             if (TrassenGeometrie == null) { AddWarningCallout("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", Xstart,Ystart); return ref Interpolation; }
 
-            int num = (int)Math.Abs(l / delta);
-            if (l < 0 && delta > 0) { delta = -delta; } //set delta negative for negative lengths
-            Interpolation = new Interpolation(num + 1);
+            List<double> Xlst = new List<double>();
+            List<double> Ylst = new List<double>();
+            List<double> Slst = new List<double>();
+            List<double> Tlst = new List<double>();
+            List<double> Klst = new List<double>();
 
-            for (int i = 0; i <= num; i++)
+            double s_ = 0;
+            double delta_ = delta;
+            bool done = false;
+            do
             {
-                Interpolation.S[i] = S + i * delta;
-                (Interpolation.X[i], Interpolation.Y[i], Interpolation.T[i], Interpolation.K[i]) = TrassenGeometrie.PointAt(i < num ? i * delta : l);
-                if (transform != null) { transform.Apply(ref Interpolation.X[i], ref Interpolation.Y[i], ref Interpolation.T[i]); }
+                double x_, y_, t_, k_;
+                if (s_ > l) { s_ = l; done = true; }
+                (x_, y_, t_, k_) = TrassenGeometrie.PointAt(s_);
+                if (transform != null) { transform.Apply(ref x_, ref y_, ref t_); }
+                Xlst.Add(x_);
+                Ylst.Add(y_);
+                Slst.Add(s_);
+                Tlst.Add(t_);
+                Klst.Add(k_);
+                //Calc curvature dependent delta:
+                if (k_ != 0 && allowedTolerance != 0)
+                {
+                    double r = 1 / Math.Abs(k_);
+                    delta_ = 2 * r * Math.Acos(1 - (allowedTolerance / r));
+                }
+                else
+                {
+                    delta_ = delta;
+                }
+                s_ = s_ + Math.Min(delta_, delta); //Use smalest delta
             }
+            while (!done);
+            Interpolation.X = Xlst.ToArray();
+            Interpolation.Y = Ylst.ToArray();
+            Interpolation.S = Slst.ToArray();
+            Interpolation.T = Tlst.ToArray();
+            Interpolation.K = Klst.ToArray();
+
             PlausibilityCheck();
             return ref Interpolation;
         }

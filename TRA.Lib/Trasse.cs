@@ -158,17 +158,30 @@ namespace TRA_Lib
             }
             return null;
         }
-
-        public Interpolation Interpolate(double delta = 1.0)
+        /// <summary>
+        /// Interpolate 2D Points allog the Trasse
+        /// </summary>
+        /// <param name="delta">distance along geometry between interpolation points</param>
+        /// <param name="allowedTolerance">maximal allowed distance between geometry and interpolated polyline, if set to zero this value is ignored</param>
+        /// <returns>Interpolation: array of 2D coordinates, along with heading and curvature for each point</returns>
+        public Interpolation Interpolate(double delta = 1.0, double allowedTolerance = 0.01)
         {
             Interpolation interpolation = new Interpolation(0);
             foreach (TrassenElementExt element in Elemente)
             {
-                interpolation.Concat(element.Interpolate(delta));
+                interpolation.Concat(element.Interpolate(delta, allowedTolerance));
             }
             return interpolation;
         }
-        public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0)
+
+        /// <summary>
+        /// Interpolate 3D Points allog the Trasse using .GRA for elevation interpolation
+        /// </summary>
+        /// <param name="stationierungsTrasse">optinal TrasseS to get mileage s. If nothing is set either a prvipusly set is used or values s from this Trasse are directly used (depending on the GRA-files this does not match)</param>
+        /// <param name="delta">distance along geometry between interpolation points</param>
+        /// <param name="allowedTolerance">maximal allowed distance between geometry and interpolated polyline, if set to zero this value is ignored</param>
+        /// <returns>Interpolation: array of 3D coordinates, along with heading and curvature for each point</returns>
+        public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0, double allowedTolerance = 0.01)
         {
             Interpolation interp = new Interpolation(0);
             TRATrasse trasseS = stationierungsTrasse != null ? stationierungsTrasse : TrasseS; //if a valid trasse is provided use that one, else try to use a previously assigned
@@ -178,7 +191,7 @@ namespace TRA_Lib
             }
             foreach (TrassenElementExt element in Elemente)
             {
-                ref Interpolation Interpolation = ref element.Interpolate(delta);
+                ref Interpolation Interpolation = ref element.Interpolate(delta, allowedTolerance);
                 if (GradientenElemente == null)
                 {
                     interp.Concat(Interpolation);
