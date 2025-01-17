@@ -37,21 +37,21 @@ namespace TRA.Tool
                     TrassenPanel panel = (TrassenPanel)owner.Controls[idx];
                     if (panel.trasseS != null)
                     {
-                        panel.trasseS.Interpolate((double)num_InterpDist.Value, (double)num_allowedTolerance.Value * 100);
+                        panel.trasseS.Interpolate((double)num_InterpDist.Value, (double)num_allowedTolerance.Value / 100);
 #if USE_SCOTTPLOT
                         panel.trasseS.Plot();
 #endif
                     }
                     if (panel.trasseL != null)
                     {
-                        panel.trasseL.Interpolate3D(null, (double)num_InterpDist.Value, (double)num_allowedTolerance.Value * 100);
+                        panel.trasseL.Interpolate3D(null, (double)num_InterpDist.Value, (double)num_allowedTolerance.Value / 100);
 #if USE_SCOTTPLOT
                         panel.trasseL.Plot();
 #endif
                     }
                     if (panel.trasseR != null)
                     {
-                        panel.trasseR.Interpolate3D(null, (double)num_InterpDist.Value, (double)num_allowedTolerance.Value * 100);
+                        panel.trasseR.Interpolate3D(null, (double)num_InterpDist.Value, (double)num_allowedTolerance.Value / 100);
 #if USE_SCOTTPLOT
                         panel.trasseR.Plot();
 #endif

@@ -58,7 +58,7 @@
             num_InterpDist.Name = "num_InterpDist";
             num_InterpDist.Size = new Size(49, 23);
             num_InterpDist.TabIndex = 2;
-            num_InterpDist.Value = new decimal(new int[] { 100, 0, 0, 65536 });
+            num_InterpDist.Value = new decimal(new int[] { 500, 0, 0, 65536 });
             // 
             // num_allowedTolerance
             // 
