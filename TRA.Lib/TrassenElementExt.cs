@@ -113,9 +113,9 @@ namespace TRA_Lib
         /// <value>Hochwert am Elementanfang</value>
         public double Xstart { get { return x; } }
         /// <value>Rechtswert am Elementende</value>
-        public double Yend { get { return successor.y; } }
+        public double Yend { get { return successor != null ? successor.y : y; } }
         /// <value>Hochwert am Elementende</value>
-        public double Xend { get { return successor.x; } }
+        public double Xend { get { return successor != null ? successor.x : x; } }
         /// <value>Station am Elementanfang</value>
         public double S { get { return s; } }
         /// <value>Länge des Elements</value>
@@ -191,7 +191,7 @@ namespace TRA_Lib
             if (!double.IsNaN(deltaK_start))
             {
                 // TODO decide if we need to change the length and if yes, do we want to update the stationvalues s
-                l = l; //* (deltaK_start + deltaK_end) / 2;
+                l = l;// * (deltaK_start + deltaK_end) / 2;
                 if (Double.IsNaN(deltaK_end)) { deltaK_end = deltaK_start; }
                 switch (this.TrassenGeometrie)
                 {
@@ -214,6 +214,8 @@ namespace TRA_Lib
         /// </summary>
         public bool PlausibilityCheck(bool bCheckRadii = false)
         {
+            double tolerance = 1e-8;
+
             WarningCallouts.Clear();
             //Radii
             if (kz == Trassenkennzeichen.Gerade && r1 != 0 & r2 != 0) { AddWarningCallout("given Radii are not matching to KZ as it is 'Gerade''", Xstart, Ystart); }
@@ -227,8 +229,13 @@ namespace TRA_Lib
             {
                 if (s + l != successor.s) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
             }
-            //Connectivity & continuity by Interpolation
-            double tolerance = 0.00000001;
+            //Length and geomtrical Length Check
+            if(TrassenGeometrie is Gerade)
+            {
+                double geoL = Math.Sqrt(Math.Pow(Xend-Xstart,2)+Math.Pow(Yend-Ystart,2));
+                if (Math.Abs(l- geoL)>tolerance) { AddWarningCallout("length missmatch. elements Length parameter, does not match to Geometry by " + (l - geoL), Xstart, Ystart); }
+            }
+            //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)
             {
                 //Connectivity
