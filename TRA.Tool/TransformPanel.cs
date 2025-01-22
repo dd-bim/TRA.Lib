@@ -33,6 +33,11 @@ namespace TRA.Tool
             DoDragDrop(this, DragDropEffects.Move);
         }
 
+        private static double DegreesToRadians(double degrees)
+        {
+            return degrees * (Math.PI / 180.0);
+        }
+
         private void btn_Transform_Click(object sender, EventArgs e)
         {
             SpatialReference SRS_Target;
@@ -70,17 +75,28 @@ namespace TRA.Tool
                     if(panel.trasseL != null ) { elements = elements.Concat(panel.trasseL.Elemente); }
                     if (panel.trasseS != null) { elements = elements.Concat(panel.trasseS.Elemente); }
                     if (panel.trasseR != null) { elements = elements.Concat(panel.trasseR.Elemente); }
-                    foreach (TrassenElementExt element in elements.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plasability checks 
+                    double previousdK = double.NaN;
+                    foreach (TrassenElementExt element in elements.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
                     {
                         //Transform Interpolation Points
                         Interpolation interp = element.InterpolationResult;
                         double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
-                        if (interp.X.Length > 0)
+                        // TODO how to handle trasse without heights (like S) in transformations
+                        if (interp.H == null) { interp.H = new double[interp.X.Length]; }
+                        if (interp.X.Length > 0 && interp.H != null)
                         {                          
                             try
                             {
                                 double[][] points = { interp.Y, interp.X, interp.H };
-                                Srs.ConvertInPlace(ref points, SRS_Source, SRS_Target);
+                                //Srs.ConvertInPlace(ref points, SRS_Source, SRS_Target);
+                                egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(points[0], points[1], points[2],out points[0], out points[1]);
+                                //Workaround to set values in place
+                                for (int i = 0; i < interp.X.Length; i++)
+                                {
+                                    interp.X[i] = points[1][i];
+                                    interp.Y[i] = points[0][i];
+                                    interp.H[i] = points[2][i];
+                                }
                             }
                             catch { 
                             }
@@ -90,9 +106,16 @@ namespace TRA.Tool
                         {
                             double[][] coordinate = !Double.IsNaN(elementHeight) ? 
                                 new double[][] { new double[] { element.Ystart }, new double[] { element.Xstart }, new double[] { elementHeight } } 
-                                : new double[][]{ new double[] { element.Ystart }, new double[] { element.Xstart } };
-                            Srs.ConvertInPlace(ref coordinate, SRS_Source, SRS_Target);
-                            element.Relocate(coordinate[1][0], coordinate[0][0]);
+                                : new double[][]{ new double[] { element.Ystart }, new double[] { element.Xstart }, new double[] { 0.0 } };
+                            //Srs.ConvertInPlace(ref coordinate, SRS_Source, SRS_Target);
+                            double[] gamma_i, k_i,gamma_o,k_o;
+                            egbt22lib.Convert.DBRef_GK5_Gamma_k(coordinate[0], coordinate[1], out gamma_i, out k_i);
+                            egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(coordinate[0], coordinate[1],coordinate[2],out coordinate[0], out coordinate[1]);
+                            egbt22lib.Convert.EGBT22_Local_Gamma_k(coordinate[0], coordinate[1], out gamma_o, out k_o);
+                            double dK = (k_i[0] / k_o[0]);
+
+                            element.Relocate(coordinate[1][0], coordinate[0][0], DegreesToRadians(gamma_o[0] - gamma_i[0]), dK,previousdK);
+                            previousdK = element.ID == 0 ? double.NaN : dK; //reset prviousScale for next Element
                         }
                         catch {
                         }
@@ -106,6 +129,7 @@ namespace TRA.Tool
                             string ownerString = panel.trasseL.Filename + "_" + element.ID;
                             TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
                         }
+                        panel.trasseL.CalcGradientCoordinates();
                         panel.trasseL.Plot();
                     }
                     if (panel.trasseS != null) {
@@ -126,6 +150,7 @@ namespace TRA.Tool
                             string ownerString = panel.trasseR.Filename + "_" + element.ID;
                             TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
                         }
+                        panel.trasseR.CalcGradientCoordinates();
                         panel.trasseR.Plot();
                     }
                 }

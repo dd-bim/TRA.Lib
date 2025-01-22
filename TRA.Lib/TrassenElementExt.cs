@@ -135,7 +135,7 @@ namespace TRA_Lib
         /// <value>Hochwert am Elementanfang</value>
         public TrassenElementExt Successor { get { return successor; } }
         /// <value>Returns Interpolationresult</value>
-        public Interpolation InterpolationResult { get { return Interpolation; } }
+        public Interpolation InterpolationResult { get { return Interpolation; }}
 
         /// <value>List of Warnings/ Callouts to show on Plot if compiled with SCOTTPLOT</value>
         //public GeometryWarning[] GetWarnings { get { return WarningCallouts.ToArray(); } }
@@ -179,13 +179,33 @@ namespace TRA_Lib
                     break;
             }
         }
-        public void Relocate(double x, double y, double t = double.NaN)
+
+        public void Relocate(double x, double y, double deltaGamma = double.NaN, double deltaK_start = double.NaN, double deltaK_end = double.NaN)
         {
             this.x = x;
             this.y = y;
-            if (!double.IsNaN(t))
+            if (!double.IsNaN(deltaGamma))
             {
-                this.t = t;
+                t = t - deltaGamma;
+            }
+            if (!double.IsNaN(deltaK_start))
+            {
+                // TODO decide if we need to change the length and if yes, do we want to update the stationvalues s
+                l = l; //* (deltaK_start + deltaK_end) / 2;
+                if (Double.IsNaN(deltaK_end)) { deltaK_end = deltaK_start; }
+                switch (this.TrassenGeometrie)
+                {
+                    case Gerade:
+                        break;
+                    case Kreis:
+                        r1 = r1 * (deltaK_start + deltaK_end) / 2;
+                        r2 = r1;
+                        break;
+                    case Klothoid:
+                        r1 = r1 * deltaK_start;
+                        r2 = r2 * deltaK_end;
+                        break;
+                }
             }
             PlausibilityCheck();
         }
@@ -247,7 +267,7 @@ namespace TRA_Lib
         {
             Transform2D transform = new Transform2D(x, y, t);
             if (TrassenGeometrie == null) { AddWarningCallout("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", Xstart,Ystart); return ref Interpolation; }
-
+            if (Double.IsNaN(l)) { AddWarningCallout("Length is NaN, no interpolation calculated", Xstart, Ystart); return ref Interpolation; }
             List<double> Xlst = new List<double>();
             List<double> Ylst = new List<double>();
             List<double> Slst = new List<double>();

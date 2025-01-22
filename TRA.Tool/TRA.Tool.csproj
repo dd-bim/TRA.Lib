@@ -27,6 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="egbt22lib">
+      <HintPath>..\..\egbt22trans\egbt22trans\bin\Debug\net6.0\egbt22lib.dll</HintPath>
+    </Reference>
     <Reference Include="LowDistortionProjection">
       <HintPath>..\..\LowDistortionProjection\LowDistortionProjection\bin\Debug\netstandard2.1\LowDistortionProjection.dll</HintPath>
     </Reference>

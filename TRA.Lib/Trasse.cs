@@ -93,7 +93,7 @@ namespace TRA_Lib
         /// <summary>
         /// Estimate coordinates of slopechanges(NW) of the GRA_Data. If a TrasseS is set, a projection to TrasseS is applied.
         /// </summary>
-        void CalcGradientCoordinates()
+        public void CalcGradientCoordinates()
         {
             if (GradientenElemente == null) return;
             foreach (GradientElementExt gradientElement in GradientenElemente)
@@ -147,7 +147,7 @@ namespace TRA_Lib
         /// </summary>
         /// <param name="X">X coordinate of Point of Interest</param>
         /// <param name="Y">Y coordinate of Point of Interest</param>
-        /// <returns></returns>
+        /// <returns>returns Element[0] if point is behind first element</returns>
         internal TrassenElementExt GetElementFromPoint(double X, double Y)
         {
             foreach (TrassenElementExt element in Elemente.Reverse())
@@ -156,7 +156,7 @@ namespace TRA_Lib
                 Vector2 v2 = new Vector2((float)(X - element.Xstart), (float)(Y - element.Ystart));
                 if (Vector2.Dot(v1, v2) > 0) { return element; }
             }
-            return null;
+            return Elemente[0];
         }
         /// <summary>
         /// Interpolate 2D Points allog the Trasse
@@ -511,13 +511,13 @@ namespace TRA_Lib
             Plot2D.Plot.Axes.Link(PlotG, true, false);
             PlotG.Plot.Axes.Link(Plot2D, true, false);
 
-            gridView.Rows.Clear();
+            gridView.Rows.Clear();           
+            PlotT.Plot.Clear();
+            PlotG.Plot.Clear();
             //Remove previous Plottables from Plots
             foreach (IPlottable plottable in Plottables)
             {
                 Plot2D.Plot.Remove(plottable);
-                PlotT.Plot.Remove(plottable);
-                PlotG.Plot.Remove(plottable);
             }
            
             foreach (TrassenElementExt element in Elemente)
@@ -530,11 +530,9 @@ namespace TRA_Lib
                 ElementMarker marker = new(element, color);
                 Plottables.Add(Plot2D.Plot.Add.Plottable(marker));
                 var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
-                Plottables.Add(scatterT);
                 //scatterT.LegendText = "Heading";
                 Plottables.Add(PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color));
                 var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, color);
-                Plottables.Add(scatterK);
                 //scatterK.LegendText = "Curvature";
                 // tell each T and K plot to use a different axis
                 scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
@@ -543,11 +541,9 @@ namespace TRA_Lib
                 if (interpolation.H != null && interpolation.s != null)
                 {
                     var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H, color);
-                    Plottables.Add(scatterH);
                     //scatterH.LegendText = "Elevation";
                     scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
                     var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s, color);
-                    Plottables.Add(scatterSlope);
                     //scatterSlope.LegendText = "Slope";
                     scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
                 }
@@ -573,7 +569,6 @@ namespace TRA_Lib
                 {
                     if (element.Y == double.NaN) continue;
                     var vline = PlotG.Plot.Add.VerticalLine(element.Y);
-                    Plottables.Add(vline);
                     vline.Text = " NW " + element.Pkt.ToString() + " " + element.H.ToString() + "m";
                     vline.LabelRotation = -90;
                     vline.ManualLabelAlignment = Alignment.UpperLeft;
@@ -590,6 +585,8 @@ namespace TRA_Lib
             Plot2D.Plot.Axes.SquareUnits();
             Plot2D.Plot.HideLegend();
             Plot2D.Refresh();
+            PlotT.Refresh();
+            PlotG.Refresh();
             if (!Form.Visible) Form.Show();// ShowDialog();
             Form.Update();
         }
@@ -636,6 +633,7 @@ namespace TRA_Lib
                 case NotifyCollectionChangedAction.Reset:       
                     break; 
             }
+            Plot2D.Refresh();
         }
         private void CheckProjections_CheckedChanged(object sender, EventArgs e)
         {
