@@ -89,13 +89,17 @@ namespace TRA.Tool
                             {
                                 double[][] points = { interp.Y, interp.X, interp.H };
                                 //Srs.ConvertInPlace(ref points, SRS_Source, SRS_Target);
+                                double[] gamma_i, k_i, gamma_o, k_o = new double[interp.X.Length];
+                                egbt22lib.Convert.DBRef_GK5_Gamma_k(points[0], points[1],out gamma_i,out k_i);
                                 egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(points[0], points[1], points[2],out points[0], out points[1]);
+                                egbt22lib.Convert.EGBT22_Local_Gamma_k(points[0], points[1], out gamma_o, out k_o);
                                 //Workaround to set values in place
                                 for (int i = 0; i < interp.X.Length; i++)
                                 {
                                     interp.X[i] = points[1][i];
                                     interp.Y[i] = points[0][i];
                                     interp.H[i] = points[2][i];
+                                    interp.T[i] = interp.T[i]-DegreesToRadians(gamma_o[i] - gamma_i[i]);
                                 }
                             }
                             catch { 
@@ -104,17 +108,15 @@ namespace TRA.Tool
                         //Transform Element
                         try
                         {
-                            double[][] coordinate = !Double.IsNaN(elementHeight) ? 
-                                new double[][] { new double[] { element.Ystart }, new double[] { element.Xstart }, new double[] { elementHeight } } 
-                                : new double[][]{ new double[] { element.Ystart }, new double[] { element.Xstart }, new double[] { 0.0 } };
                             //Srs.ConvertInPlace(ref coordinate, SRS_Source, SRS_Target);
-                            double[] gamma_i, k_i,gamma_o,k_o;
-                            egbt22lib.Convert.DBRef_GK5_Gamma_k(coordinate[0], coordinate[1], out gamma_i, out k_i);
-                            egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(coordinate[0], coordinate[1],coordinate[2],out coordinate[0], out coordinate[1]);
-                            egbt22lib.Convert.EGBT22_Local_Gamma_k(coordinate[0], coordinate[1], out gamma_o, out k_o);
-                            double dK = (k_i[0] / k_o[0]);
+                            double gamma_i, k_i,gamma_o,k_o;
+                            double rechts, hoch;
+                            (gamma_i,k_i) = egbt22lib.Convert.DBRef_GK5_Gamma_k(element.Ystart, element.Xstart);
+                            (rechts, hoch) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(element.Ystart, element.Xstart, Double.IsNaN(elementHeight) ? 0.0 : elementHeight);
+                            (gamma_o,k_o) = egbt22lib.Convert.EGBT22_Local_Gamma_k(rechts, hoch);
+                            double dK = (k_i / k_o);
 
-                            element.Relocate(coordinate[1][0], coordinate[0][0], DegreesToRadians(gamma_o[0] - gamma_i[0]), dK,previousdK);
+                            element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK,previousdK);
                             previousdK = element.ID == 0 ? double.NaN : dK; //reset prviousScale for next Element
                         }
                         catch {

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             splitContainer1 = new SplitContainer();
             treeView = new TreeView();
             splitContainer2 = new SplitContainer();
@@ -38,6 +39,8 @@
             btn_AddTrassenPanel = new Button();
             btn_AddInterpolation = new Button();
             tb_Log = new TextBox();
+            contextMenuStrip_Log = new ContextMenuStrip(components);
+            clearToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -48,6 +51,7 @@
             splitContainer2.SuspendLayout();
             flowLayoutPanel.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
+            contextMenuStrip_Log.SuspendLayout();
             SuspendLayout();
             // 
             // splitContainer1
@@ -170,6 +174,7 @@
             // 
             // tb_Log
             // 
+            tb_Log.ContextMenuStrip = contextMenuStrip_Log;
             tb_Log.Dock = DockStyle.Fill;
             tb_Log.Location = new Point(0, 0);
             tb_Log.Multiline = true;
@@ -179,6 +184,19 @@
             tb_Log.Size = new Size(605, 107);
             tb_Log.TabIndex = 3;
             // 
+            // contextMenuStrip_Log
+            // 
+            contextMenuStrip_Log.Items.AddRange(new ToolStripItem[] { clearToolStripMenuItem });
+            contextMenuStrip_Log.Name = "contextMenuStrip1";
+            contextMenuStrip_Log.Size = new Size(102, 26);
+            // 
+            // clearToolStripMenuItem
+            // 
+            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            clearToolStripMenuItem.Size = new Size(101, 22);
+            clearToolStripMenuItem.Text = "Clear";
+            clearToolStripMenuItem.Click += clearToolStripMenuItem_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -187,6 +205,7 @@
             Controls.Add(splitContainer1);
             Name = "MainForm";
             Text = "TRA.Tool";
+            Shown += MainForm_Shown;
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
@@ -198,6 +217,7 @@
             splitContainer2.ResumeLayout(false);
             flowLayoutPanel.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
+            contextMenuStrip_Log.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -215,5 +235,7 @@
         private Button btn_AddInterpolation;
         private Button btn_AddTransformation;
         private TableLayoutPanel tableLayoutPanel1;
+        private ContextMenuStrip contextMenuStrip_Log;
+        private ToolStripMenuItem clearToolStripMenuItem;
     }
 }

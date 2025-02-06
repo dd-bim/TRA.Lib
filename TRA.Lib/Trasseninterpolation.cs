@@ -118,7 +118,7 @@ namespace TRA_Lib
         /// </summary>
         /// <param name="r1">First radius NaN is interpreted as zero(straight)</param>
         /// <param name="r2">Second radius NaN is interpreted as zero(straight)</param>
-        /// <param name="length">Length of the Clothoid. NaN and 0 is results in stragiht line (radii have no effect)</param>
+        /// <param name="length">Length of the Clothoid. NaN and 0 is results in straight line (radii have no effect)</param>
         public Klothoid(double r1, double r2, double length)
         {
             this.r1 = Double.IsNaN(r1) ? 0 : r1; //interpreting NaN radius as zero (straight line)
@@ -176,7 +176,7 @@ namespace TRA_Lib
             Complex Cs = Cs1 * Cs2;
 
             //Tangent at point
-            double theta = gamma * Math.Pow(s, 2) / 2 + curvature1 * s;
+            double theta = gamma * s * s * 0.5 + curvature1 * s;
             return (Cs.Real, dir * Math.Sign(gamma) * Cs.Imaginary, theta, curvature1 + gamma * s);
         }
 
@@ -231,14 +231,13 @@ namespace TRA_Lib
             double s = 0.0;
             double d = double.PositiveInfinity; //distance between point and normal
             Vector2 v1, v2;
-            Vector2 vt = new();
-            int prevSign = 0;
+            v1 = new Vector2();
             if (!Double.IsNaN(t))
             {
                 double x, y;
                 (x, y) = Math.SinCos(t);
-                vt = new Vector2((float)y, (float)x);
-                prevSign = Math.Sign(X * vt.Y - Y * vt.X);
+                v1 = new Vector2((float)y, (float)x);
+                delta = Math.Sign(X * v1.Y - Y * v1.X)*delta;
             }
 
             int maxIterations = 1000;
@@ -249,32 +248,30 @@ namespace TRA_Lib
                 v2 = new Vector2((float)(X - X_), (float)(Y - Y_)); //vector from current position to Point of interest
                 if (Double.IsNaN(t))
                 {
-                    v1 = new Vector2((float)Math.Sin(t_), (float)Math.Cos(t_)); //normal at current position
-                    double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
-                    if (Math.Sign(scalarCross) != Math.Sign(delta))
+                    v1 = new Vector2((float)Math.Cos(t_), (float)Math.Sin(t_)); //normal at current position
+                    double vectorDot = Vector2.Dot(v1,v2) / v2.Length();
+                    if (Math.Sign(vectorDot) != Math.Sign(delta))
                     {
                         delta = -0.5 * delta;
-                    }
-                    // Compute d by cross product               
-                    d = Math.Abs(scalarCross) / (float)v1.Length();
+                    }            
+                    d = Math.Abs(vectorDot);
                 }
                 else
                 {
-                    double scalarCross = v2.X * vt.Y - v2.Y * vt.X;
-                    if (Math.Sign(scalarCross) != prevSign)
+                    double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
+                    double vectorDot = 1-(Vector2.Dot(v2,v1) / v2.Length()); //Result is reached when both vectors are parallel
+                    if (Math.Sign(scalarCross) != Math.Sign(delta))
                     {
                         delta = -0.5 * delta;
-                        prevSign = Math.Sign(scalarCross);
-                    }
-                    double ang = Math.Acos(Vector2.Dot(vt, v2 / v2.Length()));
-                    d = (ang > 0.5 * Math.PI ? Math.PI - ang : ang) * v2.Length();
+                    }              
+                    d = Math.Abs(vectorDot);
                 }
                 s = s + delta;
                 i++;
             }
             if (i == maxIterations)
             {
-                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry", this);
+                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + d, this);
                 return double.NaN;
             }
             return s;

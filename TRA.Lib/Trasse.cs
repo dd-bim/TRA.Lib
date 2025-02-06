@@ -301,7 +301,7 @@ namespace TRA_Lib
         /// <value>List of all Plottables of this element</value>
         List<IPlottable> Plottables = new();
         /// <value>Callout for right-click selected Coordinate and s-projection</value>
-        static ScottPlot.Plottables.Callout selectedS;
+        static ProjectionArrow selectedS;
         /// <value>Plot for TRA-Details heading and hurvature </value>
         ScottPlot.WinForms.FormsPlot PlotT;
         /// <value>Plot for GRA-Details elevation and slope </value>
@@ -675,18 +675,21 @@ namespace TRA_Lib
                 Coordinates coordinates = Plot2D.Plot.GetCoordinates(new Pixel(e.X, e.Y));
                 TrassenElementExt element = GetElementFromPoint(coordinates.Y, coordinates.X);
                 if (element == null) { return; }
-                double s = element.GetSAtPoint(coordinates.Y, coordinates.X);
+                double s = element.GetSAtPoint(coordinates.Y, coordinates.X,0);
                 if (Double.IsNaN(s)) return;
-                (double X, double Y, _) = element.GetPointAtS(s);
+                (double X, double Y, double H) = element.GetPointAtS(s);
+                coordinates = new Coordinates(Y + 10 * Math.Sin(H + 0.5 * Math.PI), X + 10 * Math.Cos(H + 0.5 * Math.PI));
                 if (selectedS == null)
                 {
-                    selectedS = Plot2D.Plot.Add.Callout(s.ToString(), Y + 10, X + 10, Y, X);
+                    //selectedS = Plot2D.Plot.Add.Callout(s.ToString(), Y + 10, X + 10, Y, X);
+                    selectedS = new ProjectionArrow(coordinates, new Coordinates(Y, X));
+                    Plot2D.Plot.Add.Plottable(selectedS);
                 }
                 else
                 {
-                    selectedS.TextCoordinates = coordinates;
-                    selectedS.TipCoordinates = new Coordinates(Y, X);
-                    selectedS.Text = s.ToString();
+                    selectedS.Base = coordinates;
+                    selectedS.Tip = new Coordinates(Y, X);
+                    //selectedS.Text = s.ToString();
                 }
                 Plot2D.Refresh();
             }

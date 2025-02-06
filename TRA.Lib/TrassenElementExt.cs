@@ -191,7 +191,7 @@ namespace TRA_Lib
             if (!double.IsNaN(deltaK_start))
             {
                 // TODO decide if we need to change the length and if yes, do we want to update the stationvalues s
-                l = l;// * (deltaK_start + deltaK_end) / 2;
+                l = l * (deltaK_start + deltaK_end) / 2;
                 if (Double.IsNaN(deltaK_end)) { deltaK_end = deltaK_start; }
                 switch (this.TrassenGeometrie)
                 {
@@ -229,7 +229,7 @@ namespace TRA_Lib
             {
                 if (s + l != successor.s) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
             }
-            //Length and geomtrical Length Check
+            //Length and geometrical Length Check
             if(TrassenGeometrie is Gerade)
             {
                 double geoL = Math.Sqrt(Math.Pow(Xend-Xstart,2)+Math.Pow(Yend-Ystart,2));
@@ -331,9 +331,8 @@ namespace TRA_Lib
         /// <returns>Hochwert X,Rechtswert Y, Heading T</returns>
         public (double, double, double) GetPointAtS(double S)
         {
-            (double X, double Y, _, _) = TrassenGeometrie.PointAt(S - s);
+            (double X, double Y, double T, _) = TrassenGeometrie.PointAt(S - s);
             Transform2D transform = new Transform2D(x, y, t);
-            double T = 0.0;
             transform.Apply(ref X, ref Y, ref T);
             return (X, Y, T);
         }

@@ -2,6 +2,7 @@
 using LowDistortionProjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Windows.Forms;
 using TRA_Lib;
 
 namespace TRA.Tool
@@ -16,15 +17,6 @@ namespace TRA.Tool
 
             // Handle TreeView events
             treeView.ItemDrag += TreeView_ItemDrag;
-
-            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddProvider(new TextBoxLoggerProvider(tb_Log));
-            });
-            // Create logger
-            logger = loggerFactory.CreateLogger<MainForm>();
-            TrassierungLog.AssignLogger(loggerFactory);
-            SrsLogger.Instance.ConfigureLogger(logger);
 
             // Create a Panel to indicate the drop location
             dropIndicatorPanel = new Panel
@@ -189,6 +181,24 @@ namespace TRA.Tool
                 panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
                 panel.Invalidate();
             }
+        }
+
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tb_Log.Clear();
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddProvider(new TextBoxLoggerProvider(tb_Log));
+            });
+            // Create logger
+            logger = loggerFactory.CreateLogger<MainForm>();
+            TrassierungLog.AssignLogger(loggerFactory);
+            egbt22lib.LoggingInitializer.InitializeLogging(loggerFactory);
+            SrsLogger.Instance.ConfigureLogger(logger);
         }
     }
 
