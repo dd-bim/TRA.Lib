@@ -1,6 +1,7 @@
 ﻿
 using System.Data;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 using TRA_Lib;
 
@@ -17,6 +18,25 @@ namespace TRA.Tool
         public TrassenPanel()
         {
             InitializeComponent();
+        }
+
+        public void set_TRA_L_Path(TreeNode treeNode)
+        {
+            tb_TRA_L.Tag = treeNode;
+            FileInfo fileInfo = new FileInfo(treeNode.Tag.ToString());
+            tb_TRA_L.Text = fileInfo.Name;
+        }
+        public void set_TRA_S_Path(TreeNode treeNode)
+        {
+            tb_TRA_S.Tag = treeNode;
+            FileInfo fileInfo = new FileInfo(treeNode.Tag.ToString());
+            tb_TRA_S.Text = fileInfo.Name;
+        }
+        public void set_TRA_R_Path(TreeNode treeNode)
+        {
+            tb_TRA_R.Tag = treeNode;
+            FileInfo fileInfo = new FileInfo(treeNode.Tag.ToString());
+            tb_TRA_R.Text = fileInfo.Name;
         }
 
         private void Tb_TRA_DragEnter(object sender, DragEventArgs e)
@@ -184,32 +204,6 @@ namespace TRA.Tool
                 trasseR = Trassierung.ImportTRA(fileInfo.FullName);
                 trasseR.AssignTrasseS(trasseS);
                 trasseR.AssignGRA(gradientR);
-            }
-        }
-
-        private void btn_Interpolate_Click(object sender, EventArgs e)
-        {
-
-            if (trasseS != null)
-            {
-                trasseS.Interpolate(1);
-#if USE_SCOTTPLOT
-                trasseS.Plot();
-#endif
-            }
-            if (trasseL != null)
-            {
-                trasseL.Interpolate3D(null, 10.0);
-#if USE_SCOTTPLOT
-                trasseL.Plot();
-#endif
-            }
-            if (trasseR != null)
-            {
-                trasseR.Interpolate3D(null, 10.0);
-#if USE_SCOTTPLOT
-                trasseR.Plot();
-#endif
             }
         }
 

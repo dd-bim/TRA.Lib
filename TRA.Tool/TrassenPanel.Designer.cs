@@ -33,7 +33,6 @@ namespace TRA.Tool
             label_Trasse = new Label();
             panel1 = new Panel();
             btn_Save = new Button();
-            btn_Interpolate = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
             tb_TRA_S = new TextBox();
             label_TRA_L = new Label();
@@ -64,7 +63,6 @@ namespace TRA.Tool
             // panel1
             // 
             panel1.Controls.Add(btn_Save);
-            panel1.Controls.Add(btn_Interpolate);
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 121);
             panel1.Name = "panel1";
@@ -80,18 +78,6 @@ namespace TRA.Tool
             btn_Save.Text = "SaveCSV";
             btn_Save.UseVisualStyleBackColor = true;
             btn_Save.Click += btn_Save_Click;
-            // 
-            // btn_Interpolate
-            // 
-            btn_Interpolate.Anchor = AnchorStyles.Left;
-            btn_Interpolate.Enabled = false;
-            btn_Interpolate.Location = new Point(3, 3);
-            btn_Interpolate.Name = "btn_Interpolate";
-            btn_Interpolate.Size = new Size(76, 20);
-            btn_Interpolate.TabIndex = 0;
-            btn_Interpolate.Text = "Interpolate";
-            btn_Interpolate.UseVisualStyleBackColor = true;
-            btn_Interpolate.Click += btn_Interpolate_Click;
             // 
             // tableLayoutPanel1
             // 
@@ -272,7 +258,6 @@ namespace TRA.Tool
         private Label label_GRA_L;
         private TextBox tb_GRA_L;
         private TextBox tb_GRA_R;
-        private Button btn_Interpolate;
         private Button btn_Save;
         private FolderBrowserDialog folderBrowserDialog_CSV;
     }

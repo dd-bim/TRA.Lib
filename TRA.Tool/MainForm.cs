@@ -1,5 +1,3 @@
-
-using LowDistortionProjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Windows.Forms;
@@ -85,14 +83,25 @@ namespace TRA.Tool
 
         private void FlowLayoutPanel_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(UserControl)))
+            if (e.Data.GetDataPresent(typeof(UserControl))) 
             {
                 e.Effect = DragDropEffects.Move;
+            }
+            else if (e.Data.GetDataPresent(typeof(TreeNode)))
+            {
+                e.Effect = DragDropEffects.Copy;
             }
         }
         private void FlowLayoutPanel_DragOver(object sender, DragEventArgs e)
         {
-            e.Effect = DragDropEffects.Move;
+            if (e.Data.GetDataPresent(typeof(TreeNode)))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.Move;
+            }
             Point point = flowLayoutPanel.PointToClient(new Point(e.X, e.Y));
             Control item = flowLayoutPanel.GetChildAtPoint(point);
             // Display the drop indicator panel at the appropriate position
@@ -113,6 +122,8 @@ namespace TRA.Tool
         }
         private void FlowLayoutPanel_DragDrop(object sender, DragEventArgs e)
         {
+
+            //DragDrop for Panel Order
             UserControl control = null;
             if (e.Data.GetDataPresent(typeof(TrassenPanel)))
             {
@@ -139,6 +150,38 @@ namespace TRA.Tool
                 else
                 {
                     panel.Controls.SetChildIndex(control, panel.Controls.Count - 2);
+                }
+            }
+            //DragDrop for Import
+            if (e.Data.GetDataPresent(typeof(TreeNode)))
+            {
+                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                FileInfo fileInfo = new FileInfo(node.Tag.ToString());
+                Color selectedColor = TrassenPanel.DefaultBackColor;
+                if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
+                {
+                    TrassenPanel trassenPanel = new TrassenPanel();
+                    trassenPanel.set_TRA_L_Path(node);
+                    node.BackColor = trassenPanel.BackColor;
+                    panel.Controls.Add(trassenPanel);
+                    panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);                  
+                }
+                else if(fileInfo.Attributes == System.IO.FileAttributes.Directory)
+                {
+                    LoadDirectoriesAndFiles(node);
+                    foreach (TreeNode childNode in node.Nodes)
+                    {
+                        fileInfo = new FileInfo(childNode.Tag.ToString());
+                        if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase) && childNode.BackColor != selectedColor)
+                        {
+                            TrassenPanel trassenPanel = new TrassenPanel();
+                            trassenPanel.set_TRA_L_Path(childNode);
+                            childNode.BackColor = trassenPanel.BackColor;
+                            selectedColor = trassenPanel.BackColor;
+                            panel.Controls.Add(trassenPanel);
+                            panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                        }
+                    }
                 }
             }
             dropIndicatorPanel.Visible = false;
@@ -198,7 +241,6 @@ namespace TRA.Tool
             logger = loggerFactory.CreateLogger<MainForm>();
             TrassierungLog.AssignLogger(loggerFactory);
             egbt22lib.LoggingInitializer.InitializeLogging(loggerFactory);
-            SrsLogger.Instance.ConfigureLogger(logger);
         }
     }
 

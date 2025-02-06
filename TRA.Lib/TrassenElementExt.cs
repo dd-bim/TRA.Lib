@@ -169,7 +169,7 @@ namespace TRA_Lib
                 case Trassenkennzeichen.Knick:
                     break;
                 case Trassenkennzeichen.KSprung:
-                    TrassenGeometrie = new Gerade();
+                    TrassenGeometrie = new KSprung(l);
                     break;
                 case Trassenkennzeichen.S_Form_1f:
                     break;

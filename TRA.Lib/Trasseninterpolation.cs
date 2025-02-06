@@ -278,6 +278,25 @@ namespace TRA_Lib
         }
     }
 
+    public class KSprung : TrassenGeometrie
+    {
+        double length;
+        public KSprung(double l)
+        {
+            length = l;
+        }
+
+        public override (double X, double Y, double t, double k) PointAt(double s)
+        {
+            return (0, 0, 0, 0);
+        }
+
+        public override double sAt(double X, double Y, double t = double.NaN)
+        {
+            return length;
+        }
+    }
+
 
     public class Transform2D
     {
