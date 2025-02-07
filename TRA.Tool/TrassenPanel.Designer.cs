@@ -30,6 +30,7 @@ namespace TRA.Tool
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TrassenPanel));
             label_Trasse = new Label();
             panel1 = new Panel();
             btn_Save = new Button();
@@ -45,6 +46,7 @@ namespace TRA.Tool
             tb_GRA_L = new TextBox();
             tb_GRA_R = new TextBox();
             folderBrowserDialog_CSV = new FolderBrowserDialog();
+            this.btn_delete = new Button();
             panel1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
@@ -226,12 +228,28 @@ namespace TRA.Tool
             tb_GRA_R.DragDrop += Tb_GRA_DragDrop;
             tb_GRA_R.DragEnter += Tb_GRA_DragEnter;
             // 
+            // btn_delete
+            // 
+            this.btn_delete.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            this.btn_delete.AutoSize = true;
+            this.btn_delete.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            this.btn_delete.FlatAppearance.BorderSize = 0;
+            this.btn_delete.FlatStyle = FlatStyle.Flat;
+            this.btn_delete.Image = (Image)resources.GetObject("btn_delete.Image");
+            this.btn_delete.Location = new Point(543, 3);
+            this.btn_delete.Name = "btn_delete";
+            this.btn_delete.Size = new Size(22, 22);
+            this.btn_delete.TabIndex = 8;
+            this.btn_delete.UseVisualStyleBackColor = true;
+            this.btn_delete.Click += this.btn_delete_Click;
+            // 
             // TrassenPanel
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
             BorderStyle = BorderStyle.FixedSingle;
+            Controls.Add(this.btn_delete);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(panel1);
             Controls.Add(label_Trasse);
@@ -241,6 +259,7 @@ namespace TRA.Tool
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -260,5 +279,6 @@ namespace TRA.Tool
         private TextBox tb_GRA_R;
         private Button btn_Save;
         private FolderBrowserDialog folderBrowserDialog_CSV;
+        private Button btn_delete;
     }
 }

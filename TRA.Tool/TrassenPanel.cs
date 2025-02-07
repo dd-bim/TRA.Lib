@@ -272,5 +272,10 @@ namespace TRA.Tool
         {
             DoDragDrop(this, DragDropEffects.Move);
         }
+
+        private void btn_delete_Click(object sender, EventArgs e)
+        {
+            Parent.Controls.Remove(this);
+        }
     }
 }
