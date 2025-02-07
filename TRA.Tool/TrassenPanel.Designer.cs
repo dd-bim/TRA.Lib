@@ -46,7 +46,7 @@ namespace TRA.Tool
             tb_GRA_L = new TextBox();
             tb_GRA_R = new TextBox();
             folderBrowserDialog_CSV = new FolderBrowserDialog();
-            this.btn_delete = new Button();
+            btn_delete = new Button();
             panel1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
@@ -230,18 +230,18 @@ namespace TRA.Tool
             // 
             // btn_delete
             // 
-            this.btn_delete.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            this.btn_delete.AutoSize = true;
-            this.btn_delete.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            this.btn_delete.FlatAppearance.BorderSize = 0;
-            this.btn_delete.FlatStyle = FlatStyle.Flat;
-            this.btn_delete.Image = (Image)resources.GetObject("btn_delete.Image");
-            this.btn_delete.Location = new Point(543, 3);
-            this.btn_delete.Name = "btn_delete";
-            this.btn_delete.Size = new Size(22, 22);
-            this.btn_delete.TabIndex = 8;
-            this.btn_delete.UseVisualStyleBackColor = true;
-            this.btn_delete.Click += this.btn_delete_Click;
+            btn_delete.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btn_delete.AutoSize = true;
+            btn_delete.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btn_delete.FlatAppearance.BorderSize = 0;
+            btn_delete.FlatStyle = FlatStyle.Flat;
+            btn_delete.Image = (Image)resources.GetObject("btn_delete.Image");
+            btn_delete.Location = new Point(543, 3);
+            btn_delete.Name = "btn_delete";
+            btn_delete.Size = new Size(22, 22);
+            btn_delete.TabIndex = 8;
+            btn_delete.UseVisualStyleBackColor = true;
+            btn_delete.Click += btn_delete_Click;
             // 
             // TrassenPanel
             // 
@@ -249,7 +249,7 @@ namespace TRA.Tool
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
             BorderStyle = BorderStyle.FixedSingle;
-            Controls.Add(this.btn_delete);
+            Controls.Add(btn_delete);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(panel1);
             Controls.Add(label_Trasse);

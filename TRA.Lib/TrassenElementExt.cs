@@ -52,6 +52,7 @@ namespace TRA_Lib
         }
         public void Concat(Interpolation interp)
         {
+            if (interp.X ==  null || interp.Y == null || interp.S == null || interp.T == null || interp.K == null) { return; }
             X = X.Concat(interp.X).ToArray();
             Y = Y.Concat(interp.Y).ToArray();
             S = S.Concat(interp.S).ToArray();
@@ -273,7 +274,11 @@ namespace TRA_Lib
         public ref Interpolation Interpolate(double delta = 1.0, double allowedTolerance = 0.001)
         {
             Transform2D transform = new Transform2D(x, y, t);
-            if (TrassenGeometrie == null) { AddWarningCallout("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", Xstart,Ystart); return ref Interpolation; }
+            if (TrassenGeometrie == null) { 
+                AddWarningCallout("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", Xstart,Ystart); 
+                Interpolation = new Interpolation(0);
+                return ref Interpolation; 
+            }
             if (Double.IsNaN(l)) { AddWarningCallout("Length is NaN, no interpolation calculated", Xstart, Ystart); return ref Interpolation; }
             List<double> Xlst = new List<double>();
             List<double> Ylst = new List<double>();
@@ -320,6 +325,7 @@ namespace TRA_Lib
 
         public double GetSAtPoint(double X, double Y, double T = double.NaN)
         {
+            if (TrassenGeometrie == null) return (0);
             Transform2D transform = new Transform2D(x, y, t);
             transform.ApplyInverse(ref X, ref Y, ref T);
             return TrassenGeometrie.sAt(X, Y, T) + s;
@@ -331,6 +337,7 @@ namespace TRA_Lib
         /// <returns>Hochwert X,Rechtswert Y, Heading T</returns>
         public (double, double, double) GetPointAtS(double S)
         {
+            if (TrassenGeometrie == null) return (0, 0, 0);// (Double.NaN, Double.NaN, Double.NaN);
             (double X, double Y, double T, _) = TrassenGeometrie.PointAt(S - s);
             Transform2D transform = new Transform2D(x, y, t);
             transform.Apply(ref X, ref Y, ref T);

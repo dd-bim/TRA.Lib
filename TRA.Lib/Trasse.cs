@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Collections.Specialized;
+using ScottPlot.Colormaps;
 
 #if USE_SCOTTPLOT
 using ScottPlot.Plottables;
@@ -539,10 +540,10 @@ namespace TRA_Lib
 
                 if (interpolation.H != null && interpolation.s != null)
                 {
-                    var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H, color);
+                    var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H.Where(i => !double.IsNaN(i)).ToArray(), color); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
                     //scatterH.LegendText = "Elevation";
                     scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
-                    var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s, color);
+                    var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s.Where(i => !double.IsNaN(i)).ToArray(), color); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
                     //scatterSlope.LegendText = "Slope";
                     scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
                 }

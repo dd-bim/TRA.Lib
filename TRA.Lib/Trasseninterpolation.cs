@@ -66,7 +66,7 @@ namespace TRA_Lib
             double r = Math.Abs(radius);
             if (r == 0) { return (s, 0.0, 0.0, 0.0); } //Gerade
             (double X, double Y) = Math.SinCos(s / r);
-            return (X * r, sig * ((1 - Y) * r), s / r, 1 / radius);
+            return (X * r, sig * ((1 - Y) * r), s / radius, 1 / radius);
         }
 
         public override double sAt(double X, double Y, double t = double.NaN)
@@ -177,7 +177,7 @@ namespace TRA_Lib
 
             //Tangent at point
             double theta = gamma * s * s * 0.5 + curvature1 * s;
-            return (Cs.Real, dir * Math.Sign(gamma) * Cs.Imaginary, theta, curvature1 + gamma * s);
+            return (Cs.Real, dir * Math.Sign(gamma) * Cs.Imaginary, dir * theta, dir* (curvature1 + gamma * s));
         }
 
         // Implementing the Fresnel integrals using numerical integration
