@@ -308,7 +308,6 @@ namespace TRA_Lib
         ScottPlot.WinForms.FormsPlot PlotG;
         /// <value>Table for all loaded Attributes of the TRA-File</value>
         DataGridView gridView;
-
         public void Plot()
         {
             if (Form == null)
@@ -358,9 +357,9 @@ namespace TRA_Lib
                 BtnPanel.Controls.Add(CheckElementLabels);
                 BtnPanel.Controls.Add(CheckShowWarnings);
                 BtnPanel.Controls.Add(CheckProjections);
-                splitContainer.Panel2.Controls.Add(tabControl);
-
+                splitContainer.Panel2.Controls.Add(tabControl);               
             }
+            Form.FormClosing += (sender, e) => OnFormClosed();
             //Add Plot for 2D overview
             PixelPadding padding = new(80, 80, 20, 5);
             if (Plot2D == null)
@@ -591,6 +590,15 @@ namespace TRA_Lib
             Form.Update();
         }
 
+        private void OnFormClosed()
+        {
+            Plottables.Clear();
+            selectedS = null; PlotT = null; PlotG = null;
+            gridView = null;
+            Plot2D = null;
+            Form = null;
+        }
+
         public void UpdatePlot()
         {
             if (gridView != null)
@@ -604,7 +612,8 @@ namespace TRA_Lib
 
         }
         private void Warning_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
-        { 
+        {
+            if (Plot2D == null) return;
             switch (e.Action) 
             { 
                 case NotifyCollectionChangedAction.Add: 
