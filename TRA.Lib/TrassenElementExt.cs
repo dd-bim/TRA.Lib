@@ -97,10 +97,10 @@ namespace TRA_Lib
         /// <value>List of Warnings. Callouts to show on Plot if compiled with SCOTTPLOT</value>
         internal CustomObservableCollection<GeometryWarning> WarningCallouts = new() { };
 
-#if USE_SCOTTPLOT
+        public double MeanProjectionDeviation() { return projections.Sum(w => w.Deviation) / projections.Count; }
+        public void ClearProjections() { projections.Clear(); }
         /// <value>Arrows for visualisation of ProjectionS</value>
         internal List<ProjectionArrow> projections = new() { };
-#endif
 
         /// public
         ///<value>ID des Elements innerhalb der Trasse</value>
@@ -356,7 +356,20 @@ namespace TRA_Lib
         public override string ToString()
         {
             CultureInfo info = CultureInfo.CurrentCulture;
-            string[] values = { r1.ToString(info),r1.ToString(info),y.ToString(info),x.ToString(info),t.ToString(info),s.ToString(info),kz.ToString(),l.ToString(info),u1.ToString(info),u2.ToString(info),c.ToString(info) };
+            string[] values = { r1.ToString(info),
+                r1.ToString(info),
+                y.ToString(info),
+                x.ToString(info),
+                t.ToString(info),
+                s.ToString(info),
+                kz.ToString(),
+                l.ToString(info),
+                u1.ToString(info),
+                u2.ToString(info),
+                C, "","",
+                MeanProjectionDeviation().ToString(info),
+                string.Join(Environment.NewLine, WarningCallouts.Select(w => w.Text))
+                };
             return String.Join(info.TextInfo.ListSeparator, values);
         }
         public void Print()

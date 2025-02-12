@@ -269,7 +269,7 @@ namespace TRA_Lib
             CultureInfo info = CultureInfo.CurrentCulture;
             using (outputFile)
             {
-                string[] titles = { "R1", "R2", "Y", "X", "T", "S", "Kz", "L", "U1", "U2", "C", "H", "s" };
+                string[] titles = { "R1", "R2", "Y", "X", "T", "S", "Kz", "L", "U1", "U2", "C", "H", "s","Deviation","Warnings" };
                 outputFile.WriteLine(string.Join(info.TextInfo.ListSeparator, titles));
                 foreach (TrassenElementExt ele in Elemente)
                 {
@@ -389,6 +389,7 @@ namespace TRA_Lib
                     Dock = DockStyle.Fill,
                     AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
                 };
+                gridView.CellDoubleClick += GridView_CellDoubleClick;
                 gridView.Columns.AddRange(new DataGridViewColumn[]
                 {
                     new DataGridViewTextBoxColumn
@@ -549,7 +550,28 @@ namespace TRA_Lib
                 }
 
                 //Raw Data to GridView
-                gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C);
+                if (element.projections == null || element.projections.Count == 0)
+                {
+                    int idx = gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C);
+                    gridView.Rows[idx].Tag = element;
+                }
+                else
+                {
+                    if (!gridView.Columns.Contains("Deviation")) 
+                    {
+                        gridView.Columns.Add(
+                        new DataGridViewTextBoxColumn
+                        {
+                            HeaderText = "ProjectionDeviation",
+                            Name = "Deviation",
+                            ValueType = typeof(double)
+                        });
+                        gridView.AutoResizeColumns();
+                        gridView.ScrollBars = ScrollBars.Both;
+                    };
+                    int idx = gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C,element.MeanProjectionDeviation());
+                    gridView.Rows[idx].Tag = element;
+                }
                 //Warnings
                 element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
                 foreach (var warning in element.WarningCallouts)
@@ -589,6 +611,17 @@ namespace TRA_Lib
             PlotG.Refresh();
             if (!Form.Visible) Form.Show();// ShowDialog();
             Form.Update();
+        }
+
+        private void GridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+             DataGridView gridView = (DataGridView)sender;
+             if (gridView != null)
+             {
+                TrassenElementExt element = (TrassenElementExt)gridView.Rows[e.RowIndex].Tag;
+                Plot2D.Plot.Axes.SetLimits(Math.Min(element.Ystart, element.Yend), Math.Max(element.Ystart, element.Yend), Math.Min(element.Xstart, element.Xend), Math.Max(element.Xstart, element.Xend));
+                Plot2D.Refresh();
+            }
         }
 
         private void OnFormClosed()
@@ -721,6 +754,7 @@ namespace TRA_Lib
 #if USE_SCOTTPLOT
     class ProjectionArrow : ScottPlot.Plottables.Arrow
     {
+        public double Deviation;
         public ProjectionArrow(Coordinates pos, Coordinates tip) : base()
         {
             Base = pos;
@@ -731,6 +765,7 @@ namespace TRA_Lib
             ArrowheadLength = 20;
             ArrowheadAxisLength = 20;
             ArrowheadWidth = 7;
+            Deviation = tip.Distance(pos);
         }
     }
     class ElementMarker : LabelStyleProperties, IPlottable, IHasLine, IHasMarker, IHasLegendText
@@ -804,6 +839,15 @@ namespace TRA_Lib
             Drawing.DrawMarker(rp.Canvas, paint, Axes.GetPixel(End), MarkerStyle);
             Drawing.DrawLine(rp.Canvas, paint, pxLine, LineStyle);
             LabelStyle.Render(rp.Canvas, pxLine.Center, paint);
+        }
+    }
+#else
+    class ProjectionArrow
+    {
+        public double Deviation;
+        public ProjectionArrow(Coordinates pos, Coordinates tip)
+        {
+            Deviation = tip.Distance(pos);
         }
     }
 #endif
