@@ -166,6 +166,7 @@ namespace TRA_Lib
                 case Trassenkennzeichen.UB_S_Form:
                     break;
                 case Trassenkennzeichen.Bloss:
+                    TrassenGeometrie = new Bloss(r1,r2, l);
                     break;
                 case Trassenkennzeichen.Knick:
                     break;
@@ -181,6 +182,14 @@ namespace TRA_Lib
             }
         }
 
+        /// <summary>
+        /// Set a new Transform to a Element
+        /// </summary>
+        /// <param name="x">new Hochwert</param>
+        /// <param name="y">new Rechtswert</param>
+        /// <param name="deltaGamma">delta in Heading (Meridiankonvergenz)</param>
+        /// <param name="deltaK_start">Scale at Elementstart (Masstabsfaktor)</param>
+        /// <param name="deltaK_end">Scale at Elementend (Masstabsfaktor)</param>
         public void Relocate(double x, double y, double deltaGamma = double.NaN, double deltaK_start = double.NaN, double deltaK_end = double.NaN)
         {
             this.x = x;
@@ -275,7 +284,7 @@ namespace TRA_Lib
         {
             Transform2D transform = new Transform2D(x, y, t);
             if (TrassenGeometrie == null) { 
-                AddWarningCallout("No Gemetry for interpolation " + kz.ToString() + "set, maybe not implemented yet", Xstart,Ystart); 
+                AddWarningCallout("No Geometry for interpolation " + kz.ToString() + " set, maybe not implemented yet", Xstart,Ystart); 
                 Interpolation = new Interpolation(0);
                 return ref Interpolation; 
             }

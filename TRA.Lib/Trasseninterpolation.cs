@@ -278,6 +278,227 @@ namespace TRA_Lib
         }
     }
 
+    public class Bloss : TrassenGeometrie
+    {
+        double r1;
+        double r2;
+        double length;
+
+        /// <summary>
+        /// Define Bloss
+        /// </summary>
+        /// <param name="r1">radius at the begin of Bloss. radius NaN is interpreted as zero(straight)</param>
+        /// <param name="r2">radius at the end of Bloss. radius NaN is interpreted as zero(straight)</param>
+        /// <param name="length">Length of the Bloss. NaN and 0 results in straight line (radii have no effect)</param>
+        public Bloss(double r1, double r2, double length)
+        {
+            this.r1 = Double.IsNaN(r1) ? 0 : r1; //interpreting NaN radius as zero (straight line)
+            this.r2 = Double.IsNaN(r2) ? 0 : r2; //interpreting NaN radius as zero (straight line)
+            this.length = Double.IsNaN(length) ? 0 : length;
+            CalcConstants();
+        }
+
+        //Constant parameters
+        double radius;
+        double curvature1,curvature2;
+        int dir; //1 ==right turn , -1 == left turn
+
+        //Intermediate results storage
+        double last_t;
+        double last_Sa;
+        double last_Ca;
+
+        void CalcConstants()
+        {
+            // using absolute values is not the elegant way but, simplfies calculations
+            radius = Math.Abs(r2);
+            curvature1 = r1 == 0.0 ? 0 : Math.Abs(1 / r1);
+            curvature2 = r2 == 0.0 ? 0 : Math.Abs(1 / r2);
+            dir = Math.Sign(r2); //Get turning-direction of the Bloss
+        }
+        public override (double X, double Y, double t, double k) PointAt(double s)
+        {
+            if (r2 == 0.0) { return new Gerade().PointAt(s); }
+
+            // Fresnel integrals
+            double Ca = new double();
+            double Sa = new double();
+        //https://pwayblog.com/2017/05/15/bloss-rectangular-coordinates/
+        //(Sa, Ca) = CalculateFresnel(s, ref last_t, ref last_Sa, ref last_Ca);
+        https://dgk.badw.de/fileadmin/user_upload/Files/DGK/docs/b-314.pdf
+
+            //https://mediatum.ub.tum.de/doc/1295100/document.pdf:
+            //Berechnung mit Polynom Formel (3.29):
+            //Ca = s;
+            //Sa = curvature2 * (Math.Pow(s, 4) / (4 * Math.Pow(length, 2)) - Math.Pow(s, 5) / (10 * Math.Pow(length, 3))); //https://pwayblog.com/2015/02/22/bloss-like-a-boss/ gleichung 1
+            //Berechnung mit FresnelIntegral Formel (3.33):
+            //(Sa, Ca) = CalculateFresnel(s, ref last_t, ref last_Sa, ref last_Ca);
+            //Berechnung mit Taylorreihe Formal (3.36):
+            (Sa, Ca) = CalculateTaylor(s);
+
+            //(Sa, Ca) = CalculateFresnel(s);
+
+            //Local Curvature
+            double k = (3 * Math.Pow(s, 2)) / (radius * Math.Pow(length, 2)) -
+                (2 * Math.Pow(s, 3)) / (radius * Math.Pow(length, 3));
+            //Tangent at point
+            double t = Math.Pow(s, 3) / (radius * Math.Pow(length, 2))
+                    - Math.Pow(s, 4) / (2 * radius * Math.Pow(length, 3));
+            return (Ca,Sa*dir,t*dir,k*dir);
+        }
+
+        int binomialCoeffizient(int n, int k)
+        {
+                if (k > n - k)
+                    k = n - k;
+                int res = 1;
+                for (int i = 0; i < k; ++i)
+                {
+                    res *= (n - i);
+                    res /= (i + 1);
+                }
+                return res;
+        }
+        long fakultaet(int n)
+        {
+            if (n == 0)
+                return 1;
+            return n * fakultaet(n - 1);
+        }
+
+        (double S, double C) CalculateTaylor(double x)
+        {
+            int n = 4; // Number of steps for the integration
+            double k, t, Fi;
+            double S = 0;
+            double C = 0;
+            double R = Math.Abs(r2)-Math.Abs(r1);
+            for (int i = 0; i <= n; i++)
+            {
+                int m = i * 2;
+                double am = 0;
+                for (int j = 0; j <= m; j++)
+                {
+                    am += binomialCoeffizient(m, j) * Math.Pow(1 / (R * length * length), m - j) * Math.Pow(-1 / (2 * R * length * length * length), j) * (Math.Pow(x, j + 1) / (3 * m + j + 1));
+                }
+                C += Math.Pow(-1, m / 2) / fakultaet(m) * am * Math.Pow(x, 3 * m);
+                m = m + 1;
+                am = 0;
+                for (int j = 0; j <= m; j++)
+                {
+                    am += binomialCoeffizient(m, j) * Math.Pow(1 / (R * length * length), m - j) * Math.Pow(-1 / (2 * R * length * length * length), j) * (Math.Pow(x, j + 1) / (3 * m + j + 1));
+                }
+                S += Math.Pow(-1, (m-1) / 2) / fakultaet(m) * am * Math.Pow(x, 3 * m);
+            }
+            return (S, C);
+        }
+        (double S, double C) CalculateFresnel(double x)
+        {
+        //https://dgk.badw.de/fileadmin/user_upload/Files/DGK/docs/b-314.pdf gleichung 4.8
+            int n = 100000; // Number of steps for the integration
+            double k,t,Fi;
+            t = 0;
+            double S = 0;
+            double C = 0;
+            double step = x / n;
+            for (int i = 1; i <= n; i++)
+            {
+                Fi = 3 * Math.Pow(x / length, 2) - 2 * Math.Pow(x / length, 3);
+                k = curvature1 + Fi * (curvature2 - curvature1);
+                t +=  k * step;
+                double sin, cos;
+                (sin, cos) = Math.SinCos(t);
+                S += sin * step;
+                C += cos * step;
+            }
+            return (S, C);
+        }
+
+        (double S, double C) CalculateFresnel(double x, ref double t, ref double sumS, ref double sumC)
+        {
+            int n = 100000; // Number of steps for the integration
+            if (t > x)
+            {
+                t = 0.0;
+                sumS = 0.0;
+                sumC = 0.0;
+            } //reset
+            double step = (x - t) / n;
+            double t_0 = t;
+            
+            for (int i = 1; i <= n; i++)
+            {
+                t = t_0 + i * step;
+                double sin, cos;
+                (sin, cos) = Math.SinCos(
+                    Math.Pow(x,3)/(radius* Math.Pow(length, 2))
+                    - Math.Pow(x, 4) / (2*radius * Math.Pow(length, 3))
+                    );
+                sumS += sin * step;
+                sumC += cos * step;
+            }
+            return (sumS, sumC);
+        }
+
+        public override double sAt(double X, double Y, double t = double.NaN)
+        {
+            if (Double.IsNaN(X) || Double.IsNaN(Y)) return double.NaN;
+            double threshold = 0.00001;
+            double delta = 1.0;
+            double X_ = 0.0;
+            double Y_ = 0.0;
+            double t_ = 0.0;
+            double k = 0.0;
+            double s = 0.0;
+            double d = double.PositiveInfinity; //distance between point and normal
+            Vector2 v1, v2;
+            v1 = new Vector2();
+            if (!Double.IsNaN(t))
+            {
+                double x, y;
+                (x, y) = Math.SinCos(t);
+                v1 = new Vector2((float)y, (float)x);
+                delta = Math.Sign(X * v1.Y - Y * v1.X) * delta;
+            }
+
+            int maxIterations = 1000;
+            int i = 0;
+            while (i < maxIterations && d > threshold)
+            {
+                (X_, Y_, t_, k) = PointAt(s);
+                v2 = new Vector2((float)(X - X_), (float)(Y - Y_)); //vector from current position to Point of interest
+                if (Double.IsNaN(t))
+                {
+                    v1 = new Vector2((float)Math.Cos(t_), (float)Math.Sin(t_)); //normal at current position
+                    double vectorDot = Vector2.Dot(v1, v2) / v2.Length();
+                    if (Math.Sign(vectorDot) != Math.Sign(delta))
+                    {
+                        delta = -0.5 * delta;
+                    }
+                    d = Math.Abs(vectorDot);
+                }
+                else
+                {
+                    double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
+                    double vectorDot = 1 - (Vector2.Dot(v2, v1) / v2.Length()); //Result is reached when both vectors are parallel
+                    if (Math.Sign(scalarCross) != Math.Sign(delta))
+                    {
+                        delta = -0.5 * delta;
+                    }
+                    d = Math.Abs(vectorDot);
+                }
+                s = s + delta;
+                i++;
+            }
+            if (i == maxIterations)
+            {
+                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + d, this);
+                return double.NaN;
+            }
+            return s;
+        }
+    }
+
     public class KSprung : TrassenGeometrie
     {
         double length;
