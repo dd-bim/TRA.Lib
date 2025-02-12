@@ -469,10 +469,10 @@ namespace TRA_Lib
                     },
                     new DataGridViewTextBoxColumn
                     {
-                        HeaderText = "C",
+                        HeaderText = "Punktnummer",
                         Name = "C",
-                        ToolTipText = "Abstand zur Trasse",
-                        ValueType = typeof(double),
+                        ToolTipText = "Punktnummer (ehemals C -Abstand zur Trasse)",
+                        ValueType = typeof(string),
                     }
                 });
                 padding = new(80, 80, 50, 5);

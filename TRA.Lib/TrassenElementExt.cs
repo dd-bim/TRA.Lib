@@ -125,8 +125,8 @@ namespace TRA_Lib
         public double U1 { get { return u1; } }
         /// <value>Überhöhung am Elementende</value>
         public double U2 { get { return u2; } }
-        /// <value>Abstand zu Trasse</value>
-        public double C { get { return c; } }
+        /// <value>Punktnummer</value>
+        public string C { get { return c.ToString("F5").Replace(',','.'); } }
         /// <value>Richtung am Elementanfang</value>
         public double T { get { return t; } }
         public int Kz { get { return (int)kz; } }

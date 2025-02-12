@@ -37,7 +37,7 @@ namespace TRA_Lib
         protected double u1;
         /// <value>Ueberhoehung am Elementende</value>
         protected double u2;
-        /// <value>Abstand zur Trasse, i.d.R. 0 nur für Parallelübergangsbögen</value>
+        /// <value>Punktnummer. Ehemals Abstand zur Trasse, i.d.R. 0 nur für Parallelübergangsbögen</value>
         protected float c;
 
         public TrassenElement(double r1, double r2, double y, double x, double t, double s, int kz, double l, double u1, double u2, float c)
