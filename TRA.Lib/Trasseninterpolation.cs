@@ -19,6 +19,16 @@ namespace TRA_Lib
         /// <param name="t">if t is given, intersection is calculated in direction t starting from the given point, otherwise calculation is perpendicular to geometry</param>
         /// <returns></returns>
         public abstract double sAt(double X, double Y, double t = double.NaN);
+
+        internal double length;
+        internal double r1;
+        internal double r2;
+        public void updateParameters(double length, double r1, double r2)
+        {
+            this.length = length;
+            this.r1 = r1;
+            this.r2 = r2;
+        }
     }
     public class Gerade : TrassenGeometrie
     {
@@ -54,26 +64,25 @@ namespace TRA_Lib
     }
     public class Kreis : TrassenGeometrie
     {
-        double radius;
 
         public Kreis(double radius)
         {
-            this.radius = radius;
+            this.r1 = radius;
         }
         public override (double X, double Y, double t, double k) PointAt(double s)
         {
-            int sig = Math.Sign(radius);
-            double r = Math.Abs(radius);
+            int sig = Math.Sign(r1);
+            double r = Math.Abs(r1);
             if (r == 0) { return (s, 0.0, 0.0, 0.0); } //Gerade
             (double X, double Y) = Math.SinCos(s / r);
-            return (X * r, sig * ((1 - Y) * r), s / radius, 1 / radius);
+            return (X * r, sig * ((1 - Y) * r), s / r1, 1 / r1);
         }
 
         public override double sAt(double X, double Y, double t = double.NaN)
         {
-            if (radius == 0) return new Gerade().sAt(X, Y, t); //use this calculation if radius is 0;
+            if (r1 == 0) return new Gerade().sAt(X, Y, t); //use this calculation if radius is 0;
 
-            Vector2 c = new Vector2(0, (float)radius);
+            Vector2 c = new Vector2(0, (float)r1);
             Vector2 point = new Vector2((float)X, (float)Y);
             Vector2 dir;
             if (Double.IsNaN(t)) //t is not used
@@ -88,7 +97,7 @@ namespace TRA_Lib
             // Calculate quadratic equation coefficients
             double a = dir.X * dir.X + dir.Y * dir.Y;
             double b = 2 * (dir.X * (X - c.X) + dir.Y * (Y - c.Y));
-            double cValue = (X - c.X) * (X - c.X) + (Y - c.Y) * (Y - c.Y) - radius * radius;
+            double cValue = (X - c.X) * (X - c.X) + (Y - c.Y) * (Y - c.Y) - r1 * r1;
 
             // Calculate discriminant
             double discriminant = b * b - 4 * a * cValue;
@@ -103,16 +112,12 @@ namespace TRA_Lib
             // Calculate nearest intersection point
             Vector2 intersection = point + (float)(Math.Abs(t1) < Math.Abs(t2) ? t1 : t2) * dir;
             intersection = intersection - c; //relative to center
-            double s_ = radius > 0 ? Math.PI - Math.Atan2(intersection.X, intersection.Y) : Math.Atan2(intersection.X, intersection.Y);
-            return s_ * Math.Abs(radius);
+            double s_ = r1 > 0 ? Math.PI - Math.Atan2(intersection.X, intersection.Y) : Math.Atan2(intersection.X, intersection.Y);
+            return s_ * Math.Abs(r1);
         }
     }
     public class Klothoid : TrassenGeometrie
     {
-        double r1;
-        double r2;
-        double length;
-
         /// <summary>
         /// Define Clothoid
         /// </summary>
@@ -280,9 +285,6 @@ namespace TRA_Lib
 
     public class Bloss : TrassenGeometrie
     {
-        double r1;
-        double r2;
-        double length;
 
         /// <summary>
         /// Define Bloss

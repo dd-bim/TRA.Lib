@@ -87,6 +87,8 @@ namespace TRA_Lib
         TrassenGeometrie TrassenGeometrie;
         /// <value>ID des Elements</value>
         int id;
+        /// value>Scale - takes into account a scaling of the element length through scale corrections during the transformation</value> 
+        double scale = 1;
         /// <value>Vorgaenger Element</value>
         TrassenElementExt predecessor;
         /// <value>Nachfolger Element</value>
@@ -191,18 +193,23 @@ namespace TRA_Lib
         /// <param name="deltaGamma">delta in Heading (Meridiankonvergenz)</param>
         /// <param name="deltaK_start">Scale at Elementstart (Masstabsfaktor)</param>
         /// <param name="deltaK_end">Scale at Elementend (Masstabsfaktor)</param>
-        public void Relocate(double x, double y, double deltaGamma = double.NaN, double deltaK_start = double.NaN, double deltaK_end = double.NaN)
+        public void Relocate(double x = double.NaN, double y = double.NaN, double deltaGamma = double.NaN, double deltaK_start = double.NaN, double deltaK_end = double.NaN)
         {
-            this.x = x;
-            this.y = y;
+            if (!double.IsNaN(x))
+            {
+                this.x = x;
+            }
+            if (!double.IsNaN(y))
+            {
+                this.y = y;
+            }
             if (!double.IsNaN(deltaGamma))
             {
                 t = t - deltaGamma;
             }
             if (!double.IsNaN(deltaK_start))
             {
-                // TODO decide if we need to change the length and if yes, do we want to update the stationvalues s
-                l = l * (deltaK_start + deltaK_end) / 2;
+                scale = (deltaK_start + deltaK_end) / 2;
                 if (Double.IsNaN(deltaK_end)) { deltaK_end = deltaK_start; }
                 switch (this.TrassenGeometrie)
                 {
@@ -217,6 +224,7 @@ namespace TRA_Lib
                         r2 = r2 * deltaK_end;
                         break;
                 }
+                TrassenGeometrie.updateParameters(l*scale,r1,r2);//Set scaled parameters to Geometry
             }
             PlausibilityCheck();
         }
@@ -244,7 +252,7 @@ namespace TRA_Lib
             if(TrassenGeometrie is Gerade)
             {
                 double geoL = Math.Sqrt(Math.Pow(Xend-Xstart,2)+Math.Pow(Yend-Ystart,2));
-                if (Math.Abs(l- geoL)>tolerance) { AddWarningCallout("length missmatch. elements Length parameter, does not match to Geometry by " + (l - geoL), Xstart, Ystart); }
+                if (Math.Abs(l*scale- geoL)>tolerance) { AddWarningCallout("length missmatch. elements Length parameter, does not match to Geometry by " + (l*scale - geoL), Xstart, Ystart); }
             }
             //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)
@@ -303,7 +311,7 @@ namespace TRA_Lib
             {
                 double x_, y_, t_, k_;
                 if (s_ > l) { s_ = l; done = true; }
-                (x_, y_, t_, k_) = TrassenGeometrie.PointAt(s_);
+                (x_, y_, t_, k_) = TrassenGeometrie.PointAt(s_*scale);
                 if (transform != null) { transform.Apply(ref x_, ref y_, ref t_); }
                 Xlst.Add(x_);
                 Ylst.Add(y_);
@@ -338,17 +346,18 @@ namespace TRA_Lib
             if (TrassenGeometrie == null) return (0);
             Transform2D transform = new Transform2D(x, y, t);
             transform.ApplyInverse(ref X, ref Y, ref T);
-            return TrassenGeometrie.sAt(X, Y, T) + s;
+            return TrassenGeometrie.sAt(X, Y, T)/scale + s;
         }
         /// <summary>
         /// Calculates a Point on the Geometry at a given Distance S
         /// </summary>
-        /// <param name="S">S as global mileage is reduced by Stationvalue S of the element</param>
+        /// <param name="S">S as mileage (global by default)</param>
+        /// <param name="local">S is used as global mileage by default, so S is reduced by Stationvalue S of the element. if set to true S is directly used as S in element mileage</param>
         /// <returns>Hochwert X,Rechtswert Y, Heading T</returns>
-        public (double, double, double) GetPointAtS(double S)
+        public (double, double, double) GetPointAtS(double S, bool local = false)
         {
             if (TrassenGeometrie == null) return (0, 0, 0);// (Double.NaN, Double.NaN, Double.NaN);
-            (double X, double Y, double T, _) = TrassenGeometrie.PointAt(S - s);
+            (double X, double Y, double T, _) = TrassenGeometrie.PointAt((local == false ? S - s : S)*scale);
             Transform2D transform = new Transform2D(x, y, t);
             transform.Apply(ref X, ref Y, ref T);
             return (X, Y, T);

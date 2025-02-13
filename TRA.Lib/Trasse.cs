@@ -232,7 +232,7 @@ namespace TRA_Lib
         {
             int num = Math.Min(X.Length, Y.Length);
             float deviation = 0;
-            double dist = 0;    
+            double dist = 0;   
             for (int i =0;i<num; i++)
             {
                (_,dist,_,_) = ProjectPoints(X[i], Y[i]);
@@ -406,7 +406,7 @@ namespace TRA_Lib
                 gridView.CellDoubleClick += GridView_CellDoubleClick;
                 gridView.CellMouseEnter += GridView_CellMouseEnter;
                 gridView.CellMouseLeave += GridView_CellMouseLeave;
-                gridView.Columns.AddRange(new DataGridViewColumn[]
+               gridView.Columns.AddRange(new DataGridViewColumn[]
                 {
                     new DataGridViewTextBoxColumn
                     {
@@ -673,13 +673,13 @@ namespace TRA_Lib
              DataGridView gridView = (DataGridView)sender;
              if (gridView != null)
              {
-                TrassenElementExt element = (TrassenElementExt)gridView.Rows[e.RowIndex].Tag;
+                    TrassenElementExt element = (TrassenElementExt)gridView.Rows[e.RowIndex].Tag;
                     if (element != null)
                     {
-                Plot2D.Plot.Axes.SetLimits(Math.Min(element.Ystart, element.Yend), Math.Max(element.Ystart, element.Yend), Math.Min(element.Xstart, element.Xend), Math.Max(element.Xstart, element.Xend));
-                Plot2D.Refresh();
+                        Plot2D.Plot.Axes.SetLimits(Math.Min(element.Ystart, element.Yend), Math.Max(element.Ystart, element.Yend), Math.Min(element.Xstart, element.Xend), Math.Max(element.Xstart, element.Xend));
+                        Plot2D.Refresh();
+                    }
             }
-        }
         }
 
         private void OnFormClosed()
