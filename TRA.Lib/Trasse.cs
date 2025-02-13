@@ -6,6 +6,8 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Collections.Specialized;
 using ScottPlot.Colormaps;
+using ScottPlot.AxisRules;
+using System.Drawing;
 
 #if USE_SCOTTPLOT
 using ScottPlot.Plottables;
@@ -206,6 +208,7 @@ namespace TRA_Lib
                     double s;
                     if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                     {
+                        element.ClearProjections();
                         (s,_,_,_) = trasseS.ProjectPoints(Interpolation.X[i], Interpolation.Y[i], element.projections);
                     }
                     else //if no trasseS provided use original value S
@@ -303,6 +306,7 @@ namespace TRA_Lib
         List<IPlottable> Plottables = new();
         /// <value>Callout for right-click selected Coordinate and s-projection</value>
         static ProjectionArrow selectedS;
+        static TrackBar ProjectionScale;
         /// <value>Plot for TRA-Details heading and hurvature </value>
         ScottPlot.WinForms.FormsPlot PlotT;
         /// <value>Plot for GRA-Details elevation and slope </value>
@@ -348,6 +352,15 @@ namespace TRA_Lib
                     Checked = false,
                 };
                 CheckProjections.CheckedChanged += CheckProjections_CheckedChanged;
+                ProjectionScale = new TrackBar
+                {
+                    Minimum = 0,
+                    Maximum = 20,
+                    TickFrequency = 10,
+                    Width = 100,
+                    Visible = false
+                };
+                ProjectionScale.ValueChanged += ProjectionScale_ValueChanged;
                 TabControl tabControl = new TabControl
                 {
                     Dock = DockStyle.Fill
@@ -358,6 +371,7 @@ namespace TRA_Lib
                 BtnPanel.Controls.Add(CheckElementLabels);
                 BtnPanel.Controls.Add(CheckShowWarnings);
                 BtnPanel.Controls.Add(CheckProjections);
+                BtnPanel.Controls.Add(ProjectionScale);
                 splitContainer.Panel2.Controls.Add(tabControl);               
             }
             Form.FormClosing += (sender, e) => OnFormClosed();
@@ -390,6 +404,8 @@ namespace TRA_Lib
                     AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
                 };
                 gridView.CellDoubleClick += GridView_CellDoubleClick;
+                gridView.CellMouseEnter += GridView_CellMouseEnter;
+                gridView.CellMouseLeave += GridView_CellMouseLeave;
                 gridView.Columns.AddRange(new DataGridViewColumn[]
                 {
                     new DataGridViewTextBoxColumn
@@ -527,13 +543,13 @@ namespace TRA_Lib
                 var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
                 Plottables.Add(scatter);
                 scatter.LegendText = Filename;
-                ScottPlot.Color color = scatter.MarkerFillColor;
-                ElementMarker marker = new(element, color);
+                element.PlotColor = scatter.MarkerFillColor;
+                ElementMarker marker = new(element, element.PlotColor);
                 Plottables.Add(Plot2D.Plot.Add.Plottable(marker));
-                var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, color);
+                var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, element.PlotColor);
                 //scatterT.LegendText = "Heading";
-                Plottables.Add(PlotT.Plot.Add.VerticalLine(element.Ystart, 2, color));
-                var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, color);
+                Plottables.Add(PlotT.Plot.Add.VerticalLine(element.Ystart, 2, element.PlotColor));
+                var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, element.PlotColor);
                 //scatterK.LegendText = "Curvature";
                 // tell each T and K plot to use a different axis
                 scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
@@ -541,10 +557,10 @@ namespace TRA_Lib
 
                 if (interpolation.H != null && interpolation.s != null)
                 {
-                    var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H.Where(i => !double.IsNaN(i)).ToArray(), color); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
+                    var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H.Where(i => !double.IsNaN(i)).ToArray(), element.PlotColor); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
                     //scatterH.LegendText = "Elevation";
                     scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
-                    var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s.Where(i => !double.IsNaN(i)).ToArray(), color); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
+                    var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s.Where(i => !double.IsNaN(i)).ToArray(), element.PlotColor); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
                     //scatterSlope.LegendText = "Slope";
                     scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
                 }
@@ -604,6 +620,11 @@ namespace TRA_Lib
             }
 
             // Set the axis scale to be equal
+            try //ScottPlot can crash on NaNs, which can occur sometimes on Interpolation
+            {
+                Plot2D.Plot.Axes.AutoScale();
+            }
+            catch { }
             Plot2D.Plot.Axes.SquareUnits();
             Plot2D.Plot.HideLegend();
             Plot2D.Refresh();
@@ -613,15 +634,52 @@ namespace TRA_Lib
             Form.Update();
         }
 
+        private void GridView_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            DataGridView gridView = (DataGridView)sender;
+            if (gridView != null && e.RowIndex >= 0 && gridView.Rows[e.RowIndex].Tag != null)
+            {
+                TrassenElementExt element = (TrassenElementExt)gridView.Rows[e.RowIndex].Tag;
+                if (element != null)
+                {
+                    foreach (ProjectionArrow arrow in element.projections)
+                    {
+                        arrow.ArrowFillColor = ScottPlot.Colors.LightGray;
+                    }
+                    Plot2D.Refresh();
+                }
+            }
+        }
+
+        private void GridView_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            DataGridView gridView = (DataGridView)sender;
+            if (gridView != null && e.RowIndex >= 0 && gridView.Rows[e.RowIndex].Tag != null)
+            {
+                TrassenElementExt element = (TrassenElementExt)gridView.Rows[e.RowIndex].Tag;
+                if (element != null)
+                {
+                    foreach (ProjectionArrow arrow in element.projections)
+                    {
+                        arrow.ArrowFillColor = element.PlotColor;
+                    }
+                    Plot2D.Refresh();
+                }
+            }
+        }
+
         private void GridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
              DataGridView gridView = (DataGridView)sender;
              if (gridView != null)
              {
                 TrassenElementExt element = (TrassenElementExt)gridView.Rows[e.RowIndex].Tag;
+                    if (element != null)
+                    {
                 Plot2D.Plot.Axes.SetLimits(Math.Min(element.Ystart, element.Yend), Math.Max(element.Ystart, element.Yend), Math.Min(element.Xstart, element.Xend), Math.Max(element.Xstart, element.Xend));
                 Plot2D.Refresh();
             }
+        }
         }
 
         private void OnFormClosed()
@@ -686,7 +744,21 @@ namespace TRA_Lib
             {
                 arrow.IsVisible = show;
             }
+            ProjectionScale.Visible = show;
             Plot2D.Refresh();
+        }
+        private void ProjectionScale_ValueChanged(object sender, EventArgs e)
+        {
+            TrackBar trackbar = (TrackBar)sender;
+            if (trackbar != null)
+            {
+                int value = trackbar.Value;
+                foreach (ProjectionArrow arrow in Plot2D.Plot.GetPlottables<ProjectionArrow>())
+                {
+                    arrow.scale(Math.Exp(value));
+                }
+                Plot2D.Refresh();
+            }
         }
 
         private void CheckElementLabels_CheckedChanged(object sender, EventArgs e)
@@ -755,6 +827,7 @@ namespace TRA_Lib
     class ProjectionArrow : ScottPlot.Plottables.Arrow
     {
         public double Deviation;
+        Vector2 direction; 
         public ProjectionArrow(Coordinates pos, Coordinates tip) : base()
         {
             Base = pos;
@@ -766,6 +839,12 @@ namespace TRA_Lib
             ArrowheadAxisLength = 20;
             ArrowheadWidth = 7;
             Deviation = tip.Distance(pos);
+            direction = new Vector2((float)(tip.X - pos.X),(float)(tip.Y-pos.Y));
+            direction = direction / direction.Length();
+        }
+        public void scale(double factor)
+        {
+            Base = new Coordinates(Tip.X - direction.X * Deviation * factor, Tip.Y - direction.Y * Deviation * factor);
         }
     }
     class ElementMarker : LabelStyleProperties, IPlottable, IHasLine, IHasMarker, IHasLegendText

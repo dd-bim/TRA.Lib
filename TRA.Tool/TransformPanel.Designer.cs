@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             btn_Transform = new Button();
+            checkBox_RecalcHeading = new CheckBox();
             SuspendLayout();
             // 
             // btn_Transform
@@ -42,20 +43,36 @@
             btn_Transform.UseVisualStyleBackColor = true;
             btn_Transform.Click += btn_Transform_Click;
             // 
+            // checkBox_RecalcHeading
+            // 
+            checkBox_RecalcHeading.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            checkBox_RecalcHeading.AutoSize = true;
+            checkBox_RecalcHeading.Checked = true;
+            checkBox_RecalcHeading.CheckState = CheckState.Checked;
+            checkBox_RecalcHeading.Location = new Point(3, 85);
+            checkBox_RecalcHeading.Name = "checkBox_RecalcHeading";
+            checkBox_RecalcHeading.Size = new Size(134, 19);
+            checkBox_RecalcHeading.TabIndex = 1;
+            checkBox_RecalcHeading.Text = "Recalculate Heading";
+            checkBox_RecalcHeading.UseVisualStyleBackColor = true;
+            // 
             // TransformPanel
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.WindowFrame;
+            Controls.Add(checkBox_RecalcHeading);
             Controls.Add(btn_Transform);
             Name = "TransformPanel";
             Size = new Size(488, 107);
             MouseDown += TransformPanel_MouseDown;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
         private Button btn_Transform;
+        private CheckBox checkBox_RecalcHeading;
     }
 }

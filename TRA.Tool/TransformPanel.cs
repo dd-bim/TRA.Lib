@@ -84,16 +84,22 @@ namespace TRA.Tool
                         //Transform Element
                         try
                         {
-                            //Srs.ConvertInPlace(ref coordinate, SRS_Source, SRS_Target);
                             double gamma_i, k_i, gamma_o, k_o;
                             double rechts, hoch;
                             (gamma_i, k_i) = egbt22lib.Convert.DBRef_GK5_Gamma_k(element.Ystart, element.Xstart);
                             (rechts, hoch) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(element.Ystart, element.Xstart, Double.IsNaN(elementHeight) ? 0.0 : elementHeight);
                             (gamma_o, k_o) = egbt22lib.Convert.EGBT22_Local_Gamma_k(rechts, hoch);
-                            double dK = (k_i / k_o);
-
+                            double dK = (k_o / k_i);
                             element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
-                            previousdK = element.ID == 0 ? double.NaN : dK; //reset prviousScale for next Element
+                            previousdK = element.ID == 0 ? double.NaN : dK; //As we iterate reverse(!) over all elements of all Trasses, we need to reset previousScale for next Trasse
+                            if (checkBox_RecalcHeading.Checked) //recalculate a optimized Heading.
+                            {
+                                double Xi, Yi; //end-coordinates calculated from geometry 
+                                (Xi, Yi, _) = element.GetPointAtS(element.L, true);
+                                double gammai = Math.Atan2(Xi - element.Xstart, Yi - element.Ystart); //heading(Richtungswinkel) from geometry
+                                double gammat = Math.Atan2(element.Xend - element.Xstart, element.Yend - element.Ystart); //heading(Richtungswinkel) from element start points
+                                element.Relocate(deltaGamma: gammat - gammai);
+                            }
                         }
                         catch
                         {
@@ -104,6 +110,7 @@ namespace TRA.Tool
                     {
                         foreach (TrassenElementExt element in panel.trasseL.Elemente)
                         {
+                            element.ClearProjections();
                             Interpolation interp = element.InterpolationResult;
                             float deviation = panel.trasseL.ProjectPoints(interp.X, interp.Y);
                             string ownerString = panel.trasseL.Filename + "_" + element.ID;
@@ -116,6 +123,7 @@ namespace TRA.Tool
                     {
                         foreach (TrassenElementExt element in panel.trasseS.Elemente)
                         {
+                            element.ClearProjections();
                             Interpolation interp = element.InterpolationResult;
                             float deviation = panel.trasseS.ProjectPoints(interp.X, interp.Y);
                             string ownerString = panel.trasseS.Filename + "_" + element.ID;
@@ -127,6 +135,7 @@ namespace TRA.Tool
                     {
                         foreach (TrassenElementExt element in panel.trasseR.Elemente)
                         {
+                            element.ClearProjections();
                             Interpolation interp = element.InterpolationResult;
                             float deviation = panel.trasseR.ProjectPoints(interp.X, interp.Y);
                             string ownerString = panel.trasseR.Filename + "_" + element.ID;
