@@ -52,3 +52,27 @@ This project provides a executable UI and a simple usage of TRA.Lib.
 ### Usage
 In the explorer to the left, open the folder containig the relevant TRA and GRA files. The UI allows to load a set of files, like they are commonly used, containing TRA -left(L), -right(R), -milage(S) and GRA -left(L), right(R). Simply drag a file to the corresponding textbox, if the naming convention of the other files follows 'xxx[L/R/S].TRA' and 'xxx[L/R].GRA', the other fileds are set automatically. Afterwards a Interpolation can be calculated using the 'Interpolate'-Button (this opens automatically the Plot-View if the included TRA.Lib is compiled with "USE_SCOTTPLOT") and the Result can be exported using the 'SaveCSV' button.
 
+### Transform
+Transfromations are currently hardcoded to DBRef_GK5 -> EGBT22_Local more options will be available in future Release.
+Resulting changes from Meridian Convergence and Scale Factor are applied to the Element geometries:
+#### Meridian Convergence
+Delta of Meridian Convergence before and after Transformation is subtracted from original heading
+```math
+heading_{new} = heading - (γ_{EGBT22} - γ_{DBref}).
+```
+Only using this approach there remain systematic deviations (52.4mm mean) like in the following image:
+![Recalculated Heading](Documentation/images/SystematicDeviationsByHeading.png)
+Therefore a recalculation of the heading was implemented, which is enabled by default using "Recalculate Heading". \
+$$X_i,Y_i$$ coordinates calculated from Geometry at end \
+$$γ_i = \text{atan2}(X_i - X_{element}, Y_i - Y_{element})$$ heading by geometry \
+$$γ_t = \text{atan2}(X_{successor} - X_{element}, Y_{successor} - Y_{element})$$ heading from element to successor element \
+$$heading = heading - (γ_t - γ_i)$$\
+Applying that, the deviation can be reduced significantly (3.4mm mean), remaining only minor deviations as for example a straight line does not mandatory remain a line after transformation (especially for long elements in that case 5633m) as following images shows:
+![Recalculated Heading](Documentation/images/RecalculatedHeading.png)
+The example shown in the image is a mileage TRA-element, so its deviation is not that important. Usually L & R TRA-elements are way shorter, reducing this effect. Again that effect affects above all straight elements but along with shorter element lengths the mean deviation reaches max 0.7mm in the Test-Dataset.
+#### Scale
+Scale is applied as follows:
+- to the Length parameter as mean of Scale at elements start- & endpoint
+- to r1 & r2 of a circle geometry as mean of Scale at elements start- & endpoint
+- for Bloss & Klothoid r1 is multiplied by scale at element start and r2 is multiplied by scale at element end
+
