@@ -9,6 +9,8 @@ TRA-Files consists of a collection of elements. Each element has a underlying Ge
 - Straight (Gerade)
 - Circle (Kreis)
 - Clothoid (Klothoid)
+- Bloss
+- K-Sprung
 ### Usage
 This is done by calling:
 ```sh

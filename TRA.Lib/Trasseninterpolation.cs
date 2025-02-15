@@ -258,17 +258,17 @@ namespace TRA_Lib
                     if (Math.Sign(vectorDot) != Math.Sign(delta))
                     {
                         delta = -0.5 * delta;
-                    }            
+                    }
                     d = Math.Abs(vectorDot);
                 }
                 else
                 {
                     double scalarCross = v2.X * v1.Y - v2.Y * v1.X;
-                    double vectorDot = 1-(Vector2.Dot(v2,v1) / v2.Length()); //Result is reached when both vectors are parallel
+                    double vectorDot = 1 - (Vector2.Dot(v2, v1) / v2.Length()); //Result is reached when both vectors are parallel
                     if (Math.Sign(scalarCross) != Math.Sign(delta))
                     {
                         delta = -0.5 * delta;
-                    }              
+                    }
                     d = Math.Abs(vectorDot);
                 }
                 s = s + delta;
@@ -302,7 +302,7 @@ namespace TRA_Lib
 
         //Constant parameters
         double radius;
-        double curvature1,curvature2;
+        double curvature1, curvature2;
         int dir; //1 ==right turn , -1 == left turn
 
         //Intermediate results storage
@@ -336,30 +336,56 @@ namespace TRA_Lib
             //Berechnung mit FresnelIntegral Formel (3.33):
             //(Sa, Ca) = CalculateFresnel(s, ref last_t, ref last_Sa, ref last_Ca);
             //Berechnung mit Taylorreihe Formal (3.36):
-            (Sa, Ca) = CalculateTaylor(s);
+            double k = 0;
+            double t = 0;
+            if (r1 != 0)
+            {
+                double x0, y0, t0;
+                t0 = TangentAtS(length, Math.Abs(r1));
+                (x0, y0) = CalculateTaylor(length, Math.Abs(r1));
+                Transform2D transform0 = new Transform2D(x0, -y0, t0);
+                double x_, y_, t_;
+                t_ = TangentAtS(length - s, Math.Abs(r1));
+                (x_, y_) = CalculateTaylor(length - s, Math.Abs(r1));
+                Transform2D transform_ = new Transform2D(x_, -y_, t_);
+                (Sa, Ca) = CalculateTaylor(s);
+                t = TangentAtS(s);
+                Ca = 0;
+                transform_.Apply(ref Sa, ref Ca, ref t);
+                transform0.ApplyInverse(ref Sa, ref Ca, ref t);
+                t += -t_+2*t0;
+                //TODO Test with additional datasets 
+                //TODO Curvature Fehler in file:///C:/HTW/Trassierung/Infos/Charakterisierung%20von%20Einzelfehlern%20im%20Eisenbahnoberbau%20aus%20Messfahrten.pdf Formel 2.5 - Addition von k_anf fehlt (vgl. 2.4)?!?
+                k = (1 / Math.Abs(r1))+(1 / Math.Abs(r2) - 1 / Math.Abs(r1)) * (3 * Math.Pow(s / length, 2) - 2 * Math.Pow(s / length, 3));
 
-            //(Sa, Ca) = CalculateFresnel(s);
-
-            //Local Curvature
-            double k = (3 * Math.Pow(s, 2)) / (radius * Math.Pow(length, 2)) -
-                (2 * Math.Pow(s, 3)) / (radius * Math.Pow(length, 3));
-            //Tangent at point
-            double t = Math.Pow(s, 3) / (radius * Math.Pow(length, 2))
-                    - Math.Pow(s, 4) / (2 * radius * Math.Pow(length, 3));
-            return (Ca,Sa*dir,t*dir,k*dir);
+            }
+            else
+            {
+                (Sa, Ca) = CalculateTaylor(s);
+                t = TangentAtS(s);
+                k = (3 * Math.Pow(s, 2)) / (radius * Math.Pow(length, 2)) -  (2 * Math.Pow(s, 3)) / (radius * Math.Pow(length, 3));
+            }
+            return (Ca, Sa * dir, t * dir, k*dir);
+        }
+        double TangentAtS(double s, double r = double.NaN)
+        {
+            if(s == 0) return 0;
+            r = double.IsNaN(r) ? r = radius : r;
+            return Math.Pow(s, 3) / (r * Math.Pow(length, 2))
+                    - Math.Pow(s, 4) / (2 * r * Math.Pow(length, 3));
         }
 
         int binomialCoeffizient(int n, int k)
         {
-                if (k > n - k)
-                    k = n - k;
-                int res = 1;
-                for (int i = 0; i < k; ++i)
-                {
-                    res *= (n - i);
-                    res /= (i + 1);
-                }
-                return res;
+            if (k > n - k)
+                k = n - k;
+            int res = 1;
+            for (int i = 0; i < k; ++i)
+            {
+                res *= (n - i);
+                res /= (i + 1);
+            }
+            return res;
         }
         long fakultaet(int n)
         {
@@ -368,13 +394,14 @@ namespace TRA_Lib
             return n * fakultaet(n - 1);
         }
 
-        (double S, double C) CalculateTaylor(double x)
+        (double S, double C) CalculateTaylor(double x, double r = double.NaN)
         {
+            if (x == 0) return (0.0, 0.0);
             int n = 4; // Number of steps for the integration
             double k, t, Fi;
             double S = 0;
             double C = 0;
-            double R = Math.Abs(r2)-Math.Abs(r1);
+            double R = double.IsNaN(r) ? radius : r;
             for (int i = 0; i <= n; i++)
             {
                 int m = i * 2;
@@ -390,15 +417,15 @@ namespace TRA_Lib
                 {
                     am += binomialCoeffizient(m, j) * Math.Pow(1 / (R * length * length), m - j) * Math.Pow(-1 / (2 * R * length * length * length), j) * (Math.Pow(x, j + 1) / (3 * m + j + 1));
                 }
-                S += Math.Pow(-1, (m-1) / 2) / fakultaet(m) * am * Math.Pow(x, 3 * m);
+                S += Math.Pow(-1, (m - 1) / 2) / fakultaet(m) * am * Math.Pow(x, 3 * m);
             }
             return (S, C);
         }
         (double S, double C) CalculateFresnel(double x)
         {
-        //https://dgk.badw.de/fileadmin/user_upload/Files/DGK/docs/b-314.pdf gleichung 4.8
+            //https://dgk.badw.de/fileadmin/user_upload/Files/DGK/docs/b-314.pdf gleichung 4.8
             int n = 100000; // Number of steps for the integration
-            double k,t,Fi;
+            double k, t, Fi;
             t = 0;
             double S = 0;
             double C = 0;
@@ -407,7 +434,7 @@ namespace TRA_Lib
             {
                 Fi = 3 * Math.Pow(x / length, 2) - 2 * Math.Pow(x / length, 3);
                 k = curvature1 + Fi * (curvature2 - curvature1);
-                t +=  k * step;
+                t += k * step;
                 double sin, cos;
                 (sin, cos) = Math.SinCos(t);
                 S += sin * step;
@@ -427,14 +454,14 @@ namespace TRA_Lib
             } //reset
             double step = (x - t) / n;
             double t_0 = t;
-            
+
             for (int i = 1; i <= n; i++)
             {
                 t = t_0 + i * step;
                 double sin, cos;
                 (sin, cos) = Math.SinCos(
-                    Math.Pow(x,3)/(radius* Math.Pow(length, 2))
-                    - Math.Pow(x, 4) / (2*radius * Math.Pow(length, 3))
+                    Math.Pow(x, 3) / (radius * Math.Pow(length, 2))
+                    - Math.Pow(x, 4) / (2 * radius * Math.Pow(length, 3))
                     );
                 sumS += sin * step;
                 sumC += cos * step;
