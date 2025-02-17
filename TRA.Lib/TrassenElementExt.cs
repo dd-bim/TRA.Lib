@@ -367,7 +367,7 @@ namespace TRA_Lib
         {
             CultureInfo info = CultureInfo.CurrentCulture;
             string[] values = { r1.ToString(info),
-                r1.ToString(info),
+                r2.ToString(info),
                 y.ToString(info),
                 x.ToString(info),
                 t.ToString(info),
