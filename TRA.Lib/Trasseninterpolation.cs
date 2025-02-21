@@ -351,13 +351,12 @@ namespace TRA_Lib
                 (Sa, Ca) = CalculateTaylor(s);
                 t = TangentAtS(s);
                 Ca = 0;
+                double t_out = t-(-t0 + t_); //TODO Test with additional datasets (differnet left/right curvature)
                 transform_.Apply(ref Sa, ref Ca, ref t);
                 transform0.ApplyInverse(ref Sa, ref Ca, ref t);
-                t += -t_+2*t0;
-                //TODO Test with additional datasets 
+                t = t_out;
                 //TODO Curvature Fehler in file:///C:/HTW/Trassierung/Infos/Charakterisierung%20von%20Einzelfehlern%20im%20Eisenbahnoberbau%20aus%20Messfahrten.pdf Formel 2.5 - Addition von k_anf fehlt (vgl. 2.4)?!?
                 k = (1 / Math.Abs(r1))+(1 / Math.Abs(r2) - 1 / Math.Abs(r1)) * (3 * Math.Pow(s / length, 2) - 2 * Math.Pow(s / length, 3));
-
             }
             else
             {
@@ -365,7 +364,7 @@ namespace TRA_Lib
                 t = TangentAtS(s);
                 k = (3 * Math.Pow(s, 2)) / (radius * Math.Pow(length, 2)) -  (2 * Math.Pow(s, 3)) / (radius * Math.Pow(length, 3));
             }
-            return (Ca, Sa * dir, t * dir, k*dir);
+            return (Ca, Sa * dir, t*dir, k*dir);
         }
         double TangentAtS(double s, double r = double.NaN)
         {
