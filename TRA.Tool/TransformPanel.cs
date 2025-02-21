@@ -87,7 +87,7 @@ namespace TRA.Tool
                             double gamma_i, k_i, gamma_o, k_o;
                             double rechts, hoch;
                             (gamma_i, k_i) = egbt22lib.Convert.DBRef_GK5_Gamma_k(element.Ystart, element.Xstart);
-                            (rechts, hoch) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(element.Ystart, element.Xstart, Double.IsNaN(elementHeight) ? 0.0 : elementHeight);
+                            (rechts, hoch) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(element.Ystart, element.Xstart, 0.0);// Double.IsNaN(elementHeight) ? 0.0 : elementHeight);
                             (gamma_o, k_o) = egbt22lib.Convert.EGBT22_Local_Gamma_k(rechts, hoch);
                             double dK = (k_o / k_i);
                             element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
