@@ -129,6 +129,7 @@ namespace TRA_Lib
         public double U2 { get { return u2; } }
         /// <value>Punktnummer</value>
         public string C { get { return c.ToString("F5").Replace(',','.'); } }
+        public float Cf { get { return c; } }
         /// <value>Richtung am Elementanfang</value>
         public double T { get { return t; } }
         public int Kz { get { return (int)kz; } }

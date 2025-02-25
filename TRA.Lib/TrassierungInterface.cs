@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Xml.Linq;
 
 namespace TRA_Lib
 {
@@ -83,9 +86,86 @@ namespace TRA_Lib
             }
             return new TRATrasse();
         }
-        public static void ExportTRA(TrassenElement[] trasse, string fileName)
+        public static void ExportTRA(TRATrasse trasse, string fileName)
         {
+            try
+            {
+                using (FileStream fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+                {
+                    using (var writer = new BinaryWriter(fileStream, Encoding.UTF8, false))
+                    {
+                        //Write 0-Element
+                        writer.Write((double)0); 
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((short)trasse.Elemente.Length);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((float)0);
 
+                        foreach (TrassenElementExt element in trasse.Elemente)
+                        {
+                            writer.Write(element.R1);
+                            writer.Write(element.R2);
+                            writer.Write(element.Ystart);
+                            writer.Write(element.Xstart);
+                            writer.Write(element.T);
+                            writer.Write(element.S);
+                            writer.Write((short)element.Kz);
+                            writer.Write(element.L);
+                            writer.Write(element.U1);
+                            writer.Write(element.U2);
+                            writer.Write(element.Cf);
+                        }
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Can not write to File " + fileName);
+            }
+        }
+        public static void ExportTRA_CSV(TRATrasse trasse, string fileName)
+        {
+            try
+            {
+                using (FileStream fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter writer = new StreamWriter(fileStream))
+                {
+                    CultureInfo info = CultureInfo.CurrentCulture;
+                    string[] titles = { "R1", "R2", "Y", "X", "T", "S", "Kz", "L", "U1", "U2", "C", "H", "s", "Deviation", "Warnings" };
+                    writer.WriteLine(string.Join(info.TextInfo.ListSeparator, titles));
+                    foreach (TrassenElementExt ele in trasse.Elemente)
+                    {
+                        writer.WriteLine(ele.ToString());
+                        Interpolation interp = ele.InterpolationResult;
+                        if (interp.Y != null)
+                        {
+                            for (int i = 0; i < ele.InterpolationResult.Y.Length; i++)
+                            {
+                                string[] values = { "", "", interp.Y[i].ToString(info), interp.X[i].ToString(info), interp.T[i].ToString(info), interp.S[i].ToString(info), interp.K[i].ToString(info) };
+                                if (interp.H != null)
+                                {
+                                    values = values.Concat(new string[] { "", "", "", "", interp.H[i].ToString(info), interp.s[i].ToString(info) }).ToArray();
+                                }
+                                else
+                                {
+                                    values = values.Concat(new string[] { "", "", "", "", "", "" }).ToArray();
+                                }
+                                writer.WriteLine(string.Join(info.TextInfo.ListSeparator, values));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Can not write to File " + fileName);
+            }
         }
 
         public static (GRATrasse, GleisscherenElement[]) ImportGRA(string fileName)

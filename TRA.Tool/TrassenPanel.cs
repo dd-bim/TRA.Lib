@@ -209,61 +209,26 @@ namespace TRA.Tool
 
         private void btn_Save_Click(object sender, EventArgs e)
         {
-            if (tb_TRA_L.Tag != null)
+            object tag = tb_TRA_L.Tag ?? tb_TRA_R.Tag ?? tb_TRA_S.Tag;
+            if (tag != null)
             {
-                FileInfo fileInfo = new FileInfo((tb_TRA_L.Tag as TreeNode).Tag.ToString());
-                folderBrowserDialog_CSV.InitialDirectory = fileInfo.DirectoryName;
+                FileInfo fileInfo = new FileInfo((tag as TreeNode).Tag.ToString());
+                folderBrowserDialog.InitialDirectory = fileInfo.DirectoryName;
             }
-            DialogResult result = folderBrowserDialog_CSV.ShowDialog();
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog_CSV.SelectedPath))
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
             {
                 if (trasseL != null)
                 {
-                    string filename = Path.Combine(folderBrowserDialog_CSV.SelectedPath, trasseL.Filename.Substring(0, trasseL.Filename.Length - 3) + "csv");
-                    try
-                    {
-                        using (FileStream fileStream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-                        using (StreamWriter writer = new StreamWriter(fileStream))
-                        {
-                            trasseL.SaveCSV(writer);
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        MessageBox.Show("Can not write to File " + filename);
-                    }
+                    Trassierung.ExportTRA_CSV(trasseL, Path.Combine(folderBrowserDialog.SelectedPath, trasseL.Filename.Substring(0, trasseL.Filename.Length - 3) + "csv"));
                 }
                 if (trasseS != null)
                 {
-                    string filename = Path.Combine(folderBrowserDialog_CSV.SelectedPath, trasseS.Filename.Substring(0, trasseS.Filename.Length - 3) + "csv");
-                    try
-                    {
-                        using (FileStream fileStream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-                        using (StreamWriter writer = new StreamWriter(fileStream))
-                        {
-                            trasseS.SaveCSV(writer);
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        MessageBox.Show("Can not write to File " + filename);
-                    }
+                    Trassierung.ExportTRA_CSV(trasseS, Path.Combine(folderBrowserDialog.SelectedPath, trasseS.Filename.Substring(0, trasseS.Filename.Length - 3) + "csv"));
                 }
                 if (trasseR != null)
                 {
-                    string filename = Path.Combine(folderBrowserDialog_CSV.SelectedPath, trasseR.Filename.Substring(0, trasseR.Filename.Length - 3) + "csv");
-                    try
-                    {
-                        using (FileStream fileStream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-                        using (StreamWriter writer = new StreamWriter(fileStream))
-                        {
-                            trasseR.SaveCSV(writer);
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        MessageBox.Show("Can not write to File " + filename);
-                    }
+                    Trassierung.ExportTRA_CSV(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename.Substring(0, trasseR.Filename.Length - 3) + "csv"));
                 }
             }
         }
@@ -276,6 +241,32 @@ namespace TRA.Tool
         private void btn_delete_Click(object sender, EventArgs e)
         {
             Parent.Controls.Remove(this);
+        }
+
+        private void btn_SaveTRA_Click(object sender, EventArgs e)
+        {
+            object tag = tb_TRA_L.Tag ?? tb_TRA_R.Tag ?? tb_TRA_S.Tag;
+            if (tag != null)
+            {
+                FileInfo fileInfo = new FileInfo((tag as TreeNode).Tag.ToString());
+                folderBrowserDialog.InitialDirectory = fileInfo.DirectoryName;
+            }
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+            {
+                if (trasseL != null)
+                {
+                    Trassierung.ExportTRA(trasseL, Path.Combine(folderBrowserDialog.SelectedPath, trasseL.Filename));
+                }
+                if (trasseS != null)
+                {
+                    Trassierung.ExportTRA(trasseS, Path.Combine(folderBrowserDialog.SelectedPath, trasseS.Filename));
+                }
+                if (trasseR != null)
+                {
+                    Trassierung.ExportTRA(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename));
+                }
+            }
         }
     }
 }
