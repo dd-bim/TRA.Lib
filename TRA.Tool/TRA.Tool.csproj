@@ -28,7 +28,10 @@
 
   <ItemGroup>
     <Reference Include="egbt22lib">
-      <HintPath>..\..\egbt22trans\egbt22trans\bin\Debug\net6.0\egbt22lib.dll</HintPath>
+      <HintPath>..\..\egbt22trans\egbt22lib\bin\x64\Debug\netstandard2.1\egbt22lib.dll</HintPath>
+    </Reference>
+    <Reference Include="GeographicLib">
+      <HintPath>..\..\egbt22trans\egbt22lib\bin\x64\Debug\netstandard2.1\GeographicLib.dll</HintPath>
     </Reference>
   </ItemGroup>
 

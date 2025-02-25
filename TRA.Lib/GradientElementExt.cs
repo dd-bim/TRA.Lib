@@ -108,5 +108,14 @@ namespace TRA_Lib
                     r != 0 ? ((s - x_A + (s1 * r) / 1000) / r) * 1000 : s2);
             }
         }
+        /// <summary>
+        /// Set a new Height value
+        /// </summary>
+        /// <param name="H">elevation[m]</param>
+        public void Relocate(double H)
+        {
+            this.h = H;
+            CalcConstants();
+        }
     }
 }

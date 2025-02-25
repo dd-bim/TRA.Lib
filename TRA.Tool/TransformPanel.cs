@@ -63,17 +63,20 @@ namespace TRA.Tool
                             try
                             {
                                 double[][] points = { interp.Y, interp.X, interp.H };
+                                double[] zeros = new double[interp.Y.Length];
                                 //Srs.ConvertInPlace(ref points, SRS_Source, SRS_Target);
                                 double[] gamma_i, k_i, gamma_o, k_o = new double[interp.X.Length];
                                 egbt22lib.Convert.DBRef_GK5_Gamma_k(points[0], points[1], out gamma_i, out k_i);
-                                egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(points[0], points[1], points[2], out points[0], out points[1]);
+                                // TODO transform interpolation points also at zero level?
+                                //egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], points[2], out points[0], out points[1],out points[2]);
+                                egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], zeros, out points[0], out points[1], out zeros);
                                 egbt22lib.Convert.EGBT22_Local_Gamma_k(points[0], points[1], out gamma_o, out k_o);
                                 //Workaround to set values in place
                                 for (int i = 0; i < interp.X.Length; i++)
                                 {
                                     interp.X[i] = points[1][i];
                                     interp.Y[i] = points[0][i];
-                                    interp.H[i] = points[2][i];
+                                    interp.H[i] = interp.H[i] + zeros[i]; //TODO is that expected behaviour
                                     interp.T[i] = interp.T[i] - DegreesToRadians(gamma_o[i] - gamma_i[i]);
                                 }
                             }
@@ -87,7 +90,7 @@ namespace TRA.Tool
                             double gamma_i, k_i, gamma_o, k_o;
                             double rechts, hoch;
                             (gamma_i, k_i) = egbt22lib.Convert.DBRef_GK5_Gamma_k(element.Ystart, element.Xstart);
-                            (rechts, hoch) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local(element.Ystart, element.Xstart, 0.0);// Double.IsNaN(elementHeight) ? 0.0 : elementHeight);
+                            (rechts, hoch,_) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(element.Ystart, element.Xstart, 0.0);
                             (gamma_o, k_o) = egbt22lib.Convert.EGBT22_Local_Gamma_k(rechts, hoch);
                             double dK = (k_o / k_i);
                             element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
@@ -105,7 +108,24 @@ namespace TRA.Tool
                         {
                         }
                     }
-
+                    // Transform Gradient Elements
+                    IEnumerable<GradientElementExt> GRAelements = Enumerable.Empty<GradientElementExt>();
+                    if (panel.gradientL != null) { GRAelements = GRAelements.Concat(panel.gradientL.GradientenElemente); }
+                    if (panel.gradientR != null) { GRAelements = GRAelements.Concat(panel.gradientR.GradientenElemente); }
+                    foreach (GradientElementExt element in GRAelements)
+                    {
+                        //Transform GradientElement
+                        try
+                        {
+                            double H;
+                            (_, _, H) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(element.Y, element.X, element.H);
+                            element.Relocate(H);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    //Calc Deviations
                     if (panel.trasseL != null)
                     {
                         foreach (TrassenElementExt element in panel.trasseL.Elemente)

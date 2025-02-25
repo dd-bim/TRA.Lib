@@ -12,8 +12,8 @@ namespace TRA.Tool
         internal TRATrasse trasseS = null;
         internal TRATrasse trasseL = null;
         internal TRATrasse trasseR = null;
-        GRATrasse gradientL = null;
-        GRATrasse gradientR = null;
+        internal GRATrasse gradientL = null;
+        internal GRATrasse gradientR = null;
 
         public TrassenPanel()
         {
