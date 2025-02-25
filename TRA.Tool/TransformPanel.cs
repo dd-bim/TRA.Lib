@@ -13,6 +13,8 @@ using TRA_Lib;
 using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
 using System.Diagnostics;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Reflection;
 
 namespace TRA.Tool
 {
@@ -21,6 +23,12 @@ namespace TRA.Tool
         public TransformPanel()
         {
             InitializeComponent();
+            foreach (ETransforms value in Enum.GetValues(typeof(ETransforms)))
+            {
+                DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute));
+                comboBox_Transform.Items.Add(attribute == null ? value.ToString() : attribute.Description);
+            }
+            comboBox_Transform.SelectedIndex = 0;
         }
 
         private void TransformPanel_MouseDown(object sender, MouseEventArgs e)
@@ -33,9 +41,74 @@ namespace TRA.Tool
             return degrees * (Math.PI / 180.0);
         }
 
+        private enum ETransforms
+        {
+            [Description("DBRef_GK5 -> EGBT22_Local")]
+            DBRef_GK5_to_EGBT22_Local,
+            [Description("EGBT22_Local -> DBRef_GK5")]
+            EGBT22_Local_to_DBRef_GK5,
+            //[Description("DBRef_GK5 -> ETRS89_UTM33")]
+            //DBRef_GK5_to_ETRS89_UTM33,
+            //[Description("ETRS89_UTM33 -> DBRef_GK5")]
+            //ETRS89_UTM33_to_DBRef_GK5
+        }
+        private delegate (double Rechts, double Hoch, double H) SingleCoordinateTransform(double InRechts, double InHoch, double InH);
+        private delegate bool ArrayCoordinateTransform(double[] InRechts, double[] InHoch, double[] InH, out double[] OutRechts, out double[] OutHoch, out double[] OutH);
+        private delegate (double gamma, double k) Single_Gamma_k(double Rechts, double Hoch);
+        private delegate bool Array_Gamma_k(double[] Rechts, double[] Hoch, out double[] gamma, out double[] k);
         private void btn_Transform_Click(object sender, EventArgs e)
         {
+            SingleCoordinateTransform singleCoordinateTransform = null;
+            ArrayCoordinateTransform arrayCoordinateTransform = null;
+            Single_Gamma_k singleIn_Gamma_k = null;
+            Array_Gamma_k arrayIn_Gamma_K = null;
+            Single_Gamma_k singleOut_Gamma_k = null;
+            Array_Gamma_k arrayOut_Gamma_K = null;
+            ETransforms eTransform = (ETransforms)comboBox_Transform.SelectedIndex;
             //Get Target SRS
+            switch (eTransform)
+            {
+                case ETransforms.DBRef_GK5_to_EGBT22_Local:
+                    singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    break;
+                case ETransforms.EGBT22_Local_to_DBRef_GK5:
+                    singleCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
+                    arrayCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
+                    singleIn_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    arrayIn_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    break;
+                //case ETransforms.DBRef_GK5_to_ETRS89_UTM33:
+                //    singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
+                //    arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
+                //    singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    singleOut_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    arrayOut_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    break;
+                //case ETransforms.ETRS89_UTM33_to_DBRef_GK5:
+                //    singleCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
+                //    arrayCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
+                //    singleIn_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    arrayIn_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    break;
+                default:
+                    singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    break;
+            }
 
             FlowLayoutPanel owner = Parent as FlowLayoutPanel;
             if (owner == null) { return; }
@@ -66,11 +139,11 @@ namespace TRA.Tool
                                 double[] zeros = new double[interp.Y.Length];
                                 //Srs.ConvertInPlace(ref points, SRS_Source, SRS_Target);
                                 double[] gamma_i, k_i, gamma_o, k_o = new double[interp.X.Length];
-                                egbt22lib.Convert.DBRef_GK5_Gamma_k(points[0], points[1], out gamma_i, out k_i);
+                                arrayIn_Gamma_K(points[0], points[1], out gamma_i, out k_i);
                                 // TODO transform interpolation points also at zero level?
                                 //egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], points[2], out points[0], out points[1],out points[2]);
-                                egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], zeros, out points[0], out points[1], out zeros);
-                                egbt22lib.Convert.EGBT22_Local_Gamma_k(points[0], points[1], out gamma_o, out k_o);
+                                arrayCoordinateTransform(points[0], points[1], zeros, out points[0], out points[1], out zeros);
+                                arrayOut_Gamma_K(points[0], points[1], out gamma_o, out k_o);
                                 //Workaround to set values in place
                                 for (int i = 0; i < interp.X.Length; i++)
                                 {
@@ -89,9 +162,9 @@ namespace TRA.Tool
                         {
                             double gamma_i, k_i, gamma_o, k_o;
                             double rechts, hoch;
-                            (gamma_i, k_i) = egbt22lib.Convert.DBRef_GK5_Gamma_k(element.Ystart, element.Xstart);
-                            (rechts, hoch,_) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(element.Ystart, element.Xstart, 0.0);
-                            (gamma_o, k_o) = egbt22lib.Convert.EGBT22_Local_Gamma_k(rechts, hoch);
+                            (gamma_i, k_i) = singleIn_Gamma_k(element.Ystart, element.Xstart);
+                            (rechts, hoch, _) = singleCoordinateTransform(element.Ystart, element.Xstart, 0.0);
+                            (gamma_o, k_o) = singleOut_Gamma_k(rechts, hoch);
                             double dK = (k_o / k_i);
                             element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
                             previousdK = element.ID == 0 ? double.NaN : dK; //As we iterate reverse(!) over all elements of all Trasses, we need to reset previousScale for next Trasse
@@ -118,7 +191,7 @@ namespace TRA.Tool
                         try
                         {
                             double H;
-                            (_, _, H) = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(element.Y, element.X, element.H);
+                            (_, _, H) = singleCoordinateTransform(element.Y, element.X, element.H);
                             element.Relocate(H);
                         }
                         catch

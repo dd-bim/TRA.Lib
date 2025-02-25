@@ -30,6 +30,7 @@
         {
             btn_Transform = new Button();
             checkBox_RecalcHeading = new CheckBox();
+            comboBox_Transform = new ComboBox();
             SuspendLayout();
             // 
             // btn_Transform
@@ -56,11 +57,20 @@
             checkBox_RecalcHeading.Text = "Recalculate Heading";
             checkBox_RecalcHeading.UseVisualStyleBackColor = true;
             // 
+            // comboBox_Transform
+            // 
+            comboBox_Transform.FormattingEnabled = true;
+            comboBox_Transform.Location = new Point(158, 38);
+            comboBox_Transform.Name = "comboBox_Transform";
+            comboBox_Transform.Size = new Size(184, 23);
+            comboBox_Transform.TabIndex = 2;
+            // 
             // TransformPanel
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.WindowFrame;
+            Controls.Add(comboBox_Transform);
             Controls.Add(checkBox_RecalcHeading);
             Controls.Add(btn_Transform);
             Name = "TransformPanel";
@@ -74,5 +84,6 @@
 
         private Button btn_Transform;
         private CheckBox checkBox_RecalcHeading;
+        private ComboBox comboBox_Transform;
     }
 }
