@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace TRA_Lib
 {
-    public abstract class TrassenGeometrie
+    public abstract class TrassenGeometrie : ICloneable
     {
         /// <summary>
         /// Calculates local Point on Geometry
@@ -29,6 +29,7 @@ namespace TRA_Lib
             this.r1 = r1;
             this.r2 = r2;
         }
+        public virtual object Clone() { return this; }
     }
     public class Gerade : TrassenGeometrie
     {
@@ -175,7 +176,7 @@ namespace TRA_Lib
             // Fresnel integrals
             double Ca = new double();
             double Sa = new double();
-            (Sa, Ca) = CalculateFresnel((curvature1 + gamma * s) / Math.Sqrt(Math.PI * Math.Abs(gamma)), ref last_t, ref last_Sa, ref last_Ca);
+            (Sa, Ca) = CalculateFresnel((curvature1 + gamma * s) / Math.Sqrt(Math.PI * Math.Abs(gamma)));//, ref last_t, ref last_Sa, ref last_Ca); // TODO for some reason this blocks multithreading
 
             Complex Cs2 = Math.Sign(gamma) * ((Ca - Cb) + new Complex(0, Sa - Sb));
             Complex Cs = Cs1 * Cs2;
@@ -280,6 +281,11 @@ namespace TRA_Lib
                 return double.NaN;
             }
             return s;
+        }
+
+        public override object Clone()
+        {
+            return new Klothoid(r1,r2,length);
         }
     }
 
@@ -470,6 +476,7 @@ namespace TRA_Lib
 
         public override double sAt(double X, double Y, double t = double.NaN)
         {
+            return double.NaN;
             if (Double.IsNaN(X) || Double.IsNaN(Y)) return double.NaN;
             double threshold = 0.00001;
             double delta = 1.0;
@@ -525,11 +532,14 @@ namespace TRA_Lib
             }
             return s;
         }
+        public override object Clone()
+        {
+            return new Bloss(r1, r2, length);
+        }
     }
 
     public class KSprung : TrassenGeometrie
     {
-        double length;
         public KSprung(double l)
         {
             length = l;

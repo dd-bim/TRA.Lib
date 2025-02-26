@@ -56,57 +56,127 @@ namespace TRA.Tool
         private delegate bool ArrayCoordinateTransform(double[] InRechts, double[] InHoch, double[] InH, out double[] OutRechts, out double[] OutHoch, out double[] OutH);
         private delegate (double gamma, double k) Single_Gamma_k(double Rechts, double Hoch);
         private delegate bool Array_Gamma_k(double[] Rechts, double[] Hoch, out double[] gamma, out double[] k);
+
+        struct TransformSetup
+        {
+            public SingleCoordinateTransform singleCoordinateTransform = null;
+            public ArrayCoordinateTransform arrayCoordinateTransform = null;
+            public Single_Gamma_k singleIn_Gamma_k = null;
+            public Array_Gamma_k arrayIn_Gamma_K = null;
+            public Single_Gamma_k singleOut_Gamma_k = null;
+            public Array_Gamma_k arrayOut_Gamma_K = null;
+
+            public TransformSetup()
+            {
+            }
+        }
+        private void TrassenTransform(TRATrasse trasse, TransformSetup transformSetup)
+        {
+            double previousdK = double.NaN;
+            foreach (TrassenElementExt element in trasse.Elemente.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
+            {
+                //Transform Interpolation Points
+                Interpolation interp = element.InterpolationResult;
+                if (interp.X == null) break;
+                double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
+                                                                                    // TODO how to handle trasse without heights (like S) in transformations
+                if (interp.H == null) { interp.H = new double[interp.X.Length]; }
+                if (interp.X.Length > 0 && interp.H != null)
+                {
+                    try
+                    {
+                        double[][] points = { interp.Y, interp.X, interp.H };
+                        double[] zeros = new double[interp.Y.Length];
+                        double[] gamma_i, k_i, gamma_o, k_o = new double[interp.X.Length];
+                        transformSetup.arrayIn_Gamma_K(points[0], points[1], out gamma_i, out k_i);
+                        // TODO transform interpolation points also at zero level?
+                        //egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], points[2], out points[0], out points[1],out points[2]);
+                        transformSetup.arrayCoordinateTransform(points[0], points[1], zeros, out points[0], out points[1], out zeros);
+                        transformSetup.arrayOut_Gamma_K(points[0], points[1], out gamma_o, out k_o);
+                        //Workaround to set values in place
+                        for (int i = 0; i < interp.X.Length; i++)
+                        {
+                            interp.X[i] = points[1][i];
+                            interp.Y[i] = points[0][i];
+                            interp.H[i] = interp.H[i] + zeros[i]; //TODO is that expected behaviour
+                            interp.T[i] = interp.T[i] - DegreesToRadians(gamma_o[i] - gamma_i[i]);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                //Transform Element
+                try
+                {
+                    double gamma_i, k_i, gamma_o, k_o;
+                    double rechts, hoch;
+                    (gamma_i, k_i) = transformSetup.singleIn_Gamma_k(element.Ystart, element.Xstart);
+                    (rechts, hoch, _) = transformSetup.singleCoordinateTransform(element.Ystart, element.Xstart, 0.0);
+                    (gamma_o, k_o) = transformSetup.singleOut_Gamma_k(rechts, hoch);
+                    double dK = (k_o / k_i);
+                    element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
+                    previousdK = element.ID == 0 ? double.NaN : dK; //As we iterate reverse(!) over all elements of all Trasses, we need to reset previousScale for next Trasse
+                    if (checkBox_RecalcHeading.Checked) //recalculate a optimized Heading.
+                    {
+                        double Xi, Yi; //end-coordinates calculated from geometry 
+                        (Xi, Yi, _) = element.GetPointAtS(element.L, true);
+                        double gammai = Math.Atan2(Xi - element.Xstart, Yi - element.Ystart); //heading(Richtungswinkel) from geometry
+                        double gammat = Math.Atan2(element.Xend - element.Xstart, element.Yend - element.Ystart); //heading(Richtungswinkel) from element start points
+                        element.Relocate(deltaGamma: gammat - gammai);
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
         private void btn_Transform_Click(object sender, EventArgs e)
         {
-            SingleCoordinateTransform singleCoordinateTransform = null;
-            ArrayCoordinateTransform arrayCoordinateTransform = null;
-            Single_Gamma_k singleIn_Gamma_k = null;
-            Array_Gamma_k arrayIn_Gamma_K = null;
-            Single_Gamma_k singleOut_Gamma_k = null;
-            Array_Gamma_k arrayOut_Gamma_K = null;
+            TransformSetup transformSetup = new TransformSetup();
             ETransforms eTransform = (ETransforms)comboBox_Transform.SelectedIndex;
             //Get Target SRS
             switch (eTransform)
             {
                 case ETransforms.DBRef_GK5_to_EGBT22_Local:
-                    singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
                     break;
                 case ETransforms.EGBT22_Local_to_DBRef_GK5:
-                    singleCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
-                    arrayCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
-                    singleIn_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    arrayIn_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
+                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
+                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
                     break;
                 //case ETransforms.DBRef_GK5_to_ETRS89_UTM33:
-                //    singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
-                //    arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
-                //    singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                //    arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                //    singleOut_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                //    arrayOut_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
+                //    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
+                //    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
                 //    break;
                 //case ETransforms.ETRS89_UTM33_to_DBRef_GK5:
-                //    singleCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
-                //    arrayCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
-                //    singleIn_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                //    arrayIn_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                //    singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                //    arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    transformSetup.singleCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
+                //    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
+                //    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
+                //    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                //    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
                 //    break;
                 default:
-                    singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
+                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
+                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
+                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
                     break;
             }
 
@@ -119,68 +189,10 @@ namespace TRA.Tool
                 if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
                 {
                     TrassenPanel panel = (TrassenPanel)owner.Controls[idx];
-                    IEnumerable<TrassenElementExt> elements = Enumerable.Empty<TrassenElementExt>();
-                    if (panel.trasseL != null) { elements = elements.Concat(panel.trasseL.Elemente); }
-                    if (panel.trasseS != null) { elements = elements.Concat(panel.trasseS.Elemente); }
-                    if (panel.trasseR != null) { elements = elements.Concat(panel.trasseR.Elemente); }
-                    double previousdK = double.NaN;
-                    foreach (TrassenElementExt element in elements.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
-                    {
-                        //Transform Interpolation Points
-                        Interpolation interp = element.InterpolationResult;
-                        double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
-                        // TODO how to handle trasse without heights (like S) in transformations
-                        if (interp.H == null) { interp.H = new double[interp.X.Length]; }
-                        if (interp.X.Length > 0 && interp.H != null)
-                        {
-                            try
-                            {
-                                double[][] points = { interp.Y, interp.X, interp.H };
-                                double[] zeros = new double[interp.Y.Length];
-                                //Srs.ConvertInPlace(ref points, SRS_Source, SRS_Target);
-                                double[] gamma_i, k_i, gamma_o, k_o = new double[interp.X.Length];
-                                arrayIn_Gamma_K(points[0], points[1], out gamma_i, out k_i);
-                                // TODO transform interpolation points also at zero level?
-                                //egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], points[2], out points[0], out points[1],out points[2]);
-                                arrayCoordinateTransform(points[0], points[1], zeros, out points[0], out points[1], out zeros);
-                                arrayOut_Gamma_K(points[0], points[1], out gamma_o, out k_o);
-                                //Workaround to set values in place
-                                for (int i = 0; i < interp.X.Length; i++)
-                                {
-                                    interp.X[i] = points[1][i];
-                                    interp.Y[i] = points[0][i];
-                                    interp.H[i] = interp.H[i] + zeros[i]; //TODO is that expected behaviour
-                                    interp.T[i] = interp.T[i] - DegreesToRadians(gamma_o[i] - gamma_i[i]);
-                                }
-                            }
-                            catch
-                            {
-                            }
-                        }
-                        //Transform Element
-                        try
-                        {
-                            double gamma_i, k_i, gamma_o, k_o;
-                            double rechts, hoch;
-                            (gamma_i, k_i) = singleIn_Gamma_k(element.Ystart, element.Xstart);
-                            (rechts, hoch, _) = singleCoordinateTransform(element.Ystart, element.Xstart, 0.0);
-                            (gamma_o, k_o) = singleOut_Gamma_k(rechts, hoch);
-                            double dK = (k_o / k_i);
-                            element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
-                            previousdK = element.ID == 0 ? double.NaN : dK; //As we iterate reverse(!) over all elements of all Trasses, we need to reset previousScale for next Trasse
-                            if (checkBox_RecalcHeading.Checked) //recalculate a optimized Heading.
-                            {
-                                double Xi, Yi; //end-coordinates calculated from geometry 
-                                (Xi, Yi, _) = element.GetPointAtS(element.L, true);
-                                double gammai = Math.Atan2(Xi - element.Xstart, Yi - element.Ystart); //heading(Richtungswinkel) from geometry
-                                double gammat = Math.Atan2(element.Xend - element.Xstart, element.Yend - element.Ystart); //heading(Richtungswinkel) from element start points
-                                element.Relocate(deltaGamma: gammat - gammai);
-                            }
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    TrassenTransform(panel.trasseL, transformSetup);
+                    TrassenTransform(panel.trasseS, transformSetup);
+                    TrassenTransform(panel.trasseR, transformSetup);
+                   
                     // Transform Gradient Elements
                     IEnumerable<GradientElementExt> GRAelements = Enumerable.Empty<GradientElementExt>();
                     if (panel.gradientL != null) { GRAelements = GRAelements.Concat(panel.gradientL.GradientenElemente); }
@@ -191,7 +203,7 @@ namespace TRA.Tool
                         try
                         {
                             double H;
-                            (_, _, H) = singleCoordinateTransform(element.Y, element.X, element.H);
+                            (_, _, H) = transformSetup.singleCoordinateTransform(element.Y, element.X, element.H);
                             element.Relocate(H);
                         }
                         catch
@@ -199,41 +211,38 @@ namespace TRA.Tool
                         }
                     }
                     //Calc Deviations
-                    if (panel.trasseL != null)
+                    IEnumerable<TrassenElementExt> elements = Enumerable.Empty<TrassenElementExt>();
+                    if (panel.trasseL != null) { elements = elements.Concat(panel.trasseL.Elemente); }
+                    if (panel.trasseS != null) { elements = elements.Concat(panel.trasseS.Elemente); }
+                    if (panel.trasseR != null) { elements = elements.Concat(panel.trasseR.Elemente); }
+
+                    Task[] tasks = new Task[elements.Count()];
+                    int n = 0;
+                    foreach (TrassenElementExt element in elements)
                     {
-                        foreach (TrassenElementExt element in panel.trasseL.Elemente)
+                        int localN = n;
+                        tasks[localN] = Task.Run(() =>
                         {
                             element.ClearProjections();
                             Interpolation interp = element.InterpolationResult;
-                            float deviation = panel.trasseL.ProjectPoints(interp.X, interp.Y);
-                            string ownerString = panel.trasseL.Filename + "_" + element.ID;
-                            TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
-                        }
+                            float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y);
+                            string ownerString = element.owner.Filename + "_" + element.ID;
+                            TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);
+                        });
+                        n++;
+                    }
+                    Task.WaitAll(tasks);
+                    if (panel.trasseL != null)
+                    {
                         panel.trasseL.CalcGradientCoordinates();
                         panel.trasseL.Plot();
                     }
                     if (panel.trasseS != null)
                     {
-                        foreach (TrassenElementExt element in panel.trasseS.Elemente)
-                        {
-                            element.ClearProjections();
-                            Interpolation interp = element.InterpolationResult;
-                            float deviation = panel.trasseS.ProjectPoints(interp.X, interp.Y);
-                            string ownerString = panel.trasseS.Filename + "_" + element.ID;
-                            TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
-                        }
                         panel.trasseS.Plot();
                     }
                     if (panel.trasseR != null)
                     {
-                        foreach (TrassenElementExt element in panel.trasseR.Elemente)
-                        {
-                            element.ClearProjections();
-                            Interpolation interp = element.InterpolationResult;
-                            float deviation = panel.trasseR.ProjectPoints(interp.X, interp.Y);
-                            string ownerString = panel.trasseR.Filename + "_" + element.ID;
-                            TrassierungLog.Logger?.LogInformation(ownerString + " " + "Deviation to geometry after transform: " + deviation);
-                        }
                         panel.trasseR.CalcGradientCoordinates();
                         panel.trasseR.Plot();
                     }

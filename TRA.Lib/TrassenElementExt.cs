@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using ScottPlot.Finance;
+using System.Collections.Concurrent;
 
 #if USE_SCOTTPLOT
 using SkiaSharp;
@@ -20,7 +21,7 @@ namespace TRA_Lib
         protected override void ClearItems() { 
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
             base.ClearItems(); 
-        } 
+        }
     }
     public struct Interpolation
     {
@@ -52,37 +53,45 @@ namespace TRA_Lib
         }
         public void Concat(Interpolation interp)
         {
-            if (interp.X ==  null || interp.Y == null || interp.S == null || interp.T == null || interp.K == null) { return; }
+            if (interp.X == null || interp.Y == null || interp.S == null || interp.T == null || interp.K == null) { return; }
             X = X.Concat(interp.X).ToArray();
             Y = Y.Concat(interp.Y).ToArray();
             S = S.Concat(interp.S).ToArray();
             T = T.Concat(interp.T).ToArray();
             K = K.Concat(interp.K).ToArray();
 
-            if (interp.H != null) 
-            { 
-                if (H == null) 
-                { 
-                    H = new double[0]; 
-                } 
-                H = H.Concat(interp.H).ToArray(); 
+            if (interp.H != null)
+            {
+                if (H == null)
+                {
+                    H = new double[0];
+                }
+                H = H.Concat(interp.H).ToArray();
             }
-            if (interp.s != null) 
-            { 
-                if (s == null) 
-                { 
-                    s = new double[0]; 
-                } 
-                s = s.Concat(interp.s).ToArray(); 
+            if (interp.s != null)
+            {
+                if (s == null)
+                {
+                    s = new double[0];
+                }
+                s = s.Concat(interp.s).ToArray();
             }
         }
-        
+        public static Interpolation Concat(Interpolation[] interp)
+        {
+            Interpolation Out = new Interpolation(0);
+            foreach (Interpolation i in interp)
+            {
+                Out.Concat(i);
+            }
+            return Out;
+        }
     }
 
     public class TrassenElementExt : TrassenElement
     {
         /// <value>Trasse this Element belongs to</value>
-        internal Trasse owner;
+        public Trasse owner;
         /// <value>Geometry of this element</value>
         TrassenGeometrie TrassenGeometrie;
         /// <value>ID des Elements</value>
@@ -281,7 +290,7 @@ namespace TRA_Lib
         }
         void AddWarningCallout(string text, double X, double Y)
         {
-            WarningCallouts.Add(new GeometryWarning(text, X, Y,this));
+            WarningCallouts.Add(new GeometryWarning(text, X, Y, this));
         }
 
         /// <summary>
@@ -293,10 +302,11 @@ namespace TRA_Lib
         public ref Interpolation Interpolate(double delta = 1.0, double allowedTolerance = 0.001)
         {
             Transform2D transform = new Transform2D(x, y, t);
-            if (TrassenGeometrie == null) { 
+            if (TrassenGeometrie == null)
+            {
                 AddWarningCallout("No Geometry for interpolation " + kz.ToString() + " set, maybe not implemented yet", Xstart,Ystart); 
-                Interpolation = new Interpolation(0);
-                return ref Interpolation; 
+                Interpolation = new Interpolation();
+                return ref Interpolation;
             }
             if (Double.IsNaN(l)) { AddWarningCallout("Length is NaN, no interpolation calculated", Xstart, Ystart); return ref Interpolation; }
             List<double> Xlst = new List<double>();
@@ -347,7 +357,9 @@ namespace TRA_Lib
             if (TrassenGeometrie == null) return (0);
             Transform2D transform = new Transform2D(x, y, t);
             transform.ApplyInverse(ref X, ref Y, ref T);
-            return TrassenGeometrie.sAt(X, Y, T)/scale + s;
+            TrassenGeometrie copy = (TrassenGeometrie)TrassenGeometrie.Clone(); //Clone Geometry for Multithreading Access
+            double output = copy.sAt( X, Y, T)/scale + s;
+            return output;
         }
         /// <summary>
         /// Calculates a Point on the Geometry at a given Distance S
@@ -406,7 +418,7 @@ namespace TRA_Lib
             TextBackgroundColor = color.Lighten();
             TrassenElementExt trasse = (TrassenElementExt)owner;
             string ownerString = trasse != null && trasse.owner != null ? trasse.owner.Filename + "_" + trasse.ID : null;
-            TrassierungLog.Logger?.LogWarning(ownerString + " " + Text, owner) ;
+            TrassierungLog.Logger?.Log_Async(LogLevel.Warning,ownerString + " " + Text, owner) ;
         }
 
     }
