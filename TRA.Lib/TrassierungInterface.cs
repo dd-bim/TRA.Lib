@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace TRA_Lib
@@ -10,14 +12,50 @@ namespace TRA_Lib
     public static class TrassierungLog
     {
         private static ILoggerFactory _loggerFactory;
+        private static readonly ConcurrentQueue<Tuple<LogLevel,string,object>> _logQueue = new ConcurrentQueue<Tuple<LogLevel, string,object>>();
+        private static readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private static Task _logTask;
+
         public static void AssignLogger(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             Logger = _loggerFactory.CreateLogger("TrassierungLogger");
+            _logTask = Task.Run(() => ProcessLogQueue(), _cts.Token);
         }
         public static ILogger Logger
         {
             get; private set;
+        }
+
+        //public static void Log(string message)
+        //{
+        //    var logEntry = $"{DateTime.Now}: {message}";
+        //    _logQueue.Enqueue(logEntry);
+        //}
+
+        public static void Log_Async(this ILogger logger,LogLevel logLevel, string? message, params object?[] args)
+        {
+            _logQueue.Enqueue(new Tuple<LogLevel,string,object>(logLevel,message,args));
+        }
+
+        private static void ProcessLogQueue()
+        {
+            while (!_cts.Token.IsCancellationRequested)
+            {
+                if (_logQueue.TryDequeue(out var logEntry))
+                {
+                    Logger.Log(logEntry.Item1,logEntry.Item2,logEntry.Item3);
+                }
+                else
+                {
+                    Thread.Sleep(100); // Adjust the sleep time as needed
+                }
+            }
+        }
+        public static void Dispose()
+        {
+            _cts.Cancel();
+            _logTask.Wait();
         }
     }
 

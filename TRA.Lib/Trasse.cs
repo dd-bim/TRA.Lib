@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using ScottPlot.Colormaps;
 using ScottPlot.AxisRules;
 using System.Drawing;
+using static TRA_Lib.Interpolation;
 
 #if USE_SCOTTPLOT
 using ScottPlot.Plottables;
@@ -26,6 +27,7 @@ namespace TRA_Lib
     {
         public static List<Trasse> LoadedTrassen = new List<Trasse> { };
         public string Filename = "";
+        internal SynchronizationContext context; //MainThread context
         public Trasse()
         {
             LoadedTrassen.Add(this);
@@ -169,12 +171,21 @@ namespace TRA_Lib
         /// <returns>Interpolation: array of 2D coordinates, along with heading and curvature for each point</returns>
         public Interpolation Interpolate(double delta = 1.0, double allowedTolerance = 0.01)
         {
-            Interpolation interpolation = new Interpolation(0);
+            Interpolation[] interpolation = new Interpolation[Elemente.Length];
+            Task[] tasks = new Task[Elemente.Length];
+            int n = 0;
+            context = SynchronizationContext.Current;
             foreach (TrassenElementExt element in Elemente)
             {
-                interpolation.Concat(element.Interpolate(delta, allowedTolerance));
+                int localN = n;
+                tasks[localN] = Task.Run(() =>
+                {
+                    interpolation[localN] = Elemente[localN].Interpolate(delta, allowedTolerance);
+                });
+                n++;
             }
-            return interpolation;
+            Task.WaitAll(tasks);
+            return Concat(interpolation);
         }
 
         /// <summary>
@@ -186,41 +197,47 @@ namespace TRA_Lib
         /// <returns>Interpolation: array of 3D coordinates, along with heading and curvature for each point</returns>
         public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0, double allowedTolerance = 0.01)
         {
-            Interpolation interp = new Interpolation(0);
             TRATrasse trasseS = stationierungsTrasse != null ? stationierungsTrasse : TrasseS; //if a valid trasse is provided use that one, else try to use a previously assigned
             if (GradientenElemente == null)
             {
                 TrassierungLog.Logger?.LogError("Can not calculate Heights for Interpolation as there are no Gradient Elements loaded for this Trasse. Please add Gradients by calling AssignGRA()", nameof(Interpolate3D));
             }
+            Interpolation[] interpolation = new Interpolation[Elemente.Length];
+            Task[] tasks = new Task[Elemente.Length];
+            int n = 0;
             foreach (TrassenElementExt element in Elemente)
             {
-                ref Interpolation Interpolation = ref element.Interpolate(delta, allowedTolerance);
-                if (GradientenElemente == null)
+                int localN = n;
+                tasks[localN] = Task.Run(() =>
                 {
-                    interp.Concat(Interpolation);
-                    continue;
-                }
-                int num = Interpolation.X.Length;
-                Interpolation.H = new double[num];
-                Interpolation.s = new double[num];
-                for (int i = 0; i < num; i++)
-                {
-                    double s;
-                    if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
+                    interpolation[localN] = element.Interpolate(delta, allowedTolerance);
+                    if (GradientenElemente == null)
                     {
-                        element.ClearProjections();
-                        (s,_,_,_) = trasseS.ProjectPoints(Interpolation.X[i], Interpolation.Y[i], element.projections);
+                        return;
                     }
-                    else //if no trasseS provided use original value S
+                    int num = interpolation[localN].X.Length;
+                    interpolation[localN].H = new double[num];
+                    interpolation[localN].s = new double[num];
+                    element.ClearProjections();
+                    for (int i = 0; i < num; i++)
                     {
-                        s = Interpolation.S[i];
+                        double s;
+                        if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
+                        {
+                            (s, _, _, _) = trasseS.ProjectPoints(interpolation[localN].X[i], interpolation[localN].Y[i], element.projections);
+                        }
+                        else //if no trasseS provided use original value S
+                        {
+                            s = interpolation[localN].S[i];
+                        }
+                        GradientElementExt gradient = GetGradientElementFromS(s);
+                        (interpolation[localN].H[i], interpolation[localN].s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
                     }
-                    GradientElementExt gradient = GetGradientElementFromS(s);
-                    (Interpolation.H[i], Interpolation.s[i]) = (gradient != null ? gradient.GetHAtS(s) : (double.NaN, double.NaN));
-                }
-                interp.Concat(Interpolation);
+                });
+                n++;
             }
-            return interp;
+            Task.WaitAll(tasks);
+            return Concat(interpolation);
         }
         /// <summary>
         /// Project an Array of X,Y coordinates on elements geoemtry
@@ -261,7 +278,7 @@ namespace TRA_Lib
                 }
                 projections.Add(new ProjectionArrow(new Coordinates(Y, X), new Coordinates(Y_, X_)));
 #endif
-                return (s,Math.Sqrt(Math.Pow(X - X_, 2) + Math.Pow(Y - Y_, 2)), X_, Y_);
+                return (s, Math.Sqrt(Math.Pow(X - X_, 2) + Math.Pow(Y - Y_, 2)), X_, Y_);
             }
             return (double.NaN,double.NaN, double.NaN, double.NaN);
 
