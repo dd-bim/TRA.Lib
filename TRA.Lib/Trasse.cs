@@ -183,7 +183,6 @@ namespace TRA_Lib
                 int localN = n;
                 tasks[localN] = Task.Run(() =>
                 {
-                    element.WarningCallouts.CollectionChanged -= Warning_CollectionChanged;
                     Elemente[localN].Interpolate(delta, allowedTolerance);
                 });
                 n++;
@@ -193,7 +192,6 @@ namespace TRA_Lib
             foreach (TrassenElementExt element in Elemente)
             {
                 interp.Concat(element.InterpolationResult);
-                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
             }
 
             return interp;// Concat(interpolation);
@@ -221,7 +219,6 @@ namespace TRA_Lib
                 int localN = n;
                 tasks[localN] = Task.Run(() =>
                 {
-                    element.WarningCallouts.CollectionChanged -= Warning_CollectionChanged;
                     ref Interpolation interpolation = ref element.Interpolate(delta, allowedTolerance);
                     if (GradientenElemente == null)
                     {
@@ -252,7 +249,6 @@ namespace TRA_Lib
             foreach (TrassenElementExt element in Elemente)
             {
                 interp.Concat(element.InterpolationResult);
-                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
             }
             return interp;
         }
@@ -623,7 +619,7 @@ namespace TRA_Lib
                     gridView.Rows[idx].Tag = element;
                 }
                 //Warnings
-                //element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
+                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
                 foreach (var warning in element.WarningCallouts)
                 {
                     Plot2D.Plot.Add.Plottable(warning);

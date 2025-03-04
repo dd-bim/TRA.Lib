@@ -18,9 +18,34 @@ namespace TRA_Lib
     /// <typeparam name="T"></typeparam>
     public class CustomObservableCollection<T> : ObservableCollection<T> 
     {
-        protected override void ClearItems() { 
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
-            base.ClearItems(); 
+        private readonly SynchronizationContext _syncContext;
+        public CustomObservableCollection()
+        {
+            _syncContext = SynchronizationContext.Current ?? throw new InvalidOperationException("SynchronizationContext is not set.");
+        }
+        protected override void ClearItems() {
+            if (SynchronizationContext.Current == _syncContext)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
+                base.ClearItems();
+            }
+            else
+                _syncContext.Post(_ =>
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
+                base.ClearItems();
+            },null);
+        }
+        public void Add_Async(T item)
+        {
+            if (SynchronizationContext.Current == _syncContext)
+            {
+                base.Add(item);
+            }
+            else
+            {
+                _syncContext.Post(_ => base.Add(item),null);
+            }
         }
     }
     public struct Interpolation
@@ -290,7 +315,7 @@ namespace TRA_Lib
         }
         void AddWarningCallout(string text, double X, double Y)
         {
-            WarningCallouts.Add(new GeometryWarning(text, X, Y, this));
+            WarningCallouts.Add_Async(new GeometryWarning(text, X, Y, this));
         }
 
         /// <summary>
