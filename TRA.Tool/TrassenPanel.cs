@@ -182,13 +182,13 @@ namespace TRA.Tool
             fileInfo = tb_GRA_L.Tag != null ? new FileInfo((tb_GRA_L.Tag as TreeNode).Tag.ToString()) : null;
             if (fileInfo != null && fileInfo.Exists && (gradientL == null || gradientL.Filename != fileInfo.Name))
             {
-                (gradientL, _) = Trassierung.ImportGRA(fileInfo.FullName);
+                gradientL = Trassierung.ImportGRA(fileInfo.FullName);
                 if (trasseL != null) { trasseL.AssignGRA(gradientL); }
             }
             fileInfo = tb_GRA_R.Tag != null ? new FileInfo((tb_GRA_R.Tag as TreeNode).Tag.ToString()) : null;
             if (fileInfo != null && fileInfo.Exists && (gradientR == null || gradientR.Filename != fileInfo.Name))
             {
-                (gradientR, _) = Trassierung.ImportGRA(fileInfo.FullName);
+                gradientR = Trassierung.ImportGRA(fileInfo.FullName);
                 if (trasseR != null) { trasseR.AssignGRA(gradientR); }
             }
             fileInfo = tb_TRA_L.Tag != null ? new FileInfo((tb_TRA_L.Tag as TreeNode).Tag.ToString()) : null;
@@ -265,6 +265,14 @@ namespace TRA.Tool
                 if (trasseR != null)
                 {
                     Trassierung.ExportTRA(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename));
+                }
+                if (gradientR != null)
+                {
+                    Trassierung.ExportGRA(gradientR, Path.Combine(folderBrowserDialog.SelectedPath, gradientR.Filename));
+                }
+                if (gradientL != null)
+                {
+                    Trassierung.ExportGRA(gradientL, Path.Combine(folderBrowserDialog.SelectedPath, gradientL.Filename));
                 }
             }
         }

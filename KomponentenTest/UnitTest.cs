@@ -205,7 +205,7 @@ namespace TRA_Lib
         public GRATrasse ImportTestGRA(string Filename)
         {
             GRATrasse trasse;
-            (trasse, GleisscherenElement[] gleisschere) = Trassierung.ImportGRA(Filename);
+            trasse = Trassierung.ImportGRA(Filename);
             foreach (GradientElementExt T in trasse.GradientenElemente)
             {
                 T.print();
@@ -234,7 +234,7 @@ namespace TRA_Lib
         public void GetGRAElementFromPoint(string Filename, double s, int expectedElementID)
         {
             GRATrasse trasse;
-            (trasse, _) = Trassierung.ImportGRA(Filename);
+            trasse= Trassierung.ImportGRA(Filename);
             GradientElementExt element = trasse.GetGradientElementFromS(s);
             Assert.AreEqual(expectedElementID, element.ID, "Station value was not associated with correct Element");
         }
@@ -272,7 +272,7 @@ namespace TRA_Lib
             TRATrasse trasseLR = Trassierung.ImportTRA(FilenameTRA_LR);
             TRATrasse trasseS = Trassierung.ImportTRA(FilenameTRA_S);
             GRATrasse trasseGRA;
-            (trasseGRA, _) = Trassierung.ImportGRA(FilenameGRA_LR);
+            trasseGRA = Trassierung.ImportGRA(FilenameGRA_LR);
             trasseLR.AssignTrasseS(trasseS);
             trasseLR.AssignGRA(trasseGRA);
             trasseLR.Interpolate3D(null, 5);

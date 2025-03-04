@@ -8,17 +8,17 @@ namespace TRA_Lib
     public class GleisscherenElement
     {
         /// <value>Station RE1</value>
-        double RE1;
+        public double RE1;
         /// <value>Station RA</value>
-        double RA;
+        public double RA;
         /// <value>Station RE2</value>
-        double RE2;
+        public double RE2;
         /// <value>Ueberhoeung1</value>
-        double Ueberhoeung1;
+        public double Ueberhoeung1;
         /// <value>Ueberhoeung2</value>
-        long Ueberhoeung2;
+        public long Ueberhoeung2;
         /// <value>Gleisscherenkennzeichen</value>
-        Trassenkennzeichen Kz;
+        public Trassenkennzeichen Kz;
 
         public GleisscherenElement(double re1, double ra, double re2, double ueberhoeung1, long ueberhoeung2)
         {

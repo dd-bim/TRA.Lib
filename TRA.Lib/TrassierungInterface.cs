@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
@@ -139,7 +140,7 @@ namespace TRA_Lib
                         writer.Write((double)0);
                         writer.Write((double)0);
                         writer.Write((double)0);
-                        writer.Write((short)trasse.Elemente.Length);
+                        writer.Write((short)(trasse.Elemente.Length-1));
                         writer.Write((double)0);
                         writer.Write((double)0);
                         writer.Write((double)0);
@@ -157,7 +158,7 @@ namespace TRA_Lib
                             writer.Write(element.L);
                             writer.Write(element.U1);
                             writer.Write(element.U2);
-                            writer.Write(element.Cf);
+                            writer.Write((float)element.Cf);
                         }
                     }
                 }
@@ -206,7 +207,7 @@ namespace TRA_Lib
             }
         }
 
-        public static (GRATrasse, GleisscherenElement[]) ImportGRA(string fileName)
+        public static GRATrasse ImportGRA(string fileName)
         {
             if (File.Exists(fileName))
             {
@@ -251,10 +252,10 @@ namespace TRA_Lib
                             );
                             predecessor = trasse.GradientenElemente[i];
                         }
-                        GleisscherenElement[] gleisscheren = new GleisscherenElement[num_GS];
+                        trasse.GleisscherenElemente = new GleisscherenElement[num_GS];
                         for (int i = 0; i < num_GS; i++)
                         {
-                            gleisscheren[i] = new GleisscherenElement(
+                            trasse.GleisscherenElemente[i] = new GleisscherenElement(
                             reader.ReadDouble(),
                             reader.ReadDouble(),
                             reader.ReadDouble(),
@@ -263,14 +264,58 @@ namespace TRA_Lib
                             );
                         }
                         if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new SerializationException("End of Bytestream was not reached"); }
-                        return (trasse, gleisscheren);
+                        return trasse;
                     }
                 }
             }
-            return (null, new GleisscherenElement[0]);
+            return null;
         }
-        public static void ExportGRA(GradientElement[] gradient, GleisscherenElement[] gleisschere, string fileName)
+        public static void ExportGRA(GRATrasse trasse, string fileName)
         {
+            try
+            {
+                using (FileStream fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+                {
+                    using (var writer = new BinaryWriter(fileStream, Encoding.UTF8, false))
+                    {
+                        //Write 0-Element
+                        writer.Write((double)trasse.GradientenElemente.Length);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((double)0);
+                        writer.Write((int)trasse.GleisscherenElemente.Length);
+
+                        foreach (GradientElementExt element in trasse.GradientenElemente)
+                        {
+                            writer.Write(element.S);
+                            writer.Write(element.H);
+                            writer.Write(element.R);
+                            writer.Write(element.T);
+                            writer.Write((int)element.Pkt);
+                        }
+                        foreach (GleisscherenElement element in trasse.GleisscherenElemente)
+                        {
+                            writer.Write(element.RE1);
+                            writer.Write(element.RA);
+                            writer.Write(element.RE2);
+                            if(element.Kz == Trassenkennzeichen.UB_S_Form ||
+                                element.Kz == Trassenkennzeichen.Bloss)
+                            {
+                                writer.Write(element.Ueberhoeung1 + (int)element.Kz * 1000);
+                            }
+                            else
+                            {
+                                writer.Write(element.Ueberhoeung1);
+                            }
+                            writer.Write((int)(element.Ueberhoeung2 /10));
+                        }
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Can not write to File " + fileName);
+            }
         }
     }
 

@@ -41,6 +41,10 @@ namespace TRA_Lib
         public double S { get { return s; } }
         /// <value>Höhe am NW</value>
         public double H { get { return h; } }
+        /// <value>Ausrundungrsradius am NW</value>
+        public double R { get { return r; } }
+        /// <value>Tangentenlänge am NW</value>
+        public double T { get { return t; } }
         /// <value>Punktnummer am NW</value>
         public double Pkt { get { return pkt; } }
         /// <value>ID des Elements</value>
