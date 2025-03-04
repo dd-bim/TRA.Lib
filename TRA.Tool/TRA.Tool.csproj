@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\egbt22trans\egbt22lib\egbt22lib.csproj" />
     <ProjectReference Include="..\TRA.Lib\TRA.Lib.csproj" />
   </ItemGroup>
 
