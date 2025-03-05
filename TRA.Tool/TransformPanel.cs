@@ -194,22 +194,23 @@ namespace TRA.Tool
                     TrassenTransform(panel.trasseR, transformSetup);
                    
                     // Transform Gradient Elements
-                    IEnumerable<GradientElementExt> GRAelements = Enumerable.Empty<GradientElementExt>();
-                    if (panel.gradientL != null) { GRAelements = GRAelements.Concat(panel.gradientL.GradientenElemente); }
-                    if (panel.gradientR != null) { GRAelements = GRAelements.Concat(panel.gradientR.GradientenElemente); }
-                    foreach (GradientElementExt element in GRAelements)
-                    {
-                        //Transform GradientElement
-                        try
-                        {
-                            double H;
-                            (_, _, H) = transformSetup.singleCoordinateTransform(element.Y, element.X, element.H);
-                            element.Relocate(H);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    //IEnumerable<GradientElementExt> GRAelements = Enumerable.Empty<GradientElementExt>();
+                    //if (panel.gradientL != null) { GRAelements = GRAelements.Concat(panel.gradientL.GradientenElemente); }
+                    //if (panel.gradientR != null) { GRAelements = GRAelements.Concat(panel.gradientR.GradientenElemente); }
+                    //foreach (GradientElementExt element in GRAelements)
+                    //{
+                    //    //Transform GradientElement
+                    //    try
+                    //    {
+                    //        double H;
+                    //        (_, _, H) = transformSetup.singleCoordinateTransform(element.Y, element.X, element.H);
+                    //        element.Relocate(H);
+                    //    }
+                    //    catch
+                    //    {
+                    //    }
+                    //}
+
                     //Calc Deviations
                     IEnumerable<TrassenElementExt> elements = Enumerable.Empty<TrassenElementExt>();
                     if (panel.trasseL != null) { elements = elements.Concat(panel.trasseL.Elemente); }

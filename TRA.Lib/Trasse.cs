@@ -343,11 +343,15 @@ namespace TRA_Lib
         ScottPlot.WinForms.FormsPlot PlotG;
         /// <value>Table for all loaded Attributes of the TRA-File</value>
         DataGridView gridView;
+        //ScaleFactor for ScottPlots
+        static float scale;
         public void Plot()
         {
             if (Form == null)
             {
-                Form = new() { Width = 800, Height = 500 };
+                Form = new() { Width = (int)(800*scale), Height = (int)(500*scale) };
+                scale = Form.DeviceDpi / 96;//96 == default DPI
+                Form.Size = new Size((int)(800 * scale), (int)(500 * scale));
                 SplitContainer splitContainer = new SplitContainer
                 {
                     Dock = DockStyle.Fill,
@@ -412,6 +416,7 @@ namespace TRA_Lib
                 Plot2D = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
                 Form.Controls.OfType<SplitContainer>().First<SplitContainer>().Panel1.Controls.Add(Plot2D);
                 Plot2D.Plot.Layout.Fixed(padding);
+                Plot2D.Plot.ScaleFactor = scale;
                 //Plot2D.Plot.XLabel("Rechtswert Y[m]");
                 Plot2D.Plot.YLabel("Hochwert X[m]");
                 Plot2D.MouseDown += Plot2D_MouseClick;
@@ -526,6 +531,7 @@ namespace TRA_Lib
                 //Set properties for new Details-Plot (TRA)
                 PlotT = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
                 PlotT.Plot.Layout.Fixed(padding);
+                PlotT.Plot.ScaleFactor = scale;
                 PlotT.Plot.XLabel("Rechtswert Y[m]");
                 PlotT.Plot.Axes.Left.Label.Text = "Heading [rad]";
                 PlotT.Plot.Axes.Right.Label.Text = "Curvature [1/m]";
@@ -533,6 +539,7 @@ namespace TRA_Lib
                 //Set properties for new Details-Plot (GRA)
                 PlotG = new ScottPlot.WinForms.FormsPlot { Dock = DockStyle.Fill };
                 PlotG.Plot.Layout.Fixed(padding);
+                PlotG.Plot.ScaleFactor = scale;
                 PlotG.Plot.XLabel("Rechtswert Y[m]");
                 PlotG.Plot.Axes.Left.Label.Text = "Elevation [m]";
                 PlotG.Plot.Axes.Right.Label.Text = "Slope [‰]";
