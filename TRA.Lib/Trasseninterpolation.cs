@@ -476,7 +476,6 @@ namespace TRA_Lib
 
         public override double sAt(double X, double Y, double t = double.NaN)
         {
-            return double.NaN;
             if (Double.IsNaN(X) || Double.IsNaN(Y)) return double.NaN;
             double threshold = 0.00001;
             double delta = 1.0;
