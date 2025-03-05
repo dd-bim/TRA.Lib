@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -62,8 +63,41 @@ namespace TRA_Lib
 
     public class Trassierung
     {
+        //config from settings.json
+        static Trassierung self;
+        public static readonly double GeometricalLengthMismatchTolerance;
+        public static readonly double ConnectivityMismatchTolerance;
+        public static readonly double ContinuityOfHeadingTolerance;
+        public static readonly double ContinuityOfCurvatureTolerance;
+
+        static Trassierung()
+        {
+            if (File.Exists("settings.json"))
+            {
+                Dictionary<string, double> config = JsonSerializer.Deserialize<Dictionary<string, double>>(File.ReadAllText("settings.json"));
+                if (config == null)
+                {
+                    throw new FileNotFoundException("settings.json not found");
+                }
+                else
+                {
+                    GeometricalLengthMismatchTolerance = config["GeometricalLengthMismatchTolerance"];
+                    ConnectivityMismatchTolerance = config["ConnectivityMismatchTolerance"];
+                    ContinuityOfHeadingTolerance = config["ContinuityOfHeadingTolerance"];
+                    ContinuityOfCurvatureTolerance = config["ContinuityOfCurvatureTolerance"];
+                }
+            }
+            else
+            {
+                GeometricalLengthMismatchTolerance = 1e-8;
+                ConnectivityMismatchTolerance = 1e-8;
+                ContinuityOfHeadingTolerance = 1e-8;
+                ContinuityOfCurvatureTolerance = 1e-8;
+            }
+        }
         public static TRATrasse ImportTRA(string fileName)
         {
+            if(self == null) self = new Trassierung();
             if (File.Exists(fileName))
             {
                 using (var stream = File.Open(fileName, FileMode.Open))
@@ -209,6 +243,7 @@ namespace TRA_Lib
 
         public static GRATrasse ImportGRA(string fileName)
         {
+            if (self == null) self = new Trassierung();
             if (File.Exists(fileName))
             {
                 using (var stream = File.Open(fileName, FileMode.Open))

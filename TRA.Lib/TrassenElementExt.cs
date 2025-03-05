@@ -268,7 +268,6 @@ namespace TRA_Lib
         /// </summary>
         public bool PlausibilityCheck(bool bCheckRadii = false)
         {
-            double tolerance = 1e-8;
 
             WarningCallouts.Clear();
             //Radii
@@ -287,25 +286,25 @@ namespace TRA_Lib
             if(TrassenGeometrie is Gerade)
             {
                 double geoL = Math.Sqrt(Math.Pow(Xend-Xstart,2)+Math.Pow(Yend-Ystart,2));
-                if (Math.Abs(l*scale- geoL)>tolerance) { AddWarningCallout("length missmatch. elements Length parameter, does not match to Geometry by " + (l*scale - geoL), Xstart, Ystart); }
+                if (Math.Abs(l*scale- geoL)> Trassierung.GeometricalLengthMismatchTolerance) { AddWarningCallout("length missmatch. elements Length parameter, does not match to Geometry by " + (l*scale - geoL), Xstart, Ystart); }
             }
             //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)
             {
                 //Connectivity
-                if (Math.Abs(Interpolation.X.Last() - successor.x) > tolerance && Math.Abs(Interpolation.Y.Last() - successor.y) > tolerance)
+                if (Math.Abs(Interpolation.X.Last() - successor.x) > Trassierung.ConnectivityMismatchTolerance && Math.Abs(Interpolation.Y.Last() - successor.y) > Trassierung.ConnectivityMismatchTolerance)
                 {
                     //TrassierungLog.Logger?.LogWarning("Last interpolated Element(ID" + id.ToString() + "_" + kz.ToString() + ") coordinate differs from successors start coordinate by " + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x, 2) + Math.Pow(Interpolation.Y.Last() - successor.y, 2)).ToString());
                     AddWarningCallout("coordinate difference \n" + Math.Sqrt(Math.Pow(Interpolation.X.Last() - successor.x, 2) + Math.Pow(Interpolation.Y.Last() - successor.y, 2)).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
                 //Continuity of Heading
-                if (Math.Abs(Interpolation.T.Last() - successor.T) > tolerance)
+                if (Math.Abs(Interpolation.T.Last() - successor.T) > Trassierung.ContinuityOfHeadingTolerance)
                 {
                     //TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") heading differs from successors start heading by " + (Interpolation.T.Last() - successor.T).ToString());
                     AddWarningCallout("heading difference \n" + (Interpolation.T.Last() - successor.T).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
                 }
                 //Continuity of Radii(Curvature)
-                if (bCheckRadii && Math.Abs(Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1) > tolerance)
+                if (bCheckRadii && Math.Abs(Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1) > Trassierung.ContinuityOfCurvatureTolerance)
                 {
                     //TrassierungLog.Logger?.LogWarning("Last interpolatedElement(ID" + id.ToString() + "_" + kz.ToString() + ") radius differs from successors start radius by " + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString());
                     AddWarningCallout("curvature difference \n" + (Interpolation.K.Last() == 0 ? 0 : 1 / Interpolation.K.Last() - successor.r1).ToString(), Interpolation.X.Last(), Interpolation.Y.Last());
