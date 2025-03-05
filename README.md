@@ -19,9 +19,10 @@ var gradient = Trassierung.ImportGRA(fileName);
 ```
 To calculate 2DInterpolation points for a TRA-File call
 ```sh
-trasse.Interpolate(delta)
+trasse.Interpolate(delta, allowedTolerance)
 ```
-providing a delta value as distance between the calculated points.
+providing a delta value as distance between the calculated points. If the resulting polygon would differ more than the allowed tolerance from the geometry, the distance is decreased accordingly.
+
 GRA files are prividing height information related to a station-value S. This station-value is mostly defined in 2D-space via a Station-TRA file (Mileage/"Stationierungsachse"). TRA left/right Files have to be projected to this Station-TRA to retrieve first a value S from the requested 2D Position, and in a second step to calculate a height from the GRA-File on this value S. These relations between the files can be set by:
 ```sh
 trasseL.AssignTrasseS(trasseS);
@@ -42,6 +43,21 @@ Finally exporting the data to CSV is possible by:
 trasse.SaveCSV(StreamWriter);
 ```
 if a interpolation was done before this also includes the Interpolationpoints.
+
+### Settings 
+along with the library a settings.json is provided. Editing this allows changes to the tolerances used for warnings. Currently four parameters are available.
+```sh
+{
+  "GeometricalLengthMismatchTolerance": 1E-04,
+  "ConnectivityMismatchTolerance": 1E-04,
+  "ContinuityOfHeadingTolerance": 1E-08,
+  "ContinuityOfCurvatureTolerance": 1E-08
+}
+```
+- GeometricalLengthMismatchTolerance[m]: Only for straight-Elements (Geraden). Only relevant after transformations, when a scale is applied. Compares the scale applied Length L with the distance between start and endpoint of an element. 
+- ConnectivityMismatchTolerance[m]: The last point(L)-Position of the interpolation is compared with the successor element coordinates of the TRA-File. A euclidean distance is used for comparison.
+- ContinuityOfHeadingTolerance[rad]: The last point(L)-Heading of the interpolation is compared with the successor element heading of the TRA-File.
+- ContinuityOfCurvatureTolerance[1/m]: The last point(L)-Curvature of the interpolation is compared with the successor element curvature of the TRA-File.
 ## 2.TRA.Lib_TEST:
 This project contains Unit-Tests to verify the calculations and functions implemented in TRA.Lib. Results are compared to expected values, especally relevant for interpolations of complex Geometries like Clothoids. Tests are grouped in different categories:
 - CoordinateTransformation (Transformation in local Geometryspace)
