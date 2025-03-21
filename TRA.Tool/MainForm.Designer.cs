@@ -58,6 +58,7 @@
             // 
             splitContainer1.Dock = DockStyle.Fill;
             splitContainer1.Location = new Point(0, 0);
+            splitContainer1.Margin = new Padding(6, 6, 6, 6);
             splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -67,22 +68,25 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer2);
-            splitContainer1.Size = new Size(911, 450);
-            splitContainer1.SplitterDistance = 302;
+            splitContainer1.Size = new Size(1692, 960);
+            splitContainer1.SplitterDistance = 560;
+            splitContainer1.SplitterWidth = 7;
             splitContainer1.TabIndex = 0;
             // 
             // treeView
             // 
             treeView.Dock = DockStyle.Fill;
             treeView.Location = new Point(0, 0);
+            treeView.Margin = new Padding(6, 6, 6, 6);
             treeView.Name = "treeView";
-            treeView.Size = new Size(302, 450);
+            treeView.Size = new Size(560, 960);
             treeView.TabIndex = 1;
             // 
             // splitContainer2
             // 
             splitContainer2.Dock = DockStyle.Fill;
             splitContainer2.Location = new Point(0, 0);
+            splitContainer2.Margin = new Padding(6, 6, 6, 6);
             splitContainer2.Name = "splitContainer2";
             splitContainer2.Orientation = Orientation.Horizontal;
             // 
@@ -93,8 +97,9 @@
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(tb_Log);
-            splitContainer2.Size = new Size(605, 450);
-            splitContainer2.SplitterDistance = 339;
+            splitContainer2.Size = new Size(1125, 960);
+            splitContainer2.SplitterDistance = 723;
+            splitContainer2.SplitterWidth = 9;
             splitContainer2.TabIndex = 3;
             // 
             // flowLayoutPanel
@@ -106,8 +111,9 @@
             flowLayoutPanel.Dock = DockStyle.Fill;
             flowLayoutPanel.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel.Location = new Point(0, 0);
+            flowLayoutPanel.Margin = new Padding(6, 6, 6, 6);
             flowLayoutPanel.Name = "flowLayoutPanel";
-            flowLayoutPanel.Size = new Size(605, 339);
+            flowLayoutPanel.Size = new Size(1125, 723);
             flowLayoutPanel.TabIndex = 3;
             flowLayoutPanel.WrapContents = false;
             flowLayoutPanel.DragDrop += FlowLayoutPanel_DragDrop;
@@ -119,9 +125,10 @@
             trassenPanel1.BackColor = SystemColors.ActiveCaption;
             trassenPanel1.BorderStyle = BorderStyle.FixedSingle;
             trassenPanel1.Dock = DockStyle.Top;
-            trassenPanel1.Location = new Point(3, 3);
+            trassenPanel1.Location = new Point(11, 13);
+            trassenPanel1.Margin = new Padding(11, 13, 11, 13);
             trassenPanel1.Name = "trassenPanel1";
-            trassenPanel1.Size = new Size(599, 150);
+            trassenPanel1.Size = new Size(1102, 318);
             trassenPanel1.TabIndex = 3;
             // 
             // tableLayoutPanel1
@@ -133,18 +140,20 @@
             tableLayoutPanel1.Controls.Add(btn_AddTransformation, 2, 0);
             tableLayoutPanel1.Controls.Add(btn_AddTrassenPanel, 0, 0);
             tableLayoutPanel1.Controls.Add(btn_AddInterpolation, 1, 0);
-            tableLayoutPanel1.Location = new Point(3, 159);
+            tableLayoutPanel1.Location = new Point(6, 350);
+            tableLayoutPanel1.Margin = new Padding(6, 6, 6, 6);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(599, 58);
+            tableLayoutPanel1.Size = new Size(1112, 124);
             tableLayoutPanel1.TabIndex = 5;
             // 
             // btn_AddTransformation
             // 
-            btn_AddTransformation.Location = new Point(360, 3);
+            btn_AddTransformation.Location = new Point(670, 6);
+            btn_AddTransformation.Margin = new Padding(6, 6, 6, 6);
             btn_AddTransformation.Name = "btn_AddTransformation";
-            btn_AddTransformation.Size = new Size(110, 52);
+            btn_AddTransformation.Size = new Size(204, 111);
             btn_AddTransformation.TabIndex = 2;
             btn_AddTransformation.Text = "+ Transformation";
             btn_AddTransformation.UseVisualStyleBackColor = true;
@@ -153,9 +162,10 @@
             // btn_AddTrassenPanel
             // 
             btn_AddTrassenPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btn_AddTrassenPanel.Location = new Point(128, 3);
+            btn_AddTrassenPanel.Location = new Point(238, 6);
+            btn_AddTrassenPanel.Margin = new Padding(6, 6, 6, 6);
             btn_AddTrassenPanel.Name = "btn_AddTrassenPanel";
-            btn_AddTrassenPanel.Size = new Size(110, 52);
+            btn_AddTrassenPanel.Size = new Size(204, 111);
             btn_AddTrassenPanel.TabIndex = 0;
             btn_AddTrassenPanel.Text = "+ Trasse";
             btn_AddTrassenPanel.UseVisualStyleBackColor = true;
@@ -164,9 +174,10 @@
             // btn_AddInterpolation
             // 
             btn_AddInterpolation.Anchor = AnchorStyles.Top;
-            btn_AddInterpolation.Location = new Point(244, 3);
+            btn_AddInterpolation.Location = new Point(454, 6);
+            btn_AddInterpolation.Margin = new Padding(6, 6, 6, 6);
             btn_AddInterpolation.Name = "btn_AddInterpolation";
-            btn_AddInterpolation.Size = new Size(110, 52);
+            btn_AddInterpolation.Size = new Size(204, 111);
             btn_AddInterpolation.TabIndex = 1;
             btn_AddInterpolation.Text = "+ Interpolation";
             btn_AddInterpolation.UseVisualStyleBackColor = true;
@@ -177,32 +188,35 @@
             tb_Log.ContextMenuStrip = contextMenuStrip_Log;
             tb_Log.Dock = DockStyle.Fill;
             tb_Log.Location = new Point(0, 0);
+            tb_Log.Margin = new Padding(6, 6, 6, 6);
             tb_Log.Multiline = true;
             tb_Log.Name = "tb_Log";
             tb_Log.ReadOnly = true;
             tb_Log.ScrollBars = ScrollBars.Vertical;
-            tb_Log.Size = new Size(605, 107);
+            tb_Log.Size = new Size(1125, 228);
             tb_Log.TabIndex = 3;
             // 
             // contextMenuStrip_Log
             // 
+            contextMenuStrip_Log.ImageScalingSize = new Size(32, 32);
             contextMenuStrip_Log.Items.AddRange(new ToolStripItem[] { clearToolStripMenuItem });
             contextMenuStrip_Log.Name = "contextMenuStrip1";
-            contextMenuStrip_Log.Size = new Size(102, 26);
+            contextMenuStrip_Log.Size = new Size(143, 42);
             // 
             // clearToolStripMenuItem
             // 
             clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            clearToolStripMenuItem.Size = new Size(101, 22);
+            clearToolStripMenuItem.Size = new Size(142, 38);
             clearToolStripMenuItem.Text = "Clear";
             clearToolStripMenuItem.Click += clearToolStripMenuItem_Click;
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(911, 450);
+            ClientSize = new Size(1692, 960);
             Controls.Add(splitContainer1);
+            Margin = new Padding(6, 6, 6, 6);
             Name = "MainForm";
             Text = "TRA.Tool";
             Shown += MainForm_Shown;

@@ -15,6 +15,8 @@ using System.Xml.Linq;
 using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Reflection;
+using ScottPlot;
+using HarfBuzzSharp;
 
 namespace TRA.Tool
 {
@@ -73,6 +75,7 @@ namespace TRA.Tool
         private void TrassenTransform(TRATrasse trasse, TransformSetup transformSetup)
         {
             double previousdK = double.NaN;
+            if (trasse == null) return;
             foreach (TrassenElementExt element in trasse.Elemente.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
             {
                 //Transform Interpolation Points
@@ -133,6 +136,15 @@ namespace TRA.Tool
         }
         private void btn_Transform_Click(object sender, EventArgs e)
         {
+            LoadingForm loadingForm = null;
+            Thread _backgroundThread = new Thread(() =>
+            {
+                loadingForm = new LoadingForm();
+                loadingForm.Show();
+                Application.Run(loadingForm);
+            });
+            _backgroundThread.Start();
+
             TransformSetup transformSetup = new TransformSetup();
             ETransforms eTransform = (ETransforms)comboBox_Transform.SelectedIndex;
             //Get Target SRS
@@ -192,7 +204,7 @@ namespace TRA.Tool
                     TrassenTransform(panel.trasseL, transformSetup);
                     TrassenTransform(panel.trasseS, transformSetup);
                     TrassenTransform(panel.trasseR, transformSetup);
-                   
+
                     // Transform Gradient Elements
                     //IEnumerable<GradientElementExt> GRAelements = Enumerable.Empty<GradientElementExt>();
                     //if (panel.gradientL != null) { GRAelements = GRAelements.Concat(panel.gradientL.GradientenElemente); }
@@ -249,6 +261,58 @@ namespace TRA.Tool
                     }
                 }
                 idx--;
+            }
+
+            if (loadingForm != null)
+            {
+                // Use Invoke to close the form from the background thread
+                loadingForm.Invoke(new Action(() =>
+                {
+                    loadingForm.Close(); // Close the form
+                }));
+            }
+            // Wait for the thread to terminate
+            _backgroundThread.Join();
+        }
+
+        private void btn_SaveAll_Click(object sender, EventArgs e)
+        {
+            FlowLayoutPanel owner = Parent as FlowLayoutPanel;
+            if (owner == null) { return; }
+            int idx = owner.Controls.GetChildIndex(this) - 1;
+
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+            {
+                while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanel))
+                {
+                    if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
+                    {
+                        TrassenPanel panel = (TrassenPanel)owner.Controls[idx];
+
+                        if (panel.trasseL != null)
+                        {
+                            Trassierung.ExportTRA(panel.trasseL, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseL.Filename));
+                        }
+                        if (panel.trasseS != null)
+                        {
+                            Trassierung.ExportTRA(panel.trasseS, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseS.Filename));
+                        }
+                        if (panel.trasseR != null)
+                        {
+                            Trassierung.ExportTRA(panel.trasseR, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseR.Filename));
+                        }
+                        if (panel.gradientR != null)
+                        {
+                            Trassierung.ExportGRA(panel.gradientR, Path.Combine(folderBrowserDialog.SelectedPath, panel.gradientR.Filename));
+                        }
+                        if (panel.gradientL != null)
+                        {
+                            Trassierung.ExportGRA(panel.gradientL, Path.Combine(folderBrowserDialog.SelectedPath, panel.gradientL.Filename));
+                        }
+                    }
+                idx--;
+                }
             }
         }
     }

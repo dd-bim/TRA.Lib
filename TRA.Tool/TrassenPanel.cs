@@ -38,6 +38,18 @@ namespace TRA.Tool
             FileInfo fileInfo = new FileInfo(treeNode.Tag.ToString());
             tb_TRA_R.Text = fileInfo.Name;
         }
+        public void set_GRA_L_Path(TreeNode treeNode)
+        {
+            tb_GRA_L.Tag = treeNode;
+            FileInfo fileInfo = new FileInfo(treeNode.Tag.ToString());
+            tb_GRA_L.Text = fileInfo.Name;
+        }
+        public void set_GRA_R_Path(TreeNode treeNode)
+        {
+            tb_GRA_R.Tag = treeNode;
+            FileInfo fileInfo = new FileInfo(treeNode.Tag.ToString());
+            tb_GRA_R.Text = fileInfo.Name;
+        }
 
         private void Tb_TRA_DragEnter(object sender, DragEventArgs e)
         {
@@ -147,7 +159,7 @@ namespace TRA.Tool
                     }
                 }
             }
-            //try to find Files with same name but different ending, to set TRA/GRA pais.
+            //try to find Files with same name but different ending, to set TRA/GRA pairs.
             foreach (TextBox tb in textBoxes.FindAll(x => x.Name.EndsWith((sender as TextBox).Name.Substring(4, 4))))
             {
                 if (tb.Text != "") continue;

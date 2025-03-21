@@ -210,7 +210,7 @@ namespace TRA_Lib
             TRATrasse trasseS = stationierungsTrasse != null ? stationierungsTrasse : TrasseS; //if a valid trasse is provided use that one, else try to use a previously assigned
             if (GradientenElemente == null)
             {
-                TrassierungLog.Logger?.LogError("Can not calculate Heights for Interpolation as there are no Gradient Elements loaded for this Trasse. Please add Gradients by calling AssignGRA()", nameof(Interpolate3D));
+                TrassierungLog.Logger?.LogError("Can not calculate Heights for Interpolation as there are no Gradient Elements loaded for " + Filename + ". Please add Gradients by calling AssignGRA()", nameof(Interpolate3D));
             }
             Task[] tasks = new Task[Elemente.Length];
             int n = 0;
@@ -329,7 +329,9 @@ namespace TRA_Lib
         }
 
 #if USE_SCOTTPLOT
-        static Form Form;
+        public static Form Form;
+        static bool initialized = false;
+        static bool showWarnings = true;
         /// <value>Plot for a 2D overview of all plotted trassen</value>
         static ScottPlot.WinForms.FormsPlot Plot2D;
         /// <value>List of all Plottables of this element</value>
@@ -347,9 +349,9 @@ namespace TRA_Lib
         static float scale;
         public void Plot()
         {
-            if (Form == null)
+            if (!initialized)
             {
-                Form = new() { Width = (int)(800*scale), Height = (int)(500*scale) };
+                if(Form == null) Form = new() { Width = (int)(800), Height = (int)(500) };
                 scale = Form.DeviceDpi / 96;//96 == default DPI
                 Form.Size = new Size((int)(800 * scale), (int)(500 * scale));
                 SplitContainer splitContainer = new SplitContainer
@@ -406,7 +408,8 @@ namespace TRA_Lib
                 BtnPanel.Controls.Add(CheckShowWarnings);
                 BtnPanel.Controls.Add(CheckProjections);
                 BtnPanel.Controls.Add(ProjectionScale);
-                splitContainer.Panel2.Controls.Add(tabControl);               
+                splitContainer.Panel2.Controls.Add(tabControl);  
+                initialized = true;
             }
             Form.FormClosing += (sender, e) => OnFormClosed();
             //Add Plot for 2D overview
@@ -626,16 +629,19 @@ namespace TRA_Lib
                     gridView.Rows[idx].Tag = element;
                 }
                 //Warnings
-                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
                 foreach (var warning in element.WarningCallouts)
                 {
                     Plot2D.Plot.Add.Plottable(warning);
                 }
+                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
                 //Visualize Projections
                 foreach (ProjectionArrow projection in element.projections)
                 {
-                    projection.IsVisible = false;
-                    Plottables.Add(Plot2D.Plot.Add.Plottable(projection));
+                    if (projection != null)
+                    {
+                        projection.IsVisible = false;
+                        Plottables.Add(Plot2D.Plot.Add.Plottable(projection));
+                    }
                 }
             }
             if (GradientenElemente != null)
@@ -742,7 +748,7 @@ namespace TRA_Lib
         }
         private void Warning_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
         {
-            if (Plot2D == null) return;
+            if (Plot2D == null || !showWarnings) return;
             switch (e.Action) 
             { 
                 case NotifyCollectionChangedAction.Add: 
@@ -812,10 +818,11 @@ namespace TRA_Lib
         private void CheckShowWarnings_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox box = (CheckBox)sender;
-            bool show = box.Checked;
+            showWarnings = box.Checked;
+
             foreach (var warning in Plot2D.Plot.GetPlottables<GeometryWarning>())
             {
-                warning.IsVisible = show;
+                warning.IsVisible = showWarnings;
             }
             Plot2D.Refresh();
         }

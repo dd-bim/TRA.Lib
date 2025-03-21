@@ -25,10 +25,25 @@ namespace TRA.Tool
 
         private void btn_Interpolate_Click(object sender, EventArgs e)
         {
+            Interpolate_Async();
+        }
+        private async Task Interpolate_Async()
+        {
+            LoadingForm loadingForm = null;
+            Thread _backgroundThread = new Thread(() =>
+            {
+                loadingForm = new LoadingForm();
+                loadingForm.Show();
+                Application.Run(loadingForm);
+            });
+            _backgroundThread.Start();
+
             //Get TRA-Files to Interpolate
             FlowLayoutPanel owner = Parent as FlowLayoutPanel;
             if (owner == null) { return; }
             int idx = owner.Controls.GetChildIndex(this) - 1;
+            //await Task.Run(() =>
+            //{
             while (idx >= 0 && owner.Controls[idx].GetType() != typeof(InterpolationPanel))
             {
                 if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
@@ -58,6 +73,17 @@ namespace TRA.Tool
                 }
                 idx--;
             }
+
+            if (loadingForm != null)
+            {
+                // Use Invoke to close the form from the background thread
+                loadingForm.Invoke(new Action(() =>
+                {
+                    loadingForm.Close(); // Close the form
+                }));
+            }
+            // Wait for the thread to terminate
+            _backgroundThread.Join();
         }
     }
 }

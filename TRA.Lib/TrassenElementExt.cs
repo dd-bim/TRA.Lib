@@ -32,8 +32,11 @@ namespace TRA_Lib
             else
                 _syncContext.Post(_ =>
             {
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
-                base.ClearItems();
+                if (Count != 0)
+                {
+                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, this, Count));
+                    base.ClearItems();
+                }
             },null);
         }
         public void Add_Async(T item)
@@ -133,7 +136,9 @@ namespace TRA_Lib
         /// <value>List of Warnings. Callouts to show on Plot if compiled with SCOTTPLOT</value>
         internal CustomObservableCollection<GeometryWarning> WarningCallouts = new() { };
 
-        public double MeanProjectionDeviation() { return projections.Sum(w => w.Deviation) / projections.Count; }
+        public double MeanProjectionDeviation() { 
+            var filteredProjections = projections?.Where(w => w != null);
+            return filteredProjections.Sum(w => w.Deviation) / projections.Count; }
         public void ClearProjections() { projections.Clear(); }
         /// <value>Arrows for visualisation of ProjectionS</value>
         internal List<ProjectionArrow> projections = new() { };

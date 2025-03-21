@@ -181,6 +181,15 @@ namespace TRA.Tool
                             panel.Controls.Add(trassenPanel);
                             panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
                         }
+                        if (fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase) && childNode.BackColor != selectedColor)
+                        {
+                            TrassenPanel trassenPanel = new TrassenPanel();
+                            trassenPanel.set_GRA_L_Path(childNode);
+                            childNode.BackColor = trassenPanel.BackColor;
+                            selectedColor = trassenPanel.BackColor;
+                            panel.Controls.Add(trassenPanel);
+                            panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                        }
                     }
                 }
             }
