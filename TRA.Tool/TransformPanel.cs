@@ -17,6 +17,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Reflection;
 using ScottPlot;
 using HarfBuzzSharp;
+using System.Collections;
 
 namespace TRA.Tool
 {
@@ -197,71 +198,42 @@ namespace TRA.Tool
             if (owner == null) { return; }
             int idx = owner.Controls.GetChildIndex(this) - 1;
 
+            List<TRATrasse> transform_Trasse = new List<TRATrasse>();
             while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanel))
             {
                 if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
                 {
                     TrassenPanel panel = (TrassenPanel)owner.Controls[idx];
-                    TrassenTransform(panel.trasseL, transformSetup);
-                    TrassenTransform(panel.trasseS, transformSetup);
-                    TrassenTransform(panel.trasseR, transformSetup);
-
-                    // Transform Gradient Elements
-                    //IEnumerable<GradientElementExt> GRAelements = Enumerable.Empty<GradientElementExt>();
-                    //if (panel.gradientL != null) { GRAelements = GRAelements.Concat(panel.gradientL.GradientenElemente); }
-                    //if (panel.gradientR != null) { GRAelements = GRAelements.Concat(panel.gradientR.GradientenElemente); }
-                    //foreach (GradientElementExt element in GRAelements)
-                    //{
-                    //    //Transform GradientElement
-                    //    try
-                    //    {
-                    //        double H;
-                    //        (_, _, H) = transformSetup.singleCoordinateTransform(element.Y, element.X, element.H);
-                    //        element.Relocate(H);
-                    //    }
-                    //    catch
-                    //    {
-                    //    }
-                    //}
-
-                    //Calc Deviations
-                    IEnumerable<TrassenElementExt> elements = Enumerable.Empty<TrassenElementExt>();
-                    if (panel.trasseL != null) { elements = elements.Concat(panel.trasseL.Elemente); }
-                    if (panel.trasseS != null) { elements = elements.Concat(panel.trasseS.Elemente); }
-                    if (panel.trasseR != null) { elements = elements.Concat(panel.trasseR.Elemente); }
-
-                    Task[] tasks = new Task[elements.Count()];
-                    int n = 0;
-                    foreach (TrassenElementExt element in elements)
-                    {
-                        int localN = n;
-                        tasks[localN] = Task.Run(() =>
-                        {
-                            element.ClearProjections();
-                            Interpolation interp = element.InterpolationResult;
-                            float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y);
-                            string ownerString = element.owner.Filename + "_" + element.ID;
-                            TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);
-                        });
-                        n++;
-                    }
-                    Task.WaitAll(tasks);
-                    if (panel.trasseL != null)
-                    {
-                        panel.trasseL.CalcGradientCoordinates();
-                        panel.trasseL.Plot();
-                    }
-                    if (panel.trasseS != null)
-                    {
-                        panel.trasseS.Plot();
-                    }
-                    if (panel.trasseR != null)
-                    {
-                        panel.trasseR.CalcGradientCoordinates();
-                        panel.trasseR.Plot();
-                    }
+                    if (panel.trasseL != null && !transform_Trasse.Contains(panel.trasseL)) transform_Trasse.Add(panel.trasseL);
+                    if (panel.trasseS != null && !transform_Trasse.Contains(panel.trasseS)) transform_Trasse.Add(panel.trasseS);
+                    if (panel.trasseR != null && !transform_Trasse.Contains(panel.trasseR)) transform_Trasse.Add(panel.trasseR);
                 }
                 idx--;
+            }
+            Task[] tasks = new Task[transform_Trasse.Count()];
+            int n = 0;
+            foreach (TRATrasse trasse in transform_Trasse)
+            {
+                int localN = n;
+                tasks[localN] = Task.Run(() =>
+                {
+                    TrassenTransform(trasse, transformSetup);
+                    //Calc Deviations
+                    foreach (TrassenElementExt element in trasse.Elemente)
+                    {
+                         element.ClearProjections();
+                         Interpolation interp = element.InterpolationResult;
+                         float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y);
+                         string ownerString = element.owner.Filename + "_" + element.ID;
+                         TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);
+                    }
+                });
+                n++;
+            }
+            Task.WaitAll(tasks);
+            foreach (TRATrasse trasse in transform_Trasse)
+            {
+                trasse.Plot();
             }
 
             if (loadingForm != null)
