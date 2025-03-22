@@ -168,7 +168,9 @@ namespace TRA.Tool
                 }
                 else if(fileInfo.Attributes == System.IO.FileAttributes.Directory)
                 {
-                    LoadDirectoriesAndFiles(node);
+                    node.Expand(); //To Load Child Nodes
+                    node.Collapse(false);
+                    int i = 0;
                     foreach (TreeNode childNode in node.Nodes)
                     {
                         fileInfo = new FileInfo(childNode.Tag.ToString());
@@ -180,6 +182,7 @@ namespace TRA.Tool
                             selectedColor = trassenPanel.BackColor;
                             panel.Controls.Add(trassenPanel);
                             panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                            i++;
                         }
                         if (fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase) && childNode.BackColor != selectedColor)
                         {
@@ -189,8 +192,10 @@ namespace TRA.Tool
                             selectedColor = trassenPanel.BackColor;
                             panel.Controls.Add(trassenPanel);
                             panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                            i++;
                         }
                     }
+                    TrassierungLog.Logger?.LogInformation("Loaded " + i + " TRA-Files");
                 }
             }
             dropIndicatorPanel.Visible = false;
