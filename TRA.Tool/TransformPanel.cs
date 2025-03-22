@@ -128,6 +128,7 @@ namespace TRA.Tool
                         double gammat = Math.Atan2(element.Xend - element.Xstart, element.Yend - element.Ystart); //heading(Richtungswinkel) from element start points
                         element.Relocate(deltaGamma: gammat - gammai);
                     }
+                    element.PlausibilityCheck();
                 }
                 catch
                 {

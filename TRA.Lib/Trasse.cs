@@ -628,12 +628,7 @@ namespace TRA_Lib
                     int idx = gridView.Rows.Add(element.ID, element.R1, element.R2, element.Ystart, element.Xstart, element.T, element.S, element.KzString, element.L, element.U1, element.U2, element.C,element.MeanProjectionDeviation());
                     gridView.Rows[idx].Tag = element;
                 }
-                //Warnings
-                foreach (var warning in element.WarningCallouts)
-                {
-                    Plot2D.Plot.Add.Plottable(warning);
-                }
-                element.WarningCallouts.CollectionChanged += Warning_CollectionChanged;
+
                 //Visualize Projections
                 foreach (ProjectionArrow projection in element.projections)
                 {
@@ -746,20 +741,22 @@ namespace TRA_Lib
             }
 
         }
-        private void Warning_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        public void Warning_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
         {
-            if (Plot2D == null || !showWarnings) return;
+            if (Plot2D == null) return;
             switch (e.Action) 
             { 
                 case NotifyCollectionChangedAction.Add: 
                     foreach(var item in e.NewItems)
                     {
+                        (item as GeometryWarning).IsVisible = showWarnings;
                         Plot2D.Plot.Add.Plottable(item as GeometryWarning);
                     }
                     break; 
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var item in e.OldItems)
                     {
+                        (item as GeometryWarning).IsVisible = showWarnings;
                         Plot2D.Plot.Remove(item as GeometryWarning);
                     }
                     break; 
@@ -768,6 +765,7 @@ namespace TRA_Lib
                     foreach (var item in e.OldItems)
                     {
                         Plot2D.Plot.Remove(item as GeometryWarning);
+                        (e.NewItems[i] as GeometryWarning).IsVisible = showWarnings;
                         Plot2D.Plot.Add.Plottable(e.NewItems[i] as GeometryWarning);
                         i++;
                     }
