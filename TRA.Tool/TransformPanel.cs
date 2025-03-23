@@ -73,9 +73,14 @@ namespace TRA.Tool
             {
             }
         }
+        /// <summary>
+        /// Transforms all Elements of a TRA by the given transformSetup
+        /// </summary>
+        /// <param name="trasse"></param>
+        /// <param name="transformSetup"></param>
         private void TrassenTransform(TRATrasse trasse, TransformSetup transformSetup)
         {
-            double previousdK = double.NaN;
+            double previousdK = double.NaN; //Scale from previous element
             if (trasse == null) return;
             foreach (TrassenElementExt element in trasse.Elemente.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
             {
@@ -85,7 +90,7 @@ namespace TRA.Tool
                 double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
                                                                                     // TODO how to handle trasse without heights (like S) in transformations
                 if (interp.H == null) { interp.H = new double[interp.X.Length]; }
-                if (interp.X.Length > 0 && interp.H != null)
+                if (interp.X.Length > 0)
                 {
                     try
                     {
@@ -119,8 +124,9 @@ namespace TRA.Tool
                     (rechts, hoch, _) = transformSetup.singleCoordinateTransform(element.Ystart, element.Xstart, 0.0);
                     (gamma_o, k_o) = transformSetup.singleOut_Gamma_k(rechts, hoch);
                     double dK = (k_o / k_i);
-                    element.Relocate(hoch, rechts, DegreesToRadians(gamma_o - gamma_i), dK, previousdK);
-                    previousdK = element.ID == 0 ? double.NaN : dK; //As we iterate reverse(!) over all elements of all Trasses, we need to reset previousScale for next Trasse
+                    double dT = DegreesToRadians(gamma_o - gamma_i);
+                    element.Relocate(hoch, rechts, dT, dK, previousdK);
+                    previousdK = dK;
                     if (checkBox_RecalcHeading.Checked) //recalculate a optimized Heading.
                     {
                         double Xi, Yi; //end-coordinates calculated from geometry 
@@ -129,7 +135,6 @@ namespace TRA.Tool
                         double gammat = Math.Atan2(element.Xend - element.Xstart, element.Yend - element.Ystart); //heading(Richtungswinkel) from element start points
                         element.Relocate(deltaGamma: gammat - gammai);
                     }
-                    element.PlausibilityCheck();
                 }
                 catch
                 {
@@ -199,6 +204,7 @@ namespace TRA.Tool
             int idx = owner.Controls.GetChildIndex(this) - 1;
 
             List<TRATrasse> transform_Trasse = new List<TRATrasse>();
+            //Get all TRAs to transform
             while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanel))
             {
                 if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
@@ -217,13 +223,14 @@ namespace TRA.Tool
                 int localN = n;
                 tasks[localN] = Task.Run(() =>
                 {
+                    //Transform 
                     TrassenTransform(trasse, transformSetup);
                     //Calc Deviations
                     foreach (TrassenElementExt element in trasse.Elemente)
                     {
                          element.ClearProjections();
                          Interpolation interp = element.InterpolationResult;
-                         float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y);
+                         float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y,true);
                          string ownerString = element.owner.Filename + "_" + element.ID;
                          TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);
                     }

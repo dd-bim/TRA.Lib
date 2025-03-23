@@ -63,6 +63,9 @@ namespace TRA_Lib
     }
     public class TRATrasse : GRATrasse
     {
+        static double interpDelta = 1.0;
+        static double interpTolerance = 0.01;
+
         public TrassenElementExt[] Elemente;
         ///<value>Stationierungs/Kilometrierungs Trasse. Used to project coordinates to TrasseS and get Station values S of the mileage(TrasseS).</value>
         TRATrasse TrasseS;
@@ -171,8 +174,11 @@ namespace TRA_Lib
         /// <param name="delta">distance along geometry between interpolation points</param>
         /// <param name="allowedTolerance">maximal allowed distance between geometry and interpolated polyline, if set to zero this value is ignored</param>
         /// <returns>Interpolation: array of 2D coordinates, along with heading and curvature for each point</returns>
-        public Interpolation Interpolate(double delta = 1.0, double allowedTolerance = 0.01)
+        public Interpolation Interpolate(double delta = double.NaN, double allowedTolerance = double.NaN)
         {
+            if (!double.IsNaN(delta)) interpDelta = delta;
+            if (!double.IsNaN(allowedTolerance)) interpTolerance = allowedTolerance;
+
             Interpolation interp = new Interpolation(0);
             Interpolation[] interpolation = new Interpolation[Elemente.Length];
             Task[] tasks = new Task[Elemente.Length];
@@ -183,7 +189,7 @@ namespace TRA_Lib
                 int localN = n;
                 tasks[localN] = Task.Run(() =>
                 {
-                    Elemente[localN].Interpolate(delta, allowedTolerance);
+                    Elemente[localN].Interpolate(interpDelta, interpTolerance);
                 });
                 n++;
             }
@@ -204,8 +210,11 @@ namespace TRA_Lib
         /// <param name="delta">distance along geometry between interpolation points</param>
         /// <param name="allowedTolerance">maximal allowed distance between geometry and interpolated polyline, if set to zero this value is ignored</param>
         /// <returns>Interpolation: array of 3D coordinates, along with heading and curvature for each point</returns>
-        public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = 1.0, double allowedTolerance = 0.01)
+        public Interpolation Interpolate3D(TRATrasse stationierungsTrasse = null, double delta = double.NaN, double allowedTolerance = double.NaN)
         {
+            if (!double.IsNaN(delta)) interpDelta = delta;
+            if (!double.IsNaN(allowedTolerance)) interpTolerance = allowedTolerance;
+
             Interpolation interp = new Interpolation(0);
             TRATrasse trasseS = stationierungsTrasse != null ? stationierungsTrasse : TrasseS; //if a valid trasse is provided use that one, else try to use a previously assigned
             if (GradientenElemente == null)
@@ -219,7 +228,7 @@ namespace TRA_Lib
                 int localN = n;
                 tasks[localN] = Task.Run(() =>
                 {
-                    ref Interpolation interpolation = ref element.Interpolate(delta, allowedTolerance);
+                    ref Interpolation interpolation = ref element.Interpolate(interpDelta, interpTolerance);
                     if (GradientenElemente == null)
                     {
                         return;
@@ -233,7 +242,7 @@ namespace TRA_Lib
                         double s;
                         if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                         {
-                            (s, _, _, _) = trasseS.ProjectPoints(interpolation.X[i], interpolation.Y[i], element.projections);
+                            (s, _, _, _) = trasseS.ProjectPoints(interpolation.X[i], interpolation.Y[i]);
                         }
                         else //if no trasseS provided use original value S
                         {
@@ -258,14 +267,14 @@ namespace TRA_Lib
         /// <param name="X">array of X-coordinates</param>
         /// <param name="Y">array of Y-coordinates</param>
         /// <returns>mean deviation(distance) from point to geometry</returns>
-        public float ProjectPoints(double[] X, double[] Y)
+        public float ProjectPoints(double[] X, double[] Y, bool bsaveProjections = false)
         {
             int num = Math.Min(X.Length, Y.Length);
             float deviation = 0;
             double dist = 0;   
             for (int i =0;i<num; i++)
             {
-               (_,dist,_,_) = ProjectPoints(X[i], Y[i]);
+               (_,dist,_,_) = ProjectPoints(X[i], Y[i], bsaveProjections);
                deviation += (float)dist;
             }
             return deviation / num;
@@ -276,7 +285,7 @@ namespace TRA_Lib
         /// <param name="X">X-Coordinate</param>
         /// <param name="Y">Y-Coordinate</param>
         /// <returns>s(Milage),distance,X-Coordinate of the projection,Y-Coordinate of the projection</returns>
-        internal (double,double,double,double) ProjectPoints(double X, double Y, List<ProjectionArrow> projections = null)
+        internal (double,double,double,double) ProjectPoints(double X, double Y,bool bsaveProjections = false)
         {
             TrassenElementExt element = GetElementFromPoint(X, Y);
             double s = (element != null ? element.GetSAtPoint(X, Y) : double.NaN);
@@ -285,11 +294,10 @@ namespace TRA_Lib
             {
                 (X_, Y_, _) = element.GetPointAtS(s);
 #if USE_SCOTTPLOT    
-                if (projections == null)
+                if (bsaveProjections)
                 {
-                    projections = element.projections;
-                }
-                projections.Add(new ProjectionArrow(new Coordinates(Y, X), new Coordinates(Y_, X_)));
+                    element.projections.Add(new ProjectionArrow(new Coordinates(Y, X), new Coordinates(Y_, X_)));
+                }              
 #endif
                 return (s, Math.Sqrt(Math.Pow(X - X_, 2) + Math.Pow(Y - Y_, 2)), X_, Y_);
             }

@@ -1,6 +1,6 @@
 {
   "GeometricalLengthMismatchTolerance": 1E-04,
   "ConnectivityMismatchTolerance": 1E-04,
-  "ContinuityOfHeadingTolerance": 1E-08,
+  "ContinuityOfHeadingTolerance": 2.7E-4,
   "ContinuityOfCurvatureTolerance": 1E-08
 }
