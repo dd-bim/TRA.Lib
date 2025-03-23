@@ -604,7 +604,9 @@ namespace TRA_Lib
                     //scatterSlope.LegendText = "Slope";
                     scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
                 }
-
+                //Warnings
+                Plot2D.Plot.PlottableList.RemoveAll(n => n.GetType() == typeof(GeometryWarning) && ((GeometryWarning)n).trasse == element);
+                Plot2D.Plot.PlottableList.AddRange(element.WarningCallouts);
                 //Raw Data to GridView
                 if (element.projections == null || element.projections.Count == 0)
                 {
@@ -727,6 +729,7 @@ namespace TRA_Lib
             gridView = null;
             Plot2D = null;
             Form = null;
+            initialized = false;
         }
 
         public void UpdatePlot()

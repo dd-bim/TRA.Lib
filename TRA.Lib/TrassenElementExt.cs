@@ -9,10 +9,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.Media;
 using System.Xml.Linq;
 
-
-
-
-
 #if USE_SCOTTPLOT
 using SkiaSharp;
 using ScottPlot;
@@ -20,74 +16,6 @@ using ScottPlot;
 
 namespace TRA_Lib
 {
-    /// <summary>
-    /// A Collection triggering the Remove Action for all Items on Clearing
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class CustomObservableCollection<T> : ObservableCollection<T> 
-    {
-        private readonly SynchronizationContext _syncContext;
-        public CustomObservableCollection()
-        {
-            _syncContext = SynchronizationContext.Current ?? throw new InvalidOperationException("SynchronizationContext is not set.");
-        }
-        protected override void ClearItems() {
-            if (this.Count == 0) return;
-            if (SynchronizationContext.Current == _syncContext)
-            {
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove,Items.ToList(), Count));
-                base.ClearItems();
-            }
-            else
-                _syncContext.Post(_ =>
-            {
-                if (Count != 0)
-                {
-                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, Items.ToList(), Count));
-                    base.ClearItems();
-                }
-            },null);
-        }
-        public void Add_Async(T item)
-        {
-            if (SynchronizationContext.Current == _syncContext)
-            {
-                base.Add(item);
-            }
-            else
-            {
-                _syncContext.Post(_ => base.Add(item),null);
-            }
-        }
-        public void AddRange(IEnumerable<T> items)
-        {
-            if (items == null || items.Count() == 0) return;
-            if (SynchronizationContext.Current == _syncContext)
-            {
-                int idx = Items.Count() - 1;
-                foreach (var item in items)
-                {
-                    Items.Add(item); // Directly modify the underlying collection
-                }
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add,items.ToList(),idx));
-            }
-            else
-            {
-                _syncContext.Post(_ =>
-                {
-                    int idx = Items.Count() - 1;
-                    foreach (var item in items)
-                    {
-                        Items.Add(item); // Directly modify the underlying collection
-                    }
-                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add,items.ToList(),idx));
-                }, null);
-            }
-            
-
-            
-        }
-    }
     public struct Interpolation
     {
         /// <value>Hochwert</value>
@@ -171,7 +99,7 @@ namespace TRA_Lib
         Interpolation Interpolation;
 
         /// <value>List of Warnings. Callouts to show on Plot if compiled with SCOTTPLOT</value>
-        internal CustomObservableCollection<GeometryWarning> WarningCallouts = new() { };
+        internal List<GeometryWarning> WarningCallouts = new() { };
 
         public double MeanProjectionDeviation() { 
             var filteredProjections = projections?.Where(w => w != null);
@@ -260,7 +188,6 @@ namespace TRA_Lib
                 default:
                     break;
             }
-            WarningCallouts.CollectionChanged += ((TRATrasse)owner).Warning_CollectionChanged;
         }
 
         /// <summary>
@@ -310,7 +237,7 @@ namespace TRA_Lib
         /// </summary>
         public bool PlausibilityCheck(bool bCheckRadii = false)
         {
-            WarningCallouts.Clear(); //not working if warnings are still in queue
+            WarningCallouts.Clear(); 
             //Radii
             if (kz == Trassenkennzeichen.Gerade && r1 != 0 & r2 != 0) { AddWarningCallout("given Radii are not matching to KZ as it is 'Gerade''", Xstart, Ystart); }
             if (kz == Trassenkennzeichen.Kreis && r1 != r2) { AddWarningCallout("given Radii are not equal for KZ is 'Kreis''", Xstart, Ystart); }
@@ -327,7 +254,7 @@ namespace TRA_Lib
             if(TrassenGeometrie is Gerade)
             {
                 double geoL = Math.Sqrt(Math.Pow(Xend-Xstart,2)+Math.Pow(Yend-Ystart,2));
-                if (Math.Abs(l*scale- geoL)> Trassierung.GeometricalLengthMismatchTolerance) { AddWarningCallout("length missmatch. elements Length parameter, does not match to Geometry by " + (l*scale - geoL), Xstart, Ystart); }
+                if (Math.Abs(l*scale- geoL)> Trassierung.GeometricalLengthMismatchTolerance) { AddWarningCallout("length missmatch. Elements Length parameter, does not match to Geometry by " + (l*scale - geoL), Xstart, Ystart); }
             }
             //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)
@@ -355,8 +282,7 @@ namespace TRA_Lib
         }
         void AddWarningCallout(string text, double X, double Y)
         {
-            //WarningCallouts.Add_Async(new GeometryWarning(text, X, Y, this));
-            GeometryWarning._warningQueue.Enqueue(new GeometryWarning(text, X, Y, this));
+            WarningCallouts.Add(new GeometryWarning(text, X, Y, this));
         }
 
         /// <summary>
@@ -470,11 +396,7 @@ namespace TRA_Lib
     public class GeometryWarning : ScottPlot.Plottables.Callout
     {
         static double Xlast; //prevent multiple callouts at same location
-        static internal ConcurrentQueue<GeometryWarning> _warningQueue = new();
-        private static readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        static private Task _warningTask;
-
-        private TrassenElementExt trasse;
+        public TrassenElementExt trasse;
         public GeometryWarning(string text, double X, double Y, object owner)
         {
             ScottPlot.Color color = ScottPlot.Color.FromSDColor(System.Drawing.Color.Yellow);
@@ -490,34 +412,6 @@ namespace TRA_Lib
             trasse = (TrassenElementExt)owner;
             string ownerString = trasse != null && trasse.owner != null ? trasse.owner.Filename + "_" + trasse.ID : null;
             TrassierungLog.Logger?.Log_Async(LogLevel.Warning, ownerString + " " + Text, owner);
-            if (_warningTask == null)
-            {
-                _warningTask = Task.Run(() => ProcessWarningQueue(), _cts.Token);
-            }
-        }
-        private static void ProcessWarningQueue()
-        {
-            Dictionary<TrassenElementExt, List<GeometryWarning>> batch = new Dictionary<TrassenElementExt, List<GeometryWarning>>();
-            while (!_cts.Token.IsCancellationRequested)
-            {
-                while (_warningQueue.TryDequeue(out var logEntry))
-                {
-                    if (!batch.ContainsKey(logEntry.trasse))
-                    {
-                        // Initialize the category list if it doesn't exist
-                        batch[logEntry.trasse] = new List<GeometryWarning>();
-                    }
-
-                    // Add the log entry to the category list
-                    batch[logEntry.trasse].Add(logEntry);
-                }
-                foreach (TrassenElementExt trasse in batch.Keys)
-                {
-                    trasse.WarningCallouts.AddRange(batch[trasse]);
-                    batch.Remove(trasse);
-                }
-                Thread.Sleep(100); // Adjust the sleep time as needed
-            }
         }
     }
 
