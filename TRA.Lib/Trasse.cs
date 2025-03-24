@@ -23,7 +23,7 @@ using SkiaSharp;
 [assembly: InternalsVisibleTo("TRA.Lib_TEST")]
 
 namespace TRA_Lib
-{
+{   
     public class Trasse
     {
         internal const bool saveProjectionsOnInterpolation = false; //only for Debug, save Projections during Interpolation as Projection Errors
@@ -304,37 +304,6 @@ namespace TRA_Lib
             }
             return (double.NaN,double.NaN, double.NaN, double.NaN);
 
-        }
-
-        public void SaveCSV(StreamWriter outputFile)
-        {
-            CultureInfo info = CultureInfo.CurrentCulture;
-            using (outputFile)
-            {
-                string[] titles = { "R1", "R2", "Y", "X", "T", "S", "Kz", "L", "U1", "U2", "C", "H", "s","Deviation","Warnings" };
-                outputFile.WriteLine(string.Join(info.TextInfo.ListSeparator, titles));
-                foreach (TrassenElementExt ele in Elemente)
-                {
-                    outputFile.WriteLine(ele.ToString());
-                    Interpolation interp = ele.InterpolationResult;
-                    if (interp.Y != null)
-                    {
-                        for (int i = 0; i < ele.InterpolationResult.Y.Length; i++)
-                        {
-                            string[] values = { "", "", interp.Y[i].ToString(info), interp.X[i].ToString(info), interp.T[i].ToString(info), interp.S[i].ToString(info), interp.K[i].ToString(info) };
-                            if (interp.H != null)
-                            {
-                                values = values.Concat(new string[] { "", "", "", "", interp.H[i].ToString(info), interp.s[i].ToString(info) }).ToArray();
-                            }
-                            else
-                            {
-                                values = values.Concat(new string[] { "", "", "", "", "", "" }).ToArray();
-                            }
-                            outputFile.WriteLine(string.Join(info.TextInfo.ListSeparator, values));
-                        }
-                    }
-                }
-            }
         }
 
 #if USE_SCOTTPLOT

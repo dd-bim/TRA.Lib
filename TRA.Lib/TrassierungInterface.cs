@@ -210,7 +210,7 @@ namespace TRA_Lib
                 using (StreamWriter writer = new StreamWriter(fileStream))
                 {
                     CultureInfo info = CultureInfo.CurrentCulture;
-                    string[] titles = { "R1", "R2", "Y", "X", "T", "S", "Kz", "L", "U1", "U2", "C", "H", "s", "Deviation", "Warnings" };
+                    string[] titles = { "R1[1/m]", "R2[1/m]", "Y[m]", "X[m]", "T[rad]", "S[m]", "Kz", "L[m]", "U1", "U2", "C", "H[m]", "s[1/m]", "Scale", "Deviation", "Warnings" };
                     writer.WriteLine(string.Join(info.TextInfo.ListSeparator, titles));
                     foreach (TrassenElementExt ele in trasse.Elemente)
                     {

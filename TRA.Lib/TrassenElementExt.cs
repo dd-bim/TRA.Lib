@@ -198,7 +198,9 @@ namespace TRA_Lib
         /// <param name="deltaGamma">delta in Heading (Meridiankonvergenz)</param>
         /// <param name="deltaK_start">Scale at Elementstart (Masstabsfaktor)</param>
         /// <param name="deltaK_end">Scale at Elementend (Masstabsfaktor)</param>
-        public void Relocate(double x = double.NaN, double y = double.NaN, double deltaGamma = double.NaN, double deltaK_start = double.NaN, double deltaK_end = double.NaN)
+        /// <param name="bFitHeading">Fits Heading by rotating the element to have the last interpolationpoint as close as possible to successors start</param>
+        /// <param name="bFitLength">Calculate Scale to have the interpolationpoint at L as close as possible to successors start</param>
+        public void Relocate(double x = double.NaN, double y = double.NaN, double deltaGamma = double.NaN, double deltaK_start = double.NaN, double deltaK_end = double.NaN,bool bFitHeading = false,bool bFitLength = false)
         {
             if (!double.IsNaN(x))
             {
@@ -229,8 +231,31 @@ namespace TRA_Lib
                         r2 = r2 * deltaK_end;
                         break;
                 }
-                TrassenGeometrie.updateParameters(l*scale,r1,r2);//Set scaled parameters to Geometry
+                TrassenGeometrie.updateParameters(l * scale, r1, r2);
             }
+            if (bFitHeading)
+            {
+                double Xi, Yi; //end-coordinates calculated from geometry 
+                (Xi, Yi, _) = GetPointAtS(l, true);
+                double gammai = Math.Atan2(Xi - Xstart, Yi - Ystart); //heading(Richtungswinkel) from geometry
+                double gammat = Math.Atan2(Xend - Xstart, Yend - Ystart); //heading(Richtungswinkel) from element start points
+                t = t - (gammat - gammai);
+            }
+            if (bFitLength)
+            {
+                //optimize length
+                double Xi, Yi, Ti; //end-coordinates calculated from geometry 
+                (Xi, Yi, Ti) = GetPointAtS(l, true);
+                Transform2D transformAtEnd = new Transform2D(Xi, Yi, Ti);
+                double targetX, targetY, targetT;
+                targetX = Xend;
+                targetY = Yend;
+                targetT = 0;
+                transformAtEnd.ApplyInverse(ref targetX, ref targetY, ref targetT);
+                scale = (l*scale + targetX) / l;
+                TrassenGeometrie.updateParameters(l * scale, r1, r2);//Set new parameters to Geometry
+            }
+            
         }
         /// <summary>
         /// Plausibility Check
@@ -382,6 +407,7 @@ namespace TRA_Lib
                 u1.ToString(info),
                 u2.ToString(info),
                 C, "","",
+                scale.ToString(info),
                 MeanProjectionDeviation().ToString(info),
                 "\"" + string.Join(Environment.NewLine, WarningCallouts.Select(w => w.Text)) + "\""
                 };

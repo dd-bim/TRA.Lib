@@ -125,16 +125,8 @@ namespace TRA.Tool
                     (gamma_o, k_o) = transformSetup.singleOut_Gamma_k(rechts, hoch);
                     double dK = (k_o / k_i);
                     double dT = DegreesToRadians(gamma_o - gamma_i);
-                    element.Relocate(hoch, rechts, dT, dK, previousdK);
+                    element.Relocate(hoch, rechts, dT, dK, previousdK, checkBox_RecalcHeading.Checked, checkBox_RecalcLength.Checked);
                     previousdK = dK;
-                    if (checkBox_RecalcHeading.Checked) //recalculate a optimized Heading.
-                    {
-                        double Xi, Yi; //end-coordinates calculated from geometry 
-                        (Xi, Yi, _) = element.GetPointAtS(element.L, true);
-                        double gammai = Math.Atan2(Xi - element.Xstart, Yi - element.Ystart); //heading(Richtungswinkel) from geometry
-                        double gammat = Math.Atan2(element.Xend - element.Xstart, element.Yend - element.Ystart); //heading(Richtungswinkel) from element start points
-                        element.Relocate(deltaGamma: gammat - gammai);
-                    }
                 }
                 catch
                 {
@@ -228,16 +220,26 @@ namespace TRA.Tool
                     //Calc Deviations
                     foreach (TrassenElementExt element in trasse.Elemente)
                     {
-                         element.ClearProjections();
-                         Interpolation interp = element.InterpolationResult;
-                         float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y,true);
-                         string ownerString = element.owner.Filename + "_" + element.ID;
-                         TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);
+                        element.ClearProjections();
+                        Interpolation interp = element.InterpolationResult;
+                        float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y, true);
+                        string ownerString = element.owner.Filename + "_" + element.ID;
+                        TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);
                     }
                 });
                 n++;
             }
             Task.WaitAll(tasks);
+            foreach (TRATrasse trasse in transform_Trasse)
+            {
+                //int localN = n;
+                //tasks[localN] = Task.Run(() =>
+                //{
+                //Re-Interpolate and do PlausabilityCheck
+                trasse.Interpolate3D();
+                //});
+                //n++;
+            }
             foreach (TRATrasse trasse in transform_Trasse)
             {
                 trasse.Plot();
@@ -291,7 +293,7 @@ namespace TRA.Tool
                             Trassierung.ExportGRA(panel.gradientL, Path.Combine(folderBrowserDialog.SelectedPath, panel.gradientL.Filename));
                         }
                     }
-                idx--;
+                    idx--;
                 }
             }
         }
