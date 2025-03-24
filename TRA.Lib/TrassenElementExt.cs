@@ -138,6 +138,8 @@ namespace TRA_Lib
         public double T { get { return t; } }
         public int Kz { get { return (int)kz; } }
         public string KzString { get { return kz.ToString(); } }
+        public double Scale { get { return scale; } }
+        public void ApplyScale() { if(!double.IsNaN(scale)) l = l*scale; }
         /// <value>Vorgaenger Element</value>
         public TrassenElementExt Predecessor { get { return predecessor; } }
         /// <value>Hochwert am Elementanfang</value>
@@ -269,11 +271,11 @@ namespace TRA_Lib
             //Connectivity by Station & Length
             if (predecessor != null)
             {
-                if (predecessor.s + predecessor.l != s) { AddWarningCallout("predecessor length missmatch. elements are not connected", Xstart, Ystart); }
+                if (Math.Abs(predecessor.s + predecessor.l - s) > 1E-9) { AddWarningCallout("predecessor length missmatch. elements are not connected", Xstart, Ystart); }
             }
             if (successor != null)
             {
-                if (s + l != successor.s) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
+                if (Math.Abs(s + l - successor.s) > 1E-9) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
             }
             //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)

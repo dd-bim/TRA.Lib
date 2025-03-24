@@ -270,6 +270,7 @@ namespace TRA_Lib
         /// <returns>mean deviation(distance) from point to geometry</returns>
         public float ProjectPoints(double[] X, double[] Y, bool bsaveProjections = false)
         {
+            if (X == null || Y == null) return 0;
             int num = Math.Min(X.Length, Y.Length);
             float deviation = 0;
             double dist = 0;   

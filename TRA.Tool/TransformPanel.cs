@@ -264,6 +264,11 @@ namespace TRA.Tool
             int idx = owner.Controls.GetChildIndex(this) - 1;
 
             DialogResult result = folderBrowserDialog.ShowDialog();
+            SaveScaleDialog ScaleDialog = new SaveScaleDialog();
+            DialogResult resultScale = ScaleDialog.ShowDialog();
+            Trassierung.ESaveScale saveScale = Trassierung.ESaveScale.discard;
+            if (resultScale == DialogResult.OK) saveScale = ScaleDialog.result;
+
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
             {
                 while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanel))
@@ -274,15 +279,15 @@ namespace TRA.Tool
 
                         if (panel.trasseL != null)
                         {
-                            Trassierung.ExportTRA(panel.trasseL, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseL.Filename));
+                            Trassierung.ExportTRA(panel.trasseL, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseL.Filename), saveScale);
                         }
                         if (panel.trasseS != null)
                         {
-                            Trassierung.ExportTRA(panel.trasseS, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseS.Filename));
+                            Trassierung.ExportTRA(panel.trasseS, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseS.Filename), saveScale);
                         }
                         if (panel.trasseR != null)
                         {
-                            Trassierung.ExportTRA(panel.trasseR, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseR.Filename));
+                            Trassierung.ExportTRA(panel.trasseR, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseR.Filename), saveScale);
                         }
                         if (panel.gradientR != null)
                         {

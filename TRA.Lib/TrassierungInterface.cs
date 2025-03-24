@@ -159,11 +159,47 @@ namespace TRA_Lib
             }
             return new TRATrasse();
         }
-        public static void ExportTRA(TRATrasse trasse, string fileName)
+        public enum ESaveScale
         {
+            discard = 0,
+            multiply = 1,
+            asKSprung = 2,
+        }
+        public static void ExportTRA(TRATrasse trasse, string fileName,ESaveScale saveScale = ESaveScale.discard)
+        {
+            List<TrassenElementExt> elements = trasse.Elemente.ToList();
+            if (saveScale == ESaveScale.multiply || saveScale == ESaveScale.asKSprung)
+            {
+                foreach(TrassenElementExt element in elements)
+                {
+                    element.ApplyScale();
+                }
+            }
+            if (saveScale == ESaveScale.asKSprung)
+            {
+                for (int i = 0; i < elements.Count-1; i++)
+                {
+                    if (elements[i].Scale != 1.0 && !double.IsNaN(elements[i].Scale))
+                    {
+                        //Create a new K-Sprung element to solve length difference
+                        elements.Insert(i +1,new TrassenElementExt(0,0,
+                            elements[i].Yend, 
+                            elements[i].Xend,
+                            elements[i].Successor != null ? elements[i].Successor.T : 0,
+                            elements[i].S + elements[i].L,
+                            (int)Trassenkennzeichen.KSprung,
+                            -elements[i].L * (1-1/ elements[i].Scale),
+                            0,0,
+                            elements[i].Cf,
+                            elements[i].ID,
+                            elements[i].owner)); // Insert after a condition
+                        i++; // Adjust index to avoid looping over the inserted element
+                    }
+                }
+            }
             try
             {
-                using (FileStream fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+                using (FileStream fileStream = File.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                 {
                     using (var writer = new BinaryWriter(fileStream, Encoding.UTF8, false))
                     {
@@ -174,13 +210,13 @@ namespace TRA_Lib
                         writer.Write((double)0);
                         writer.Write((double)0);
                         writer.Write((double)0);
-                        writer.Write((short)(trasse.Elemente.Length-1));
+                        writer.Write((short)(elements.Count - 1));
                         writer.Write((double)0);
                         writer.Write((double)0);
                         writer.Write((double)0);
                         writer.Write((float)0);
 
-                        foreach (TrassenElementExt element in trasse.Elemente)
+                        foreach (TrassenElementExt element in elements)
                         {
                             writer.Write(element.R1);
                             writer.Write(element.R2);
@@ -206,7 +242,7 @@ namespace TRA_Lib
         {
             try
             {
-                using (FileStream fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+                using (FileStream fileStream = File.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                 using (StreamWriter writer = new StreamWriter(fileStream))
                 {
                     CultureInfo info = CultureInfo.CurrentCulture;

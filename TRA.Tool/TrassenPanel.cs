@@ -264,19 +264,24 @@ namespace TRA.Tool
                 folderBrowserDialog.InitialDirectory = fileInfo.DirectoryName;
             }
             DialogResult result = folderBrowserDialog.ShowDialog();
+            SaveScaleDialog ScaleDialog = new SaveScaleDialog();
+            DialogResult resultScale = ScaleDialog.ShowDialog();
+            Trassierung.ESaveScale saveScale = Trassierung.ESaveScale.discard;
+            if (resultScale == DialogResult.OK) saveScale = ScaleDialog.result;
+
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
             {
                 if (trasseL != null)
                 {
-                    Trassierung.ExportTRA(trasseL, Path.Combine(folderBrowserDialog.SelectedPath, trasseL.Filename));
+                    Trassierung.ExportTRA(trasseL, Path.Combine(folderBrowserDialog.SelectedPath, trasseL.Filename), saveScale);
                 }
                 if (trasseS != null)
                 {
-                    Trassierung.ExportTRA(trasseS, Path.Combine(folderBrowserDialog.SelectedPath, trasseS.Filename));
+                    Trassierung.ExportTRA(trasseS, Path.Combine(folderBrowserDialog.SelectedPath, trasseS.Filename), saveScale);
                 }
                 if (trasseR != null)
                 {
-                    Trassierung.ExportTRA(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename));
+                    Trassierung.ExportTRA(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename), saveScale);
                 }
                 if (gradientR != null)
                 {
