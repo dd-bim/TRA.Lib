@@ -26,6 +26,7 @@ namespace TRA_Lib
 {
     public class Trasse
     {
+        internal const bool saveProjectionsOnInterpolation = false; //only for Debug, save Projections during Interpolation as Projection Errors
         public static List<Trasse> LoadedTrassen = new List<Trasse> { };
         public string Filename = "";
         internal SynchronizationContext context; //MainThread context
@@ -236,13 +237,13 @@ namespace TRA_Lib
                     int num = interpolation.X.Length;
                     interpolation.H = new double[num];
                     interpolation.s = new double[num];
-                    element.ClearProjections();
+                    if(saveProjectionsOnInterpolation) element.ClearProjections();
                     for (int i = 0; i < num; i++)
                     {
                         double s;
                         if (trasseS != null)  //If TrasseS is set, try projecting coordinate to trasseS, s = NaN if fails
                         {
-                            (s, _, _, _) = trasseS.ProjectPoints(interpolation.X[i], interpolation.Y[i]);
+                            (s, _, _, _) = trasseS.ProjectPoints(interpolation.X[i], interpolation.Y[i],saveProjectionsOnInterpolation);
                         }
                         else //if no trasseS provided use original value S
                         {
