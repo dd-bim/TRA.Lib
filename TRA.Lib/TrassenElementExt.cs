@@ -275,12 +275,6 @@ namespace TRA_Lib
             {
                 if (s + l != successor.s) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
             }
-            //Length and geometrical Length Check
-            if(TrassenGeometrie is Gerade)
-            {
-                double geoL = Math.Sqrt(Math.Pow(Xend-Xstart,2)+Math.Pow(Yend-Ystart,2));
-                if (Math.Abs(l*scale- geoL)> Trassierung.GeometricalLengthMismatchTolerance) { AddWarningCallout("length missmatch. Elements Length parameter, does not match to Geometry by " + (l*scale - geoL), Xstart, Ystart); }
-            }
             //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)
             {
