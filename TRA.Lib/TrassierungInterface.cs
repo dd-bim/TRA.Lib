@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
@@ -181,18 +182,27 @@ namespace TRA_Lib
                 {
                     if (elements[i].Scale != 1.0 && !double.IsNaN(elements[i].Scale))
                     {
-                        //Create a new K-Sprung element to solve length difference
-                        elements.Insert(i +1,new TrassenElementExt(0,0,
-                            elements[i].Yend, 
-                            elements[i].Xend,
-                            elements[i].Successor != null ? elements[i].Successor.T : 0,
-                            elements[i].S + elements[i].L,
-                            (int)Trassenkennzeichen.KSprung,
-                            -elements[i].L * (1-1/ elements[i].Scale),
-                            0,0,
-                            elements[i].Cf,
-                            elements[i].ID,
-                            elements[i].owner)); // Insert after a condition
+                        //First check if the following Element is already a KSprung
+                        //if (elements[i].Successor.GetGeometryType() == typeof(KSprung))
+                        //{
+                        //    elements[i].Successor.L += elements[i].L * (1 - 1 / elements[i].Scale);
+                        //    i++;
+                        //}
+                        //else
+                        //{
+                            //Create a new K-Sprung element to solve length difference
+                            elements.Insert(i + 1, new TrassenElementExt(0, 0,
+                                elements[i].Yend,
+                                elements[i].Xend,
+                                elements[i].Successor != null ? elements[i].Successor.T : 0,
+                                elements[i].S + elements[i].L,
+                                (int)Trassenkennzeichen.KSprung,
+                                -elements[i].L * (1 - 1 / elements[i].Scale),
+                                0, 0,
+                                elements[i].Cf,
+                                elements[i].ID,
+                                elements[i].owner)); // Insert after a condition
+                        //}
                         i++; // Adjust index to avoid looping over the inserted element
                     }
                 }

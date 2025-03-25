@@ -83,7 +83,7 @@ namespace TRA.Tool
 
         private void FlowLayoutPanel_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(UserControl))) 
+            if (e.Data.GetDataPresent(typeof(UserControl)))
             {
                 e.Effect = DragDropEffects.Move;
             }
@@ -167,7 +167,7 @@ namespace TRA.Tool
                     panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
                     node.References.Add(trassenPanel);
                 }
-                else if(fileInfo.Attributes == System.IO.FileAttributes.Directory)
+                else if (fileInfo.Attributes == System.IO.FileAttributes.Directory)
                 {
                     node.Expand(); //To Load Child Nodes
                     node.Collapse(false);
@@ -207,39 +207,35 @@ namespace TRA.Tool
         private void btn_AddTrassenPanel_Click(object sender, EventArgs e)
         {
             FlowLayoutPanel panel = ((Control)sender).Parent.Parent as FlowLayoutPanel;
-            if (panel != null)
+            if (flowLayoutPanel != null)
             {
                 TrassenPanel control = new TrassenPanel();
-                panel.Controls.Add(control);
+                flowLayoutPanel.Controls.Add(control);
                 control.Dock = DockStyle.Top;
-                panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
-                panel.Invalidate();
+                flowLayoutPanel.Invalidate();
             }
         }
 
         private void btn_AddInterpolation_Click(object sender, EventArgs e)
         {
             FlowLayoutPanel panel = ((Control)sender).Parent.Parent as FlowLayoutPanel;
-            if (panel != null)
+            if (flowLayoutPanel != null)
             {
                 InterpolationPanel control = new InterpolationPanel();
-                panel.Controls.Add(control);
+                flowLayoutPanel.Controls.Add(control);
                 control.Dock = DockStyle.Top;
-                panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
-                panel.Invalidate();
+                flowLayoutPanel.Invalidate();
             }
         }
 
         private void btn_AddTransformation_Click(object sender, EventArgs e)
         {
-            FlowLayoutPanel panel = ((Control)sender).Parent.Parent as FlowLayoutPanel;
-            if (panel != null)
+            if (flowLayoutPanel != null)
             {
                 TransformPanel control = new TransformPanel();
-                panel.Controls.Add(control);
+                flowLayoutPanel.Controls.Add(control);
                 control.Dock = DockStyle.Top;
-                panel.Controls.SetChildIndex(control, panel.Controls.GetChildIndex(((Control)sender).Parent));
-                panel.Invalidate();
+                flowLayoutPanel.Invalidate();
             }
         }
 
@@ -258,6 +254,51 @@ namespace TRA.Tool
             logger = loggerFactory.CreateLogger<MainForm>();
             TrassierungLog.AssignLogger(loggerFactory);
             egbt22lib.LoggingInitializer.InitializeLogging(loggerFactory);
+        }
+
+        private void btn_SaveAll_Click(object sender, EventArgs e)
+        {
+            if (flowLayoutPanel == null) { return; }
+            int idx = flowLayoutPanel.Controls.Count-1;
+
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            SaveScaleDialog ScaleDialog = new SaveScaleDialog();
+            DialogResult resultScale = ScaleDialog.ShowDialog();
+            Trassierung.ESaveScale saveScale = Trassierung.ESaveScale.discard;
+            if (resultScale == DialogResult.OK) saveScale = ScaleDialog.result;
+
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+            {
+                while (idx >= 0)
+                {
+                    if (flowLayoutPanel.Controls[idx].GetType() == typeof(TrassenPanel))
+                    {
+                        TrassenPanel panel = (TrassenPanel)flowLayoutPanel.Controls[idx];
+
+                        if (panel.trasseL != null)
+                        {
+                            Trassierung.ExportTRA(panel.trasseL, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseL.Filename), saveScale);
+                        }
+                        if (panel.trasseS != null)
+                        {
+                            Trassierung.ExportTRA(panel.trasseS, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseS.Filename), saveScale);
+                        }
+                        if (panel.trasseR != null)
+                        {
+                            Trassierung.ExportTRA(panel.trasseR, Path.Combine(folderBrowserDialog.SelectedPath, panel.trasseR.Filename), saveScale);
+                        }
+                        if (panel.gradientR != null)
+                        {
+                            Trassierung.ExportGRA(panel.gradientR, Path.Combine(folderBrowserDialog.SelectedPath, panel.gradientR.Filename));
+                        }
+                        if (panel.gradientL != null)
+                        {
+                            Trassierung.ExportGRA(panel.gradientL, Path.Combine(folderBrowserDialog.SelectedPath, panel.gradientL.Filename));
+                        }
+                    }
+                    idx--;
+                }
+            }
         }
     }
 

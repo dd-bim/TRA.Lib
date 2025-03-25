@@ -87,6 +87,10 @@ namespace TRA_Lib
         public Trasse owner;
         /// <value>Geometry of this element</value>
         TrassenGeometrie TrassenGeometrie;
+        public Type GetGeometryType()
+        {
+            return TrassenGeometrie.GetType();
+        }
         /// <value>ID des Elements</value>
         int id;
         /// value>Scale - takes into account a scaling of the element length through scale corrections during the transformation</value> 
@@ -126,7 +130,7 @@ namespace TRA_Lib
         /// <value>Station am Elementanfang</value>
         public double S { get { return s; } }
         /// <value>Länge des Elements</value>
-        public double L { get { return l; } }
+        public double L { set { l = value; } get { return l; } }
         /// <value>Überhöhung am Elementanfang</value>
         public double U1 { get { return u1; } }
         /// <value>Überhöhung am Elementende</value>
