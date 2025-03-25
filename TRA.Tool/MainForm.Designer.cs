@@ -127,7 +127,7 @@
             // 
             trassenPanel1.AutoSize = true;
             trassenPanel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            trassenPanel1.BackColor = SystemColors.ActiveCaption;
+            trassenPanel1.BackColor = Color.LightBlue;
             trassenPanel1.BorderStyle = BorderStyle.FixedSingle;
             trassenPanel1.Dock = DockStyle.Top;
             trassenPanel1.Location = new Point(11, 13);
@@ -170,6 +170,7 @@
             btn_TransformationVA.TabIndex = 11;
             btn_TransformationVA.Text = "+ Transformation VA";
             btn_TransformationVA.UseVisualStyleBackColor = true;
+            btn_TransformationVA.Click += btn_TransformationVA_Click;
             // 
             // btn_AddTransformation
             // 

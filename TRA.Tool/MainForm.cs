@@ -155,7 +155,7 @@ namespace TRA.Tool
             //DragDrop for Import
             if (e.Data.GetDataPresent(typeof(TreeNode)))
             {
-                ReferenceTreeNode node = (ReferenceTreeNode)e.Data.GetData(typeof(ReferenceTreeNode));
+                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
                 FileInfo fileInfo = new FileInfo(node.Tag.ToString());
                 Color selectedColor = TrassenPanel.DefaultBackColor;
                 if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
@@ -165,7 +165,7 @@ namespace TRA.Tool
                     node.BackColor = trassenPanel.BackColor;
                     panel.Controls.Add(trassenPanel);
                     panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
-                    node.References.Add(trassenPanel);
+                    (node as ReferenceTreeNode).References.Add(trassenPanel);
                 }
                 else if (fileInfo.Attributes == System.IO.FileAttributes.Directory)
                 {
@@ -238,6 +238,16 @@ namespace TRA.Tool
                 flowLayoutPanel.Invalidate();
             }
         }
+        private void btn_TransformationVA_Click(object sender, EventArgs e)
+        {
+            if (flowLayoutPanel != null)
+            {
+                TransformPanel_VA control = new TransformPanel_VA();
+                flowLayoutPanel.Controls.Add(control);
+                control.Dock = DockStyle.Top;
+                flowLayoutPanel.Invalidate();
+            }
+        }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -259,7 +269,7 @@ namespace TRA.Tool
         private void btn_SaveAll_Click(object sender, EventArgs e)
         {
             if (flowLayoutPanel == null) { return; }
-            int idx = flowLayoutPanel.Controls.Count-1;
+            int idx = flowLayoutPanel.Controls.Count - 1;
 
             DialogResult result = folderBrowserDialog.ShowDialog();
             SaveScaleDialog ScaleDialog = new SaveScaleDialog();
@@ -300,6 +310,8 @@ namespace TRA.Tool
                 }
             }
         }
+
+        
     }
 
     public class TextBoxLogger : ILogger

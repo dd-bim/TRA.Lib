@@ -42,6 +42,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="TransformPanel_VA.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="TransformPanelBase.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -56,6 +59,9 @@
 
   <ItemGroup>
     <None Update="bkg_license.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="dbref_va_syst.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="GCG2016v2023">

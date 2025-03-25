@@ -30,7 +30,6 @@
         {
             comboBox_Transform = new ComboBox();
             SuspendLayout();
-
             // 
             // comboBox_Transform
             // 
@@ -40,11 +39,14 @@
             comboBox_Transform.Name = "comboBox_Transform";
             comboBox_Transform.Size = new Size(338, 40);
             comboBox_Transform.TabIndex = 2;
-
             // 
             // TransformPanel
             // 
+            AutoScaleDimensions = new SizeF(13F, 32F);
+            BackColor = Color.OliveDrab;
             Controls.Add(comboBox_Transform);
+            Name = "TransformPanel";
+            Controls.SetChildIndex(comboBox_Transform, 0);
             ResumeLayout(false);
         }
 
