@@ -53,9 +53,9 @@ namespace TRA.Tool
 
         private void Tb_TRA_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data != null && e.Data.GetData(typeof(TreeNode)) != null)//.GetDataPresent(DataFormats.StringFormat))
+            if (e.Data != null && e.Data.GetData(typeof(ReferenceTreeNode)) != null)//.GetDataPresent(DataFormats.StringFormat))
             {
-                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                ReferenceTreeNode node = (ReferenceTreeNode)e.Data.GetData(typeof(ReferenceTreeNode));
                 string path = node.Tag.ToString();
                 FileInfo fileInfo = new FileInfo(path);
                 if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
@@ -75,28 +75,32 @@ namespace TRA.Tool
 
         private void Tb_TRA_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data != null && e.Data.GetData(typeof(TreeNode)) != null)
+            if (e.Data != null && e.Data.GetData(typeof(ReferenceTreeNode)) != null)
             {
-                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                ReferenceTreeNode node = (ReferenceTreeNode)e.Data.GetData(typeof(ReferenceTreeNode));
                 string path = node.Tag.ToString();
                 FileInfo fileInfo = new FileInfo(path);
                 TextBox tb = (TextBox)sender;
                 if (tb != null && fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
                 {
-                    TreeNode previousNode = (TreeNode)tb.Tag;
-                    if (previousNode != null) { previousNode.BackColor = Color.Empty; }
+                    ReferenceTreeNode previousNode = (ReferenceTreeNode)tb.Tag;
+                    if (previousNode != null) {
+                        previousNode.References.Remove(this);
+                        if (previousNode.References.Count() == 0) previousNode.BackColor = Color.Empty; 
+                    }
                     tb.Tag = node;
                     tb.Text = fileInfo.Name;
                     node.BackColor = BackColor;
+                    node.References.Add(this);
                 }
             }
         }
 
         private void Tb_GRA_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data != null && e.Data.GetData(typeof(TreeNode)) != null)
+            if (e.Data != null && (e.Data.GetData(typeof(ReferenceTreeNode)) != null))
             {
-                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                ReferenceTreeNode node = (ReferenceTreeNode)e.Data.GetData(typeof(ReferenceTreeNode));
                 string path = node.Tag.ToString();
                 FileInfo fileInfo = new FileInfo(path);
                 if (fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase))
@@ -115,19 +119,24 @@ namespace TRA.Tool
         }
         private void Tb_GRA_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data != null && e.Data.GetData(typeof(TreeNode)) != null)
+            if (e.Data != null && e.Data.GetData(typeof(ReferenceTreeNode)) != null)
             {
-                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                ReferenceTreeNode node = (ReferenceTreeNode)e.Data.GetData(typeof(ReferenceTreeNode));
                 string path = node.Tag.ToString();
                 FileInfo fileInfo = new FileInfo(path);
                 TextBox tb = (TextBox)sender;
                 if (tb != null && fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase))
                 {
-                    TreeNode previousNode = (TreeNode)tb.Tag;
-                    if (previousNode != null) { previousNode.BackColor = Color.Empty; }
+                    ReferenceTreeNode previousNode = (ReferenceTreeNode)tb.Tag;
+                    if (previousNode != null)
+                    {
+                        previousNode.References.Remove(this);
+                        if (previousNode.References.Count() == 0) previousNode.BackColor = Color.Empty;
+                    }
                     tb.Tag = node;
                     tb.Text = fileInfo.Name;
                     node.BackColor = BackColor;
+                    node.References.Add(this);
                 }
             }
         }
@@ -136,25 +145,30 @@ namespace TRA.Tool
         {
             List<TextBox> textBoxes = new List<TextBox> { tb_TRA_L, tb_TRA_S, tb_TRA_R, tb_GRA_L, tb_GRA_R };
             textBoxes.Remove(sender as TextBox);
-            TreeNode node = (sender as TextBox).Tag as TreeNode;
+            ReferenceTreeNode node = (sender as TextBox).Tag as ReferenceTreeNode;
             string path = node.Tag.ToString();
             FileInfo fileInfo = new FileInfo(path);
             //Autofill
             //try to find Files following a L.TRA, S.TRA, R.TRA, L.GRA, R.GRA naming convention
-            TreeNode[] treeNodes = node.Parent.Nodes.Cast<TreeNode>().ToArray();
+            ReferenceTreeNode[] treeNodes = node.Parent.Nodes.OfType<ReferenceTreeNode>().ToArray();
             foreach (TextBox tb in textBoxes)
             {
                 if (tb.Text != "") continue;
                 string filename = fileInfo.Name.Remove(fileInfo.Name.Length - 5) + tb.Name.Last() + "." + tb.Name.Substring(3, 3);
-                foreach (TreeNode n in treeNodes)
+                foreach (ReferenceTreeNode n in treeNodes)
                 {
                     if (n.Tag.ToString().EndsWith(filename, StringComparison.OrdinalIgnoreCase))
                     {
-                        TreeNode previousNode = (TreeNode)tb.Tag;
-                        if (previousNode != null) { previousNode.BackColor = Color.Empty; }
+                        ReferenceTreeNode previousNode = (ReferenceTreeNode)tb.Tag;
+                        if (previousNode != null)
+                        {
+                            previousNode.References.Remove(this);
+                            if (previousNode.References.Count() == 0) previousNode.BackColor = Color.Empty;
+                        }
                         tb.Tag = n;
                         tb.Text = filename;
                         n.BackColor = BackColor;
+                        n.References.Add(this);
                         break;
                     }
                 }
@@ -252,6 +266,36 @@ namespace TRA.Tool
 
         private void btn_delete_Click(object sender, EventArgs e)
         {
+            ReferenceTreeNode? referenceNode = tb_TRA_L.Tag as ReferenceTreeNode;
+            if (referenceNode != null)
+            {
+                referenceNode.References.Remove(this);
+                if(referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
+            }
+            referenceNode = tb_TRA_S.Tag as ReferenceTreeNode;
+            if (referenceNode != null)
+            {
+                referenceNode.References.Remove(this);
+                if (referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
+            }
+            referenceNode = tb_TRA_R.Tag as ReferenceTreeNode;
+            if (referenceNode != null)
+            {
+                referenceNode.References.Remove(this);
+                if (referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
+            }
+            referenceNode = tb_GRA_L.Tag as ReferenceTreeNode;
+            if (referenceNode != null)
+            {
+                referenceNode.References.Remove(this);
+                if (referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
+            }
+            referenceNode = tb_GRA_R.Tag as ReferenceTreeNode;
+            if (referenceNode != null)
+            {
+                referenceNode.References.Remove(this);
+                if (referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
+            }
             Parent.Controls.Remove(this);
         }
 

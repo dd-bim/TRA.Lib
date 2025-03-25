@@ -62,7 +62,7 @@ namespace TRA.Tool
 
                 foreach (var file in Directory.GetFiles(path))
                 {
-                    var fileNode = new TreeNode(Path.GetFileName(file)) { Tag = file };
+                    var fileNode = new ReferenceTreeNode(Path.GetFileName(file)) { Tag = file };
                     node.Nodes.Add(fileNode);
                 }
             }
@@ -87,14 +87,14 @@ namespace TRA.Tool
             {
                 e.Effect = DragDropEffects.Move;
             }
-            else if (e.Data.GetDataPresent(typeof(TreeNode)))
+            else if (e.Data.GetDataPresent(typeof(TreeNode)) || e.Data.GetDataPresent(typeof(ReferenceTreeNode)))
             {
                 e.Effect = DragDropEffects.Copy;
             }
         }
         private void FlowLayoutPanel_DragOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(TreeNode)))
+            if (e.Data.GetDataPresent(typeof(TreeNode)) || e.Data.GetDataPresent(typeof(ReferenceTreeNode)))
             {
                 e.Effect = DragDropEffects.Copy;
             }
@@ -155,7 +155,7 @@ namespace TRA.Tool
             //DragDrop for Import
             if (e.Data.GetDataPresent(typeof(TreeNode)))
             {
-                TreeNode node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                ReferenceTreeNode node = (ReferenceTreeNode)e.Data.GetData(typeof(ReferenceTreeNode));
                 FileInfo fileInfo = new FileInfo(node.Tag.ToString());
                 Color selectedColor = TrassenPanel.DefaultBackColor;
                 if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
@@ -164,17 +164,18 @@ namespace TRA.Tool
                     trassenPanel.set_TRA_L_Path(node);
                     node.BackColor = trassenPanel.BackColor;
                     panel.Controls.Add(trassenPanel);
-                    panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);                  
+                    panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                    node.References.Add(trassenPanel);
                 }
                 else if(fileInfo.Attributes == System.IO.FileAttributes.Directory)
                 {
                     node.Expand(); //To Load Child Nodes
                     node.Collapse(false);
                     int i = 0;
-                    foreach (TreeNode childNode in node.Nodes)
+                    foreach (ReferenceTreeNode childNode in node.Nodes)
                     {
                         fileInfo = new FileInfo(childNode.Tag.ToString());
-                        if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase) && childNode.BackColor != selectedColor)
+                        if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase) && childNode.References.Count() == 0)
                         {
                             TrassenPanel trassenPanel = new TrassenPanel();
                             trassenPanel.set_TRA_L_Path(childNode);
@@ -182,9 +183,10 @@ namespace TRA.Tool
                             selectedColor = trassenPanel.BackColor;
                             panel.Controls.Add(trassenPanel);
                             panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                            childNode.References.Add(trassenPanel);
                             i++;
                         }
-                        if (fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase) && childNode.BackColor != selectedColor)
+                        if (fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase) && childNode.References.Count() == 0)
                         {
                             TrassenPanel trassenPanel = new TrassenPanel();
                             trassenPanel.set_GRA_L_Path(childNode);
@@ -192,6 +194,7 @@ namespace TRA.Tool
                             selectedColor = trassenPanel.BackColor;
                             panel.Controls.Add(trassenPanel);
                             panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                            childNode.References.Add(trassenPanel);
                             i++;
                         }
                     }
@@ -304,5 +307,10 @@ namespace TRA.Tool
 
         public void Dispose() { }
     }
-
+    class ReferenceTreeNode : TreeNode
+    {
+        public ReferenceTreeNode() : base() { }
+        public ReferenceTreeNode(string text) : base(text) { }
+        public List<UserControl> References = new List<UserControl>();
+    }
 }
