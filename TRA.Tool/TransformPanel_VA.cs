@@ -104,9 +104,9 @@ namespace TRA.Tool
         internal override TransformSetup SetupTransform()
         {
             TransformSetup transformSetup = new TransformSetup();
-            ETransformsInput eTransform = (ETransformsInput)comboBox_TransformInput.SelectedIndex;
+            ETransformsInput eTransformSource = (ETransformsInput)comboBox_TransformInput.SelectedIndex;
             //Get Target SRS
-            switch (eTransform)
+            switch (eTransformSource)
             {
                 case ETransformsInput._5682_DB_REF_GK_Zone_2:
                     //transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;

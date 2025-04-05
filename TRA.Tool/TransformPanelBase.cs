@@ -71,9 +71,9 @@ namespace TRA.Tool
                 Interpolation interp = element.InterpolationResult;
                 if (!interp.IsEmpty())
                 {
-                double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
-                                                                                    // TODO how to handle trasse without heights (like S) in transformations
-                if (interp.H == null) { interp.H = new double[interp.X.Length]; }
+                    double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
+                                                                                        // TODO how to handle trasse without heights (like S) in transformations
+                    if (interp.H == null) { interp.H = new double[interp.X.Length]; }
                     try
                     {
                         double[][] points = { interp.Y, interp.X, interp.H };
@@ -114,6 +114,28 @@ namespace TRA.Tool
                 {
                 }
             }
+            //Try Removing unnecessary KSprung-Elements.This can happen if previous scale was saved to TRA using KSprung, and inverted Transform was applied. Else Update
+            foreach (TrassenElementExt element in trasse.Elemente)
+            {
+                if (element.Successor != null && element.Successor.GetGeometryType() == typeof(KSprung) && element.Successor.Successor != null)
+                {
+                    if (Math.Abs(element.S + element.L * element.Scale - element.Successor.Successor.S) < Trassierung.StationMismatchTolerance)
+                    {
+                        //Replace KSprung
+                        element.ApplyScale(); //Apply Scale to pre-KSprung element
+                        element.Successor.L = 0; //Set Length of KSprung to 0 (we delete it later by filtering on zero)
+                        element.Successor = element.Successor.Successor; //move successor to KSprung-successor
+                        if (element.Successor.Successor != null) element.Successor.Successor.Predecessor = element; //if there is a successor update also its predecessor 
+                        element.Relocate(bFitHeading: true); //we changed Length so it makes sense to update Heading.
+                        element.PlausibilityCheck(); // Rerun Check as we changed Length and Heading Parameters
+                    }
+                    else
+                    {
+                        element.Successor.L = element.Successor.Successor.S - element.S - element.L * element.Scale; //if there is still a deviation in Sation-values update this in KSprung-Length
+                    }
+                }
+            }
+            trasse.Elemente = trasse.Elemente.Where(x => !(x.GetGeometryType() == typeof(KSprung) && x.L == 0)).ToArray(); //Remove KSprung elements of length 0
         }
         internal virtual TransformSetup SetupTransform() { return new TransformSetup(); }
         private void btn_Transform_Click(object sender, EventArgs e)

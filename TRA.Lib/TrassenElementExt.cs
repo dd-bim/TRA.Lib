@@ -149,9 +149,9 @@ namespace TRA_Lib
         public double Scale { get { return scale; } }
         public void ApplyScale() { if(!double.IsNaN(scale)) l = l*scale; scale = 1.0; }
         /// <value>Vorgaenger Element</value>
-        public TrassenElementExt Predecessor { get { return predecessor; } }
+        public TrassenElementExt Predecessor { set { predecessor = value; } get { return predecessor; } }
         /// <value>Hochwert am Elementanfang</value>
-        public TrassenElementExt Successor { get { return successor; } }
+        public TrassenElementExt Successor { set { successor = value; } get { return successor; } }
         /// <value>Returns Interpolationresult</value>
         public Interpolation InterpolationResult { get { return Interpolation; }}
 
@@ -277,10 +277,6 @@ namespace TRA_Lib
             if (kz == Trassenkennzeichen.Gerade && r1 != 0 & r2 != 0) { AddWarningCallout("given Radii are not matching to KZ as it is 'Gerade''", Xstart, Ystart); }
             if (kz == Trassenkennzeichen.Kreis && r1 != r2) { AddWarningCallout("given Radii are not equal for KZ is 'Kreis''", Xstart, Ystart); }
             //Connectivity by Station & Length
-            if (predecessor != null)
-            {
-                if (Math.Abs(predecessor.s + predecessor.l - s) > 1E-9) { AddWarningCallout("predecessor length missmatch. elements are not connected", Xstart, Ystart); }
-            }
             if (successor != null)
             {
                 if (Math.Abs(s + l - successor.s) > Trassierung.StationMismatchTolerance) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
