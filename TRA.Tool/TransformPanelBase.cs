@@ -18,6 +18,7 @@ using System.Reflection;
 using ScottPlot;
 using HarfBuzzSharp;
 using System.Collections;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TRA.Tool
 {

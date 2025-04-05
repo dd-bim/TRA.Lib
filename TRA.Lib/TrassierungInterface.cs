@@ -177,23 +177,28 @@ namespace TRA_Lib
             {
                 foreach(TrassenElementExt element in elements)
                 {
-                    element.ApplyScale();
+                    if (element.GetGeometryType() != typeof(KSprung)) //we don`t want to apply scale for KSprung as this is only relevant for Station values and has no geometrical impact
+                    {
+                        element.ApplyScale();
+                    }
                 }
-            }
             if (saveScale == ESaveScale.asKSprung)
             {
                 for (int i = 0; i < elements.Count-1; i++)
                 {
                     if (elements[i].Scale != 1.0 && !double.IsNaN(elements[i].Scale))
                     {
+                        double deltaL = elements[i].L * (1 - 1 / elements[i].Scale);
                         //First check if the following Element is already a KSprung
-                        //if (elements[i].Successor.GetGeometryType() == typeof(KSprung))
-                        //{
-                        //    elements[i].Successor.L += elements[i].L * (1 - 1 / elements[i].Scale);
-                        //    i++;
-                        //}
-                        //else
-                        //{
+                        if (elements[i].Successor.GetGeometryType() == typeof(KSprung))
+                        {   
+                            //Adding delta from scale to Length
+                            elements[i].Successor.L -= deltaL;
+                            //And move Station 
+                            elements[i].Successor.S += deltaL;
+                        }
+                        else
+                        {
                             //Create a new K-Sprung element to solve length difference
                             elements.Insert(i + 1, new TrassenElementExt(0, 0,
                                 elements[i].Yend,
@@ -201,12 +206,12 @@ namespace TRA_Lib
                                 elements[i].Successor != null ? elements[i].Successor.T : 0,
                                 elements[i].S + elements[i].L,
                                 (int)Trassenkennzeichen.KSprung,
-                                -elements[i].L * (1 - 1 / elements[i].Scale),
+                                -deltaL,
                                 0, 0,
                                 elements[i].Cf,
                                 elements[i].ID,
-                                elements[i].owner)); // Insert after a condition
-                        //}
+                                elements[i].owner));
+                        }
                         i++; // Adjust index to avoid looping over the inserted element
                     }
                 }

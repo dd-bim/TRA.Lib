@@ -132,7 +132,7 @@ namespace TRA_Lib
         /// <value>Hochwert am Elementende</value>
         public double Xend { get { return successor != null ? successor.x : x; } }
         /// <value>Station am Elementanfang</value>
-        public double S { get { return s; } }
+        public double S { set { s = value; } get { return s; } }
         /// <value>Länge des Elements</value>
         public double L { set { l = value; } get { return l; } }
         /// <value>Überhöhung am Elementanfang</value>
@@ -147,7 +147,7 @@ namespace TRA_Lib
         public int Kz { get { return (int)kz; } }
         public string KzString { get { return kz.ToString(); } }
         public double Scale { get { return scale; } }
-        public void ApplyScale() { if(!double.IsNaN(scale)) l = l*scale; }
+        public void ApplyScale() { if(!double.IsNaN(scale)) l = l*scale; scale = 1.0; }
         /// <value>Vorgaenger Element</value>
         public TrassenElementExt Predecessor { get { return predecessor; } }
         /// <value>Hochwert am Elementanfang</value>
@@ -326,6 +326,11 @@ namespace TRA_Lib
             if (TrassenGeometrie == null)
             {
                 AddWarningCallout("No Geometry for interpolation " + kz.ToString() + " set, maybe not implemented yet", Xstart,Ystart); 
+                Interpolation = new Interpolation();
+                return ref Interpolation;
+            }
+            if(TrassenGeometrie is KSprung) //do not interpolate KSprung
+            {
                 Interpolation = new Interpolation();
                 return ref Interpolation;
             }
