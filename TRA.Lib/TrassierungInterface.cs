@@ -66,9 +66,13 @@ namespace TRA_Lib
     {
         //config from settings.json
         static Trassierung self;
-        public static readonly double GeometricalLengthMismatchTolerance;
+        //Tolerance for Station-values; the Station + Length is compared to the successor Station
+        public static readonly double StationMismatchTolerance;
+        //The last point(L)-Position of the interpolation is compared to the successor element coordinates of the TRA-File.A euclidean distance is used for comparison.[m]
         public static readonly double ConnectivityMismatchTolerance;
+        //The last point(L)-Heading of the interpolation is compared to the successor element heading of the TRA-File.[rad]
         public static readonly double ContinuityOfHeadingTolerance;
+        //The last point(L)-Curvature of the interpolation is compared to the successor element curvature of the TRA-File.[1/m]
         public static readonly double ContinuityOfCurvatureTolerance;
 
         static Trassierung()
@@ -82,7 +86,7 @@ namespace TRA_Lib
                 }
                 else
                 {
-                    GeometricalLengthMismatchTolerance = config["GeometricalLengthMismatchTolerance"];
+                    StationMismatchTolerance = config["StationMismatchTolerance"];
                     ConnectivityMismatchTolerance = config["ConnectivityMismatchTolerance"];
                     ContinuityOfHeadingTolerance = config["ContinuityOfHeadingTolerance"];
                     ContinuityOfCurvatureTolerance = config["ContinuityOfCurvatureTolerance"];
@@ -90,7 +94,7 @@ namespace TRA_Lib
             }
             else
             {
-                GeometricalLengthMismatchTolerance = 1e-8;
+                StationMismatchTolerance = 1e-8;
                 ConnectivityMismatchTolerance = 1e-8;
                 ContinuityOfHeadingTolerance = 1e-8;
                 ContinuityOfCurvatureTolerance = 1e-8;
