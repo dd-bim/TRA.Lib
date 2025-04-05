@@ -68,12 +68,11 @@ namespace TRA.Tool
             {
                 //Transform Interpolation Points
                 Interpolation interp = element.InterpolationResult;
-                if (interp.X == null) break;
+                if (!interp.IsEmpty())
+                {
                 double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
                                                                                     // TODO how to handle trasse without heights (like S) in transformations
                 if (interp.H == null) { interp.H = new double[interp.X.Length]; }
-                if (interp.X.Length > 0)
-                {
                     try
                     {
                         double[][] points = { interp.Y, interp.X, interp.H };
@@ -160,6 +159,7 @@ namespace TRA.Tool
                     {
                         element.ClearProjections();
                         Interpolation interp = element.InterpolationResult;
+                        if (interp.IsEmpty()) continue;
                         float deviation = ((TRATrasse)element.owner).ProjectPoints(interp.X, interp.Y, true);
                         string ownerString = element.owner.Filename + "_" + element.ID;
                         TrassierungLog.Logger?.Log_Async(LogLevel.Information, ownerString + " " + "Deviation to geometry after transform: " + deviation, element);

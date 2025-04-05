@@ -44,9 +44,13 @@ namespace TRA_Lib
             H = null;
             s = null;
         }
+        public readonly bool IsEmpty()
+        {
+            return (X == null || Y == null || S == null || T == null || K == null);
+        }
         public void Concat(Interpolation interp)
         {
-            if (interp.X == null || interp.Y == null || interp.S == null || interp.T == null || interp.K == null) { return; }
+            if (interp.IsEmpty()) { return; }
             X = X.Concat(interp.X).ToArray();
             Y = Y.Concat(interp.Y).ToArray();
             S = S.Concat(interp.S).ToArray();
@@ -279,7 +283,7 @@ namespace TRA_Lib
             }
             if (successor != null)
             {
-                if (Math.Abs(s + l - successor.s) > 1E-9) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
+                if (Math.Abs(s + l - successor.s) > Trassierung.StationMismatchTolerance) { AddWarningCallout("length missmatch. element is not connected to successor", Xend, Yend); }
             }
             //Connectivity & continuity by Interpolation          
             if (Interpolation.X?.Length > 0 && successor != null)

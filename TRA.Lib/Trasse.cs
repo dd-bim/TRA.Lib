@@ -234,7 +234,7 @@ namespace TRA_Lib
                     {
                         return;
                     }
-                    int num = interpolation.X.Length;
+                    int num = interpolation.IsEmpty()? 0 : interpolation.X.Length;
                     interpolation.H = new double[num];
                     interpolation.s = new double[num];
                     if(saveProjectionsOnInterpolation) element.ClearProjections();
@@ -559,29 +559,32 @@ namespace TRA_Lib
             foreach (TrassenElementExt element in Elemente)
             {
                 Interpolation interpolation = element.InterpolationResult;
-                var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
-                Plottables.Add(scatter);
-                scatter.LegendText = Filename;
-                element.PlotColor = scatter.MarkerFillColor;
-                ElementMarker marker = new(element, element.PlotColor);
-                Plottables.Add(Plot2D.Plot.Add.Plottable(marker));
-                var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, element.PlotColor);
-                //scatterT.LegendText = "Heading";
-                Plottables.Add(PlotT.Plot.Add.VerticalLine(element.Ystart, 2, element.PlotColor));
-                var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, element.PlotColor);
-                //scatterK.LegendText = "Curvature";
-                // tell each T and K plot to use a different axis
-                scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
-                scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
-
-                if (interpolation.H != null && interpolation.s != null)
+                if (!interpolation.IsEmpty())
                 {
-                    var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H.Where(i => !double.IsNaN(i)).ToArray(), element.PlotColor); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
-                    //scatterH.LegendText = "Elevation";
-                    scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
-                    var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s.Where(i => !double.IsNaN(i)).ToArray(), element.PlotColor); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
-                    //scatterSlope.LegendText = "Slope";
-                    scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
+                    var scatter = Plot2D.Plot.Add.Scatter(interpolation.Y, interpolation.X);
+                    Plottables.Add(scatter);
+                    scatter.LegendText = Filename;
+                    element.PlotColor = scatter.MarkerFillColor;
+                    ElementMarker marker = new(element, element.PlotColor);
+                    Plottables.Add(Plot2D.Plot.Add.Plottable(marker));
+                    var scatterT = PlotT.Plot.Add.Scatter(interpolation.Y, interpolation.T, element.PlotColor);
+                    //scatterT.LegendText = "Heading";
+                    Plottables.Add(PlotT.Plot.Add.VerticalLine(element.Ystart, 2, element.PlotColor));
+                    var scatterK = PlotT.Plot.Add.ScatterLine(interpolation.Y, interpolation.K, element.PlotColor);
+                    //scatterK.LegendText = "Curvature";
+                    // tell each T and K plot to use a different axis
+                    scatterT.Axes.YAxis = PlotT.Plot.Axes.Left;
+                    scatterK.Axes.YAxis = PlotT.Plot.Axes.Right;
+
+                    if (interpolation.H != null && interpolation.s != null)
+                    {
+                        var scatterH = PlotG.Plot.Add.Scatter(interpolation.Y, interpolation.H.Where(i => !double.IsNaN(i)).ToArray(), element.PlotColor); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
+                                                                                                                                                           //scatterH.LegendText = "Elevation";
+                        scatterH.Axes.YAxis = PlotG.Plot.Axes.Left;
+                        var scatterSlope = PlotG.Plot.Add.ScatterLine(interpolation.Y, interpolation.s.Where(i => !double.IsNaN(i)).ToArray(), element.PlotColor); //BugFix as ScottPlot Crashes on NaNs should be fixed in future release https://github.com/ScottPlot/ScottPlot/pull/4770
+                                                                                                                                                                   //scatterSlope.LegendText = "Slope";
+                        scatterSlope.Axes.YAxis = PlotG.Plot.Axes.Right;
+                    }
                 }
                 //Warnings
                 Plot2D.Plot.PlottableList.RemoveAll(n => n.GetType() == typeof(GeometryWarning) && ((GeometryWarning)n).trasse == element);
