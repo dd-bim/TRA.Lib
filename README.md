@@ -1,7 +1,8 @@
 # TRA.Lib
 
 ## Description
-This repository consists of three projects.
+This repository consists of three projects. First is a Library for importing .TRA and .GRA files, second is are corresponding Tests for different caluclations (some of the geometries require iterative caluclations so this can be used to compare results). The third Project is the actual User-Interface which can be used to read, export, visualize and transform TRA/GRA-files. If you are happy with that, and you don`t want to create a own application using the TRA.Lib, you can skip the first two sections and start with [TRA.Tool](#3.TRA.Tool). Only be aware of the currently available [Gemeotry-Types](#Geometry-Types) and available [Tolerance-Settings](#Settings).
+
 ## 1. TRA.Lib:
 Library providing Functionality for loading .TRA and .GRA files. If the Library is compiled using the symbol "USE_SCOTTPLOT" it is also providing a detailed visualisation of the loaded data.
 ### Geometry-Types
@@ -61,9 +62,9 @@ along with the library a settings.json is provided. Editing this allows changes 
 
 ### Export
 the library allows export to .TRA/GRA and .csv. For exporting to TRA different options are available:
-- Discard: The scale is ignored, the length retains its original value. This leads to coordinate differences between the geometry elements. The condition station value + L == subsequent element station value is satisfied.
-- Multiply: The length is multiplied by scale. The station values of the elements are not adjusted. The condition station value + L == subsequent element.station value is NOT met.
-- Add KSprung: The length is multiplied by the scale. To satisfy the condition Stationswert + L == Folgeelement.Stationswert, additional KSprung elements are added where necessary (this mostly results in a TRA-File having KSprung-elements between each geometry). Also a check for Removing KSprung-Elements is done after transform, especially when transformig back to a previous coordinate-system this takes effect.
+- Discard: The scale is ignored, the length retains its original value. This leads to coordinate differences between the geometry elements. The condition **station value + L = subsequent element station value** is satisfied.
+- Multiply: The length is multiplied by scale. The station values of the elements are not adjusted. The condition **station value + L = subsequent element station value** is NOT met.
+- Add KSprung: The length is multiplied by the scale. To satisfy the condition **station value + L = subsequent element station value**, additional KSprung elements are added where necessary (this mostly results in a TRA-File having KSprung-elements between each geometry). Also a check for Removing KSprung-Elements is done after transform, especially when transformig back to a previous coordinate-system this takes effect.
 
 Export to csv exports a list of all elements, properties and interpolationpoints. Depending on a previous TRA-export scale is already applied to Length parameter, or not if csv-export is done before TRA-export.
 
@@ -75,12 +76,14 @@ This project contains Unit-Tests to verify the calculations and functions implem
 - GeometryProjection (Get a value s on a Gemeotry for a 2D-Point)
 - OverallExecutionTest (Test the whole workflow, loading files, interpolate and Plot)
 ## 3.TRA.Tool
-This project provides a executable UI and a simple usage of TRA.Lib.
+This project provides a executable UI and a simple usage of TRA.Lib. It can be used to read, export, visualize and transform TRA/GRA-files.
 ### Usage
-In the explorer to the left, open the folder containig the relevant TRA and GRA files. The UI allows to load a set of files, like they are commonly used, containing TRA -left(L), -right(R), -milage(S) and GRA -left(L), right(R). Simply drag a file to the corresponding textbox, if the naming convention of the other files follows 'xxx[L/R/S].TRA' and 'xxx[L/R].GRA', the other fileds are set automatically. It is also possible to import entire folders, all TRA files are loaded and grouped, if the naming convention allows it. Afterwards a Interpolation can be calculated using the 'Interpolate'-Button (this opens automatically the Plot-View if the included TRA.Lib is compiled with "USE_SCOTTPLOT") and the Result can be exported using the 'SaveCSV' button.
+In the explorer to the left, open the folder containig the relevant TRA and GRA files. The UI allows to load a set of files, like they are commonly used, containing TRA -left(L), -right(R), -milage(S) and GRA -left(L), right(R). Simply drag a file to the corresponding textbox, if the naming convention of the other files follows 'xxx[L/R/S].TRA' and 'xxx[L/R].GRA', the other fileds are set automatically. It is also possible to import entire folders (by draging the folder into the List on the right), all TRA files are loaded and grouped, if the naming convention allows it. Afterwards a Interpolation can be calculated using the 'Interpolate'-Button (this opens automatically the Plot-View if the included TRA.Lib is compiled with "USE_SCOTTPLOT") and the Result can be exported using the 'SaveCSV' button.
+![Screenshot 2025-04-24 133038](https://github.com/user-attachments/assets/6f737996-8c7a-400f-ba8c-c73c05e3fed3)
+
 
 ### Transform
-Transfromations are currently hardcoded to DBRef_GK5 -> EGBT22_Local more options will be available in future Release.
+Transfromations are currently limited to **DBRef_GK5 <-> EGBT22_Local** and **DBRef_GK5 <-> ETRS89_UTM33**  more options will be available in future Release.
 Resulting changes from Meridian Convergence and Scale Factor are applied to the Element geometries:
 #### Meridian Convergence
 Delta of Meridian Convergence before and after Transformation is subtracted from original heading
