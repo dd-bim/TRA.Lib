@@ -166,8 +166,11 @@ namespace TRA_Lib
         }
         public enum ESaveScale
         {
+            //The scale is ignored, the length retains its original value. This leads to coordinate differences between the geometry elements. The condition station value + L == subsequent element station value is satisfied.
             discard = 0,
+            //The length is multiplied by scale. The station values of the elements are not adjusted. The condition station value + L == subsequent element.station value is NOT met.
             multiply = 1,
+            //The length is multiplied by the scale. To satisfy the condition Stationswert + L == Folgeelement.Stationswert, additional KSprung elements are added.
             asKSprung = 2,
         }
         public static void ExportTRA(TRATrasse trasse, string fileName,ESaveScale saveScale = ESaveScale.discard)
@@ -175,13 +178,14 @@ namespace TRA_Lib
             List<TrassenElementExt> elements = trasse.Elemente.ToList();
             if (saveScale == ESaveScale.multiply || saveScale == ESaveScale.asKSprung)
             {
-                foreach(TrassenElementExt element in elements)
+                foreach (TrassenElementExt element in elements)
                 {
                     if (element.GetGeometryType() != typeof(KSprung)) //we don`t want to apply scale for KSprung as this is only relevant for Station values and has no geometrical impact
                     {
                         element.ApplyScale();
                     }
                 }
+            }
             if (saveScale == ESaveScale.asKSprung)
             {
                 for (int i = 0; i < elements.Count-1; i++)

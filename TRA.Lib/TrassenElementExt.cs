@@ -243,26 +243,19 @@ namespace TRA_Lib
                 }
                 TrassenGeometrie.updateParameters(l * scale, r1, r2);
             }
+            double Xi, Yi; //end-coordinates calculated from geometry
+            (Xi, Yi, _) = GetPointAtS(l, true);
             if (bFitHeading)
-            {
-                double Xi, Yi; //end-coordinates calculated from geometry 
-                (Xi, Yi, _) = GetPointAtS(l, true);
+            {         
                 double gammai = Math.Atan2(Xi - Xstart, Yi - Ystart); //heading(Richtungswinkel) from geometry
                 double gammat = Math.Atan2(Xend - Xstart, Yend - Ystart); //heading(Richtungswinkel) from element start points
-                t = t - (gammat - gammai);
+                t = t - (gammat - gammai); //subtract dT
             }
             if (bFitLength)
             {
-                //optimize length
-                double Xi, Yi, Ti; //end-coordinates calculated from geometry 
-                (Xi, Yi, Ti) = GetPointAtS(l, true);
-                Transform2D transformAtEnd = new Transform2D(Xi, Yi, Ti);
-                double targetX, targetY, targetT;
-                targetX = Xend;
-                targetY = Yend;
-                targetT = 0;
-                transformAtEnd.ApplyInverse(ref targetX, ref targetY, ref targetT);
-                scale = (l*scale + targetX) / l;
+                double S = Math.Sqrt(Math.Pow(Xi - Xstart,2) + Math.Pow(Yi - Ystart,2));
+                double s = Math.Sqrt(Math.Pow(Xend - Xstart,2) + Math.Pow(Yend - Ystart,2));
+                scale = (l * scale + (s-S)) / l;
                 TrassenGeometrie.updateParameters(l * scale, r1, r2);//Set new parameters to Geometry
             }
             
