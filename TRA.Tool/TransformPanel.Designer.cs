@@ -28,31 +28,47 @@
         /// </summary>
         private void InitializeComponent()
         {
-            comboBox_Transform = new ComboBox();
+            components = new System.ComponentModel.Container();
+            comboBox_TransformFrom = new ComboBox();
+            comboBox_TransformTo = new ComboBox();
+            toolTip = new ToolTip(components);
             SuspendLayout();
             // 
-            // comboBox_Transform
+            // comboBox_TransformFrom
             // 
-            comboBox_Transform.FormattingEnabled = true;
-            comboBox_Transform.Location = new Point(293, 81);
-            comboBox_Transform.Margin = new Padding(6);
-            comboBox_Transform.Name = "comboBox_Transform";
-            comboBox_Transform.Size = new Size(338, 40);
-            comboBox_Transform.TabIndex = 2;
+            comboBox_TransformFrom.FormattingEnabled = true;
+            comboBox_TransformFrom.Location = new Point(12, 81);
+            comboBox_TransformFrom.Margin = new Padding(6);
+            comboBox_TransformFrom.Name = "comboBox_TransformFrom";
+            comboBox_TransformFrom.Size = new Size(338, 40);
+            comboBox_TransformFrom.TabIndex = 2;
+            // 
+            // comboBox_TransformTo
+            // 
+            comboBox_TransformTo.FormattingEnabled = true;
+            comboBox_TransformTo.Location = new Point(420, 81);
+            comboBox_TransformTo.Margin = new Padding(6);
+            comboBox_TransformTo.Name = "comboBox_TransformTo";
+            comboBox_TransformTo.Size = new Size(338, 40);
+            comboBox_TransformTo.TabIndex = 5;
             // 
             // TransformPanel
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             BackColor = Color.OliveDrab;
             Name = "TransformPanel";
+            Controls.SetChildIndex(btn_Transform, 0);
             ResumeLayout(false);
             //
             // base.panel_TransformProperties
             //
-            panel_TransformProperties.Controls.Add(comboBox_Transform);
+            panel_TransformProperties.Controls.Add(comboBox_TransformFrom);
+            panel_TransformProperties.Controls.Add(comboBox_TransformTo);
         }
 
         #endregion
-        private ComboBox comboBox_Transform;
+        private ComboBox comboBox_TransformFrom;
+        private ComboBox comboBox_TransformTo;
+        private ToolTip toolTip;
     }
 }

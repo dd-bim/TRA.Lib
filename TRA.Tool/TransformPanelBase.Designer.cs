@@ -122,7 +122,7 @@
 
         #endregion
 
-        private Button btn_Transform;
+        protected Button btn_Transform;
         private CheckBox checkBox_RecalcHeading;
         private GroupBox groupBox;
         private CheckBox checkBox_RecalcLength;

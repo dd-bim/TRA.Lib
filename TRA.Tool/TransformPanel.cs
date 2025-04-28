@@ -27,78 +27,35 @@ namespace TRA.Tool
         public TransformPanel() : base()
         {
             InitializeComponent();
+
             this.label_Panel.Text = "Transform";
-            foreach (ETransforms value in Enum.GetValues(typeof(ETransforms)))
-            {
-                DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute));
-                comboBox_Transform.Items.Add(attribute == null ? value.ToString() : attribute.Description);
-            }
-            comboBox_Transform.SelectedIndex = 0;
+            comboBox_TransformFrom.DataSource = Enum.GetValues(typeof(egbt22lib.Convert.CRS));
+            comboBox_TransformTo.DataSource = Enum.GetValues(typeof(egbt22lib.Convert.CRS));
+            comboBox_TransformFrom.SelectedItem = egbt22lib.Convert.CRS.DB_Ref_GK5;
+            comboBox_TransformTo.SelectedItem = egbt22lib.Convert.CRS.ETRS89_EGBT22_LDP;
+            comboBox_TransformFrom.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
+            comboBox_TransformTo.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
+            comboBox_Transform_SelectedIndexChanged(this,EventArgs.Empty);
         }
-
-        private enum ETransforms
+        private TransformSetup transformSetup;
+        internal override TransformSetup GetTransformSetup()
         {
-            [Description("DBRef_GK5 -> EGBT22_Local")]
-            DBRef_GK5_to_EGBT22_Local,
-            [Description("EGBT22_Local -> DBRef_GK5")]
-            EGBT22_Local_to_DBRef_GK5,
-            [Description("DBRef_GK5 -> ETRS89_UTM33")]
-            DBRef_GK5_to_ETRS89_UTM33,
-            [Description("ETRS89_UTM33 -> DBRef_GK5")]
-            ETRS89_UTM33_to_DBRef_GK5
-        }
-
-        internal override TransformSetup SetupTransform()  
-        {
-            TransformSetup transformSetup = new TransformSetup();
-            ETransforms eTransform = (ETransforms)comboBox_Transform.SelectedIndex;
-            //Get Target SRS
-            switch (eTransform)
-            {
-                case ETransforms.DBRef_GK5_to_EGBT22_Local:
-                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    break;
-                case ETransforms.EGBT22_Local_to_DBRef_GK5:
-                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
-                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
-                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    break;
-                case ETransforms.DBRef_GK5_to_ETRS89_UTM33:
-                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
-                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
-                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    break;
-                case ETransforms.ETRS89_UTM33_to_DBRef_GK5:
-                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
-                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
-                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    break;
-                default:
-                    transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    transformSetup.singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    break;
-            }
             return transformSetup;
         }
 
-  
+
+        private void comboBox_Transform_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(comboBox_TransformFrom.SelectedItem == null || comboBox_TransformTo.SelectedItem == null) return;
+            egbt22lib.Convert.CRS CRSFrom = (egbt22lib.Convert.CRS)comboBox_TransformFrom.SelectedItem;
+            egbt22lib.Convert.CRS CRSTo = (egbt22lib.Convert.CRS)comboBox_TransformTo.SelectedItem;
+            string info;
+            bool result = egbt22lib.Convert.GetConversion(CRSFrom, CRSTo,out transformSetup.ConvertFunc, out info, true);
+            bool result2 = egbt22lib.Convert.GetGammaKCalculation(CRSFrom, out transformSetup.GammaK_From);
+            result2 = egbt22lib.Convert.GetGammaKCalculation(CRSTo, out transformSetup.GammaK_To);
+            toolTip.SetToolTip(comboBox_TransformFrom, info);
+            toolTip.SetToolTip(comboBox_TransformTo, info);
+            btn_Transform.Enabled = result;
+        }
     }
 }
