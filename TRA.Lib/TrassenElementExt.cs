@@ -245,20 +245,36 @@ namespace TRA_Lib
             }
             double Xi, Yi; //end-coordinates calculated from geometry
             (Xi, Yi, _) = GetPointAtS(l, true);
-            if (bFitHeading)
-            {         
-                double gammai = Math.Atan2(Xi - Xstart, Yi - Ystart); //heading(Richtungswinkel) from geometry
-                double gammat = Math.Atan2(Xend - Xstart, Yend - Ystart); //heading(Richtungswinkel) from element start points
-                t = t - (gammat - gammai); //subtract dT
+            int n = 0;
+            while (Math.Sqrt(Math.Pow(Xi - Xend, 2) + Math.Pow(Yi - Yend, 2)) > Trassierung.ConnectivityMismatchTolerance)
+            { 
+                if (bFitHeading)
+                {
+                    double gammai = Math.Atan2(Xi - Xstart, Yi - Ystart); //heading(Richtungswinkel) from geometry
+                    double gammat = Math.Atan2(Xend - Xstart, Yend - Ystart); //heading(Richtungswinkel) from element start points
+                    t = t - (gammat - gammai); //subtract dT
+                }
+                if (bFitLength)
+                {
+                    double S = Math.Sqrt(Math.Pow(Xi - Xstart, 2) + Math.Pow(Yi - Ystart, 2));
+                    double s = Math.Sqrt(Math.Pow(Xend - Xstart, 2) + Math.Pow(Yend - Ystart, 2));
+                    scale = (l * scale + (s - S)) / l;
+                    TrassenGeometrie.updateParameters(l * scale, r1, r2);//Set new parameters to Geometry
+                }
+                if (bFitHeading && bFitLength)
+                {
+                    (Xi, Yi, _) = GetPointAtS(l, true); //recalculate after fit
+                }
+                else
+                {
+                    break; //if only one paramter is fitted no changes will occur on iterations
+                }
+                if(n>5)//max number of iterations reached, 5 should be enough
+                {
+                    break;
+                }
+                n++;
             }
-            if (bFitLength)
-            {
-                double S = Math.Sqrt(Math.Pow(Xi - Xstart,2) + Math.Pow(Yi - Ystart,2));
-                double s = Math.Sqrt(Math.Pow(Xend - Xstart,2) + Math.Pow(Yend - Ystart,2));
-                scale = (l * scale + (s-S)) / l;
-                TrassenGeometrie.updateParameters(l * scale, r1, r2);//Set new parameters to Geometry
-            }
-            
         }
         /// <summary>
         /// Plausibility Check
