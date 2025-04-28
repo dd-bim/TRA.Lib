@@ -101,7 +101,7 @@ namespace TRA.Tool
             }
         }
 
-        internal override TransformSetup SetupTransform()
+        internal override TransformSetup GetTransformSetup()
         {
             TransformSetup transformSetup = new TransformSetup();
             ETransformsInput eTransformSource = (ETransformsInput)comboBox_TransformInput.SelectedIndex;

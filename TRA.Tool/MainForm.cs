@@ -263,7 +263,7 @@ namespace TRA.Tool
             // Create logger
             logger = loggerFactory.CreateLogger<MainForm>();
             TrassierungLog.AssignLogger(loggerFactory);
-            egbt22lib.LoggingInitializer.InitializeLogging(loggerFactory);
+            //egbt22lib.Convert.LoggingInitializer.InitializeLogging(loggerFactory);
         }
 
         private void btn_SaveAll_Click(object sender, EventArgs e)
