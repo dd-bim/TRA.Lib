@@ -238,7 +238,14 @@ namespace TRA_Lib
                             writer.Write(element.T);
                             writer.Write(element.S);
                             writer.Write((short)element.Kz);
-                            writer.Write(saveScale == ESaveScale.discard ? element.L : element.L*element.Scale);
+                            if (double.IsNaN(element.Scale))
+                            {
+                                writer.Write((double)0.0); //set 0 if scale was NaN (should only occur for the closing element (last) as there no scale is defined. We set length to zero.
+                            }
+                            else
+                            { 
+                                writer.Write(saveScale == ESaveScale.discard ? element.L : element.L * element.Scale); //if discarding scale we set the original length, otherwise apply scale. 
+                            }
                             writer.Write(element.U1);
                             writer.Write(element.U2);
                             writer.Write((float)element.Cf);
