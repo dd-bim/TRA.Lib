@@ -28,10 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             comboBox_TransformFrom = new ComboBox();
             comboBox_TransformTo = new ComboBox();
-            toolTip = new ToolTip(components);
             SuspendLayout();
             // 
             // comboBox_TransformFrom
@@ -68,6 +66,5 @@
         #endregion
         private ComboBox comboBox_TransformFrom;
         private ComboBox comboBox_TransformTo;
-        private ToolTip toolTip;
     }
 }

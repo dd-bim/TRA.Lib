@@ -28,31 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
-            comboBox_TransformInput = new ComboBox();
-            comboBox_TransformOutput = new ComboBox();
+            comboBox_TransformFrom = new ComboBox();
+            comboBox_TransformTo = new ComboBox();
             label1 = new Label();
             label2 = new Label();
             SuspendLayout();
             // 
             // comboBox_TransformInput
             // 
-            comboBox_TransformInput.FormattingEnabled = true;
-            comboBox_TransformInput.Location = new Point(12, 52);
-            comboBox_TransformInput.Margin = new Padding(6);
-            comboBox_TransformInput.Name = "comboBox_TransformInput";
-            comboBox_TransformInput.Size = new Size(437, 40);
-            comboBox_TransformInput.TabIndex = 2;
+            comboBox_TransformFrom.FormattingEnabled = true;
+            comboBox_TransformFrom.Location = new Point(12, 52);
+            comboBox_TransformFrom.Margin = new Padding(6);
+            comboBox_TransformFrom.Name = "comboBox_TransformInput";
+            comboBox_TransformFrom.Size = new Size(437, 40);
+            comboBox_TransformFrom.TabIndex = 2;
             // 
             // comboBox_TransformOutput
             // 
-            comboBox_TransformOutput.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-            comboBox_TransformOutput.AutoCompleteSource = AutoCompleteSource.ListItems;
-            comboBox_TransformOutput.FormattingEnabled = true;
-            comboBox_TransformOutput.Location = new Point(461, 52);
-            comboBox_TransformOutput.Margin = new Padding(6);
-            comboBox_TransformOutput.Name = "comboBox_TransformOutput";
-            comboBox_TransformOutput.Size = new Size(439, 40);
-            comboBox_TransformOutput.TabIndex = 5;
+            comboBox_TransformTo.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            comboBox_TransformTo.AutoCompleteSource = AutoCompleteSource.ListItems;
+            comboBox_TransformTo.FormattingEnabled = true;
+            comboBox_TransformTo.Location = new Point(461, 52);
+            comboBox_TransformTo.Margin = new Padding(6);
+            comboBox_TransformTo.Name = "comboBox_TransformOutput";
+            comboBox_TransformTo.Size = new Size(439, 40);
+            comboBox_TransformTo.TabIndex = 5;
             // 
             // label1
             // 
@@ -78,11 +78,11 @@
             BackColor = Color.SeaGreen;
             Controls.Add(label2);
             Controls.Add(label1);
-            Controls.Add(comboBox_TransformOutput);
-            Controls.Add(comboBox_TransformInput);
+            Controls.Add(comboBox_TransformTo);
+            Controls.Add(comboBox_TransformFrom);
             Name = "TransformPanel_VA";
-            Controls.SetChildIndex(comboBox_TransformInput, 0);
-            Controls.SetChildIndex(comboBox_TransformOutput, 0);
+            Controls.SetChildIndex(comboBox_TransformFrom, 0);
+            Controls.SetChildIndex(comboBox_TransformTo, 0);
             Controls.SetChildIndex(label1, 0);
             Controls.SetChildIndex(label2, 0);
             ResumeLayout(false);
@@ -90,8 +90,8 @@
         }
 
         #endregion
-        private ComboBox comboBox_TransformInput;
-        private ComboBox comboBox_TransformOutput;
+        private ComboBox comboBox_TransformFrom;
+        private ComboBox comboBox_TransformTo;
         private Label label1;
         private Label label2;
     }
