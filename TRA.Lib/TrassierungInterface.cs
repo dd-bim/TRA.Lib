@@ -176,23 +176,13 @@ namespace TRA_Lib
         public static void ExportTRA(TRATrasse trasse, string fileName,ESaveScale saveScale = ESaveScale.discard)
         {
             List<TrassenElementExt> elements = trasse.Elemente.ToList();
-            if (saveScale == ESaveScale.multiply || saveScale == ESaveScale.asKSprung)
-            {
-                foreach (TrassenElementExt element in elements)
-                {
-                    if (element.GetGeometryType() != typeof(KSprung)) //we don`t want to apply scale for KSprung as this is only relevant for Station values and has no geometrical impact
-                    {
-                        element.ApplyScale();
-                    }
-                }
-            }
             if (saveScale == ESaveScale.asKSprung)
             {
                 for (int i = 0; i < elements.Count-1; i++)
                 {
                     if (elements[i].Scale != 1.0 && !double.IsNaN(elements[i].Scale))
                     {
-                        double deltaL = elements[i].L * (1 - 1 / elements[i].Scale);
+                        double deltaL = elements[i].L * (elements[i].Scale -1);
                         //First check if the following Element is already a KSprung
                         if (elements[i].Successor.GetGeometryType() == typeof(KSprung))
                         {   
@@ -208,7 +198,7 @@ namespace TRA_Lib
                                 elements[i].Yend,
                                 elements[i].Xend,
                                 elements[i].Successor != null ? elements[i].Successor.T : 0,
-                                elements[i].S + elements[i].L,
+                                elements[i].S + elements[i].L * elements[i].Scale,
                                 (int)Trassenkennzeichen.KSprung,
                                 -deltaL,
                                 0, 0,
@@ -248,7 +238,7 @@ namespace TRA_Lib
                             writer.Write(element.T);
                             writer.Write(element.S);
                             writer.Write((short)element.Kz);
-                            writer.Write(element.L);
+                            writer.Write(saveScale == ESaveScale.discard ? element.L : element.L*element.Scale);
                             writer.Write(element.U1);
                             writer.Write(element.U2);
                             writer.Write((float)element.Cf);
