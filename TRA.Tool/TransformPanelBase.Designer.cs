@@ -28,10 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             btn_Transform = new Button();
             checkBox_RecalcHeading = new CheckBox();
             groupBox = new GroupBox();
             checkBox_RecalcLength = new CheckBox();
+            toolTip = new ToolTip(components);
             panel_TransformProperties = new Panel();
             groupBox.SuspendLayout();
             panel_TransformProperties.SuspendLayout();
@@ -126,6 +128,7 @@
         private CheckBox checkBox_RecalcHeading;
         private GroupBox groupBox;
         private CheckBox checkBox_RecalcLength;
+        protected ToolTip toolTip;
         protected Panel panel_TransformProperties;
     }
 }

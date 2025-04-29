@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            comboBox_TransformInput = new ComboBox();
-            comboBox_TransformOutput = new ComboBox();
+            comboBox_TransformFrom = new ComboBox();
+            comboBox_TransformTo = new ComboBox();
             label_Source = new Label();
             label_Target = new Label();
             panel_TransformProperties.SuspendLayout();
@@ -53,12 +53,12 @@
             // 
             // comboBox_TransformInput
             // 
-            comboBox_TransformInput.FormattingEnabled = true;
-            comboBox_TransformInput.Location = new Point(14, 38);
-            comboBox_TransformInput.Margin = new Padding(6);
-            comboBox_TransformInput.Name = "comboBox_TransformInput";
-            comboBox_TransformInput.Size = new Size(414, 40);
-            comboBox_TransformInput.TabIndex = 2;
+            comboBox_TransformFrom.FormattingEnabled = true;
+            comboBox_TransformFrom.Location = new Point(12, 52);
+            comboBox_TransformFrom.Margin = new Padding(6);
+            comboBox_TransformFrom.Name = "comboBox_TransformInput";
+            comboBox_TransformFrom.Size = new Size(437, 40);
+            comboBox_TransformFrom.TabIndex = 2;
             // 
             // comboBox_TransformOutput
             // 
@@ -102,8 +102,8 @@
         }
 
         #endregion
-        private ComboBox comboBox_TransformInput;
-        private ComboBox comboBox_TransformOutput;
+        private ComboBox comboBox_TransformFrom;
+        private ComboBox comboBox_TransformTo;
         private Label label_Source;
         private Label label_Target;
     }

@@ -50,9 +50,9 @@ namespace TRA.Tool
             egbt22lib.Convert.CRS CRSFrom = (egbt22lib.Convert.CRS)comboBox_TransformFrom.SelectedItem;
             egbt22lib.Convert.CRS CRSTo = (egbt22lib.Convert.CRS)comboBox_TransformTo.SelectedItem;
             string info;
-            bool result = egbt22lib.Convert.GetConversion(CRSFrom, CRSTo,out transformSetup.ConvertFunc, out info, true);
-            bool result2 = egbt22lib.Convert.GetGammaKCalculation(CRSFrom, out transformSetup.GammaK_From);
-            result2 = egbt22lib.Convert.GetGammaKCalculation(CRSTo, out transformSetup.GammaK_To);
+            bool result = egbt22lib.Convert.GetConversion(CRSFrom, CRSTo,out transformSetup.ConvertFunc, out info, true)
+                && egbt22lib.Convert.GetGammaKCalculation(CRSFrom, out transformSetup.GammaK_From)
+                && egbt22lib.Convert.GetGammaKCalculation(CRSTo, out transformSetup.GammaK_To);
             toolTip.SetToolTip(comboBox_TransformFrom, info);
             toolTip.SetToolTip(comboBox_TransformTo, info);
             btn_Transform.Enabled = result;
