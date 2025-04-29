@@ -119,7 +119,7 @@ namespace TRA.Tool
                     (rechts, hoch) = transformSetup.ConvertFunc(element.Ystart, element.Xstart);
                     (gamma_o, k_o) = transformSetup.GammaK_To(rechts, hoch);
                     double dK = (k_o / k_i);
-                    double dT = 0;// DegreesToRadians(gamma_o - gamma_i);
+                    double dT = DegreesToRadians(gamma_o - gamma_i);
                     element.Relocate(hoch, rechts, dT, dK, previousdK, checkBox_RecalcHeading.Checked, checkBox_RecalcLength.Checked);
                     previousdK = dK;
                 }
