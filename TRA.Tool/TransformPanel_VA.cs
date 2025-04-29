@@ -29,6 +29,7 @@ namespace TRA.Tool
         public TransformPanel_VA() : base()
         {
             InitializeComponent();
+            this.label_Panel.Text = "Transform VA";
             //Load Input CRS
             foreach (ETransformsInput value in Enum.GetValues(typeof(ETransformsInput)))
             {

@@ -44,10 +44,12 @@
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             BackColor = Color.OliveDrab;
-            Controls.Add(comboBox_Transform);
             Name = "TransformPanel";
-            Controls.SetChildIndex(comboBox_Transform, 0);
             ResumeLayout(false);
+            //
+            // base.panel_TransformProperties
+            //
+            panel_TransformProperties.Controls.Add(comboBox_Transform);
         }
 
         #endregion

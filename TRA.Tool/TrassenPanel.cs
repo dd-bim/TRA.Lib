@@ -7,7 +7,7 @@ using TRA_Lib;
 
 namespace TRA.Tool
 {
-    public partial class TrassenPanel : UserControl
+    public partial class TrassenPanel : BasePanel
     {
         internal TRATrasse trasseS = null;
         internal TRATrasse trasseL = null;
@@ -18,6 +18,7 @@ namespace TRA.Tool
         public TrassenPanel()
         {
             InitializeComponent();
+            this.label_Panel.Text = "Trasse";
         }
 
         public void set_TRA_L_Path(TreeNode treeNode)
@@ -259,12 +260,7 @@ namespace TRA.Tool
             }
         }
 
-        private void label_Trasse_MouseDown(object sender, MouseEventArgs e)
-        {
-            DoDragDrop(this, DragDropEffects.Move);
-        }
-
-        private void btn_delete_Click(object sender, EventArgs e)
+        protected override void btn_delete_Click(object sender, EventArgs e)
         {
             ReferenceTreeNode? referenceNode = tb_TRA_L.Tag as ReferenceTreeNode;
             if (referenceNode != null)
@@ -296,7 +292,8 @@ namespace TRA.Tool
                 referenceNode.References.Remove(this);
                 if (referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
             }
-            Parent.Controls.Remove(this);
+            // Call the parent class's delete function
+            base.btn_delete_Click(sender, e);
         }
 
         private void btn_SaveTRA_Click(object sender, EventArgs e)

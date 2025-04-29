@@ -11,16 +11,12 @@ using TRA_Lib;
 
 namespace TRA.Tool
 {
-    public partial class InterpolationPanel : UserControl
+    public partial class InterpolationPanel : BasePanel
     {
         public InterpolationPanel()
         {
             InitializeComponent();
-        }
-
-        private void InterpolationPanel_MouseDown(object sender, MouseEventArgs e)
-        {
-            DoDragDrop(this, DragDropEffects.Move);
+            this.label_Panel.Text = "Interpolation";
         }
 
         private void btn_Interpolate_Click(object sender, EventArgs e)

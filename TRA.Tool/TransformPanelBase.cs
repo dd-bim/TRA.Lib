@@ -22,15 +22,11 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TRA.Tool
 {
-    public partial class TransformPanelBase : UserControl
+    public partial class TransformPanelBase : BasePanel
     {
         public TransformPanelBase()
         {
             InitializeComponent();
-        }
-        private void TransformPanel_MouseDown(object sender, MouseEventArgs e)
-        {
-            DoDragDrop(this, DragDropEffects.Move);
         }
 
         private static double DegreesToRadians(double degrees)

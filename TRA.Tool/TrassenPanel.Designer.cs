@@ -30,8 +30,6 @@ namespace TRA.Tool
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TrassenPanel));
-            label_Trasse = new Label();
             panel1 = new Panel();
             btn_SaveTRA = new Button();
             btn_SaveCSV = new Button();
@@ -47,22 +45,13 @@ namespace TRA.Tool
             tb_GRA_L = new TextBox();
             tb_GRA_R = new TextBox();
             folderBrowserDialog = new FolderBrowserDialog();
-            btn_delete = new Button();
             panel1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
-            // label_Trasse
+            // label_Panel
             // 
-            label_Trasse.Dock = DockStyle.Top;
-            label_Trasse.Location = new Point(0, 0);
-            label_Trasse.Margin = new Padding(6, 0, 6, 0);
-            label_Trasse.Name = "label_Trasse";
-            label_Trasse.Size = new Size(1055, 43);
-            label_Trasse.TabIndex = 0;
-            label_Trasse.Text = "Trasse";
-            label_Trasse.TextAlign = ContentAlignment.TopCenter;
-            label_Trasse.MouseDown += label_Trasse_MouseDown;
+            label_Panel.Size = new Size(1055, 56);
             // 
             // panel1
             // 
@@ -114,7 +103,7 @@ namespace TRA.Tool
             tableLayoutPanel1.Controls.Add(tb_GRA_L, 0, 3);
             tableLayoutPanel1.Controls.Add(tb_GRA_R, 2, 3);
             tableLayoutPanel1.Dock = DockStyle.Fill;
-            tableLayoutPanel1.Location = new Point(0, 43);
+            tableLayoutPanel1.Location = new Point(0, 56);
             tableLayoutPanel1.Margin = new Padding(6);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 4;
@@ -122,7 +111,7 @@ namespace TRA.Tool
             tableLayoutPanel1.RowStyles.Add(new RowStyle());
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 43F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.Size = new Size(1055, 215);
+            tableLayoutPanel1.Size = new Size(1055, 202);
             tableLayoutPanel1.TabIndex = 4;
             // 
             // tb_TRA_S
@@ -255,45 +244,24 @@ namespace TRA.Tool
             tb_GRA_R.DragDrop += Tb_GRA_DragDrop;
             tb_GRA_R.DragEnter += Tb_GRA_DragEnter;
             // 
-            // btn_delete
-            // 
-            btn_delete.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btn_delete.AutoSize = true;
-            btn_delete.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            btn_delete.FlatAppearance.BorderSize = 0;
-            btn_delete.FlatStyle = FlatStyle.Flat;
-            btn_delete.Image = (Image)resources.GetObject("btn_delete.Image");
-            btn_delete.Location = new Point(1027, 6);
-            btn_delete.Margin = new Padding(6);
-            btn_delete.Name = "btn_delete";
-            btn_delete.Size = new Size(22, 22);
-            btn_delete.TabIndex = 8;
-            btn_delete.UseVisualStyleBackColor = true;
-            btn_delete.Click += btn_delete_Click;
-            // 
             // TrassenPanel
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
-            BorderStyle = BorderStyle.FixedSingle;
-            Controls.Add(btn_delete);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(panel1);
-            Controls.Add(label_Trasse);
-            Margin = new Padding(6);
             Name = "TrassenPanel";
             Size = new Size(1055, 316);
+            Controls.SetChildIndex(panel1, 0);
+            Controls.SetChildIndex(tableLayoutPanel1, 0);
             panel1.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
-
-        private Label label_Trasse;
         private Panel panel1;
         private TableLayoutPanel tableLayoutPanel1;
         private TextBox tb_TRA_S;
@@ -308,7 +276,6 @@ namespace TRA.Tool
         private TextBox tb_GRA_R;
         private Button btn_SaveCSV;
         private FolderBrowserDialog folderBrowserDialog;
-        private Button btn_delete;
         private Button btn_SaveTRA;
     }
 }

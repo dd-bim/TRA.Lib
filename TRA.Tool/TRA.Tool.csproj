@@ -48,6 +48,9 @@
     <Compile Update="TransformPanelBase.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="BasePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

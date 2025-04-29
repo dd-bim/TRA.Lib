@@ -27,6 +27,7 @@ namespace TRA.Tool
         public TransformPanel() : base()
         {
             InitializeComponent();
+            this.label_Panel.Text = "Transform";
             foreach (ETransforms value in Enum.GetValues(typeof(ETransforms)))
             {
                 DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute));

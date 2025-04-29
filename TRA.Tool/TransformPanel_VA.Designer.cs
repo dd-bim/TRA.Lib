@@ -30,17 +30,34 @@
         {
             comboBox_TransformInput = new ComboBox();
             comboBox_TransformOutput = new ComboBox();
-            label1 = new Label();
-            label2 = new Label();
+            label_Source = new Label();
+            label_Target = new Label();
+            panel_TransformProperties.SuspendLayout();
             SuspendLayout();
+            // 
+            // panel_TransformProperties
+            // 
+            panel_TransformProperties.Controls.Add(label_Target);
+            panel_TransformProperties.Controls.Add(label_Source);
+            panel_TransformProperties.Controls.Add(comboBox_TransformOutput);
+            panel_TransformProperties.Controls.Add(comboBox_TransformInput);
+            panel_TransformProperties.Size = new Size(904, 196);
+            panel_TransformProperties.Controls.SetChildIndex(comboBox_TransformInput, 0);
+            panel_TransformProperties.Controls.SetChildIndex(comboBox_TransformOutput, 0);
+            panel_TransformProperties.Controls.SetChildIndex(label_Source, 0);
+            panel_TransformProperties.Controls.SetChildIndex(label_Target, 0);
+            // 
+            // label_Panel
+            // 
+            label_Panel.Size = new Size(904, 56);
             // 
             // comboBox_TransformInput
             // 
             comboBox_TransformInput.FormattingEnabled = true;
-            comboBox_TransformInput.Location = new Point(12, 52);
+            comboBox_TransformInput.Location = new Point(14, 38);
             comboBox_TransformInput.Margin = new Padding(6);
             comboBox_TransformInput.Name = "comboBox_TransformInput";
-            comboBox_TransformInput.Size = new Size(437, 40);
+            comboBox_TransformInput.Size = new Size(414, 40);
             comboBox_TransformInput.TabIndex = 2;
             // 
             // comboBox_TransformOutput
@@ -48,43 +65,38 @@
             comboBox_TransformOutput.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             comboBox_TransformOutput.AutoCompleteSource = AutoCompleteSource.ListItems;
             comboBox_TransformOutput.FormattingEnabled = true;
-            comboBox_TransformOutput.Location = new Point(461, 52);
+            comboBox_TransformOutput.Location = new Point(448, 41);
             comboBox_TransformOutput.Margin = new Padding(6);
             comboBox_TransformOutput.Name = "comboBox_TransformOutput";
             comboBox_TransformOutput.Size = new Size(439, 40);
             comboBox_TransformOutput.TabIndex = 5;
             // 
-            // label1
+            // label_Source
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(12, 14);
-            label1.Name = "label1";
-            label1.Size = new Size(92, 32);
-            label1.TabIndex = 6;
-            label1.Text = "Source:";
+            label_Source.AutoSize = true;
+            label_Source.Location = new Point(14, 0);
+            label_Source.Name = "label_Source";
+            label_Source.Size = new Size(92, 32);
+            label_Source.TabIndex = 6;
+            label_Source.Text = "Source:";
             // 
-            // label2
+            // label_Target
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(461, 14);
-            label2.Name = "label2";
-            label2.Size = new Size(84, 32);
-            label2.TabIndex = 7;
-            label2.Text = "Target:";
+            label_Target.AutoSize = true;
+            label_Target.Location = new Point(448, 3);
+            label_Target.Name = "label_Target";
+            label_Target.Size = new Size(84, 32);
+            label_Target.TabIndex = 7;
+            label_Target.Text = "Target:";
             // 
             // TransformPanel_VA
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             BackColor = Color.SeaGreen;
-            Controls.Add(label2);
-            Controls.Add(label1);
-            Controls.Add(comboBox_TransformOutput);
-            Controls.Add(comboBox_TransformInput);
             Name = "TransformPanel_VA";
-            Controls.SetChildIndex(comboBox_TransformInput, 0);
-            Controls.SetChildIndex(comboBox_TransformOutput, 0);
-            Controls.SetChildIndex(label1, 0);
-            Controls.SetChildIndex(label2, 0);
+            Size = new Size(904, 252);
+            panel_TransformProperties.ResumeLayout(false);
+            panel_TransformProperties.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -92,7 +104,7 @@
         #endregion
         private ComboBox comboBox_TransformInput;
         private ComboBox comboBox_TransformOutput;
-        private Label label1;
-        private Label label2;
+        private Label label_Source;
+        private Label label_Target;
     }
 }
