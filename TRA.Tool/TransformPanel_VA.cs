@@ -21,6 +21,8 @@ using System.Collections;
 using static TRA.Tool.TransformPanelBase;
 using System.Windows.Markup;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using ScottPlot.Plottables;
+using ScottPlot.Plottables;
 
 namespace TRA.Tool
 {
@@ -30,48 +32,35 @@ namespace TRA.Tool
         {
             InitializeComponent();
             this.label_Panel.Text = "Transform VA";
-            //Load Input CRS
-            foreach (ETransformsInput value in Enum.GetValues(typeof(ETransformsInput)))
+            //Load available Options
+            List<ComboBoxItem> options = new List<ComboBoxItem>();
+            foreach (valib.Convert.CRS value in Enum.GetValues(typeof(valib.Convert.CRS)))
             {
-                DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute));
-                comboBox_TransformInput.Items.Add(attribute == null ? value.ToString() : attribute.Description);
+                options.Add(new ComboBoxItem(value.ToString()));
             }
-            comboBox_TransformInput.SelectedIndex = 0;
+            comboBox_TransformFrom.Items.AddRange(options.ToArray());
+            comboBox_TransformTo.Items.AddRange(options.ToArray());
+            //comboBox_TransformFrom.SelectedItem = valib.Convert.CRS.Bessel_GK2;
             //Load Target CRS from CSV
             string relativePath = @"dbref_va_syst.csv";
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath);
             LoadOptionsFromCSV(fullPath);
-        }
-
-        private enum ETransformsInput
-        {
-            [Description("5682 DB_REF GK Zone 2")]
-            _5682_DB_REF_GK_Zone_2,
-            [Description("5683 DB_REF GK Zone 3")]
-            _5683_DB_REF_GK_Zone_3,
-            [Description("5684 DB_REF GK Zone 4")]
-            _5684_DB_REF_GK_Zone_4,
-            [Description("5685 DB_REF GK Zone 5")]
-            _5685_DB_REF_GK_Zone_5,
-            [Description("9932 DB_REF GK Zone 2 + GNTRANS2016 Höhen")]
-            _9932_DB_REF_GK_Zone_2_GNTRANS2016_Hoehen,
-            [Description("9933 DB_REF GK Zone 3 + GNTRANS2016 Höhen")]
-            _9933_DB_REF_GK_Zone_3_GNTRANS2016_Hoehen,
-            [Description("9934 DB_REF GK Zone 4 + GNTRANS2016 Höhen")]
-            _9934_DB_REF_GK_Zone_4_GNTRANS2016_Hoehen,
-            [Description("9935 DB_REF GK Zone 5 + GNTRANS2016 Höhen")]
-            _9935_DB_REF_GK_Zone_5_GNTRANS2016_Hoehen,
+            comboBox_TransformFrom.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
+            comboBox_TransformTo.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
+            comboBox_Transform_SelectedIndexChanged(this, EventArgs.Empty);
         }
 
         class ComboBoxItem
         {
-            public ComboBoxItem(string Name, string VA_ID)
+            public ComboBoxItem(string Name, string VA_ID = "", string fullString = "")
             {
                 this.Name = Name;
                 this.VA_ID = VA_ID;
+                FullString = (fullString != "" ? fullString : Name);
             }
             public string VA_ID { get; set; }
             public string Name { get; set; }
+            public string FullString { get; set; }
             public override string ToString()
             {
                 return Name + " (" + VA_ID + ")"; // Display "Name" in the ComboBox
@@ -90,10 +79,10 @@ namespace TRA.Tool
                 {
                     // Optionally, split by delimiter for multi-column CSV files
                     string[] values = line.Split(',');
-
-                    // Add a specific column or the full line to the ComboBox
-                    ComboBoxItem item = new ComboBoxItem(values[1], values[0]);
-                    comboBox_TransformOutput.Items.Add(item); // Assuming the first column contains the options
+                        // Add a specific column or the full line to the ComboBox
+                    ComboBoxItem item = new ComboBoxItem(values[1], values[0],line);
+                    comboBox_TransformTo.Items.Add(item); // Assuming the first column contains the options
+                    comboBox_TransformFrom.Items.Add(item);
                 }
             }
             catch (Exception ex)
@@ -102,63 +91,23 @@ namespace TRA.Tool
             }
         }
 
-        internal override TransformSetup SetupTransform()
+        private TransformSetup transformSetup;
+        internal override TransformSetup GetTransformSetup()
         {
-            TransformSetup transformSetup = new TransformSetup();
-            ETransformsInput eTransformSource = (ETransformsInput)comboBox_TransformInput.SelectedIndex;
-            //Get Target SRS
-            switch (eTransformSource)
-            {
-                case ETransformsInput._5682_DB_REF_GK_Zone_2:
-                    //transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    //transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    //transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    //transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    break;
-                case ETransformsInput._5683_DB_REF_GK_Zone_3:
-                    //transformSetup.singleCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
-                    //transformSetup.arrayCoordinateTransform = egbt22lib.Convert.EGBT22_Local_to_DBRef_GK5_Ell;
-                    //transformSetup.singleIn_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    //transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    //transformSetup.singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    break;
-                case ETransformsInput._5684_DB_REF_GK_Zone_4:
-                    //transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
-                    //transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_ETRS89_UTM33_Ell;
-                    //transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.singleOut_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    //transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    break;
-                case ETransformsInput._5685_DB_REF_GK_Zone_5:
-                    //transformSetup.singleCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
-                    //transformSetup.arrayCoordinateTransform = egbt22lib.Convert.ETRS89_UTM33_to_DBRef_GK5_Ell;
-                    //transformSetup.singleIn_Gamma_k = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    //transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.ETRS89_UTM33_Gamma_k;
-                    //transformSetup.singleOut_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    break;
-                case ETransformsInput._9932_DB_REF_GK_Zone_2_GNTRANS2016_Hoehen:
-                    break;
-                case ETransformsInput._9933_DB_REF_GK_Zone_3_GNTRANS2016_Hoehen:
-                    break;
-                case ETransformsInput._9934_DB_REF_GK_Zone_4_GNTRANS2016_Hoehen:
-                    break;
-                case ETransformsInput._9935_DB_REF_GK_Zone_5_GNTRANS2016_Hoehen:
-                    break;
-                default:
-                    //transformSetup.singleCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    //transformSetup.arrayCoordinateTransform = egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell;
-                    //transformSetup.singleIn_Gamma_k = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.arrayIn_Gamma_K = egbt22lib.Convert.DBRef_GK5_Gamma_k;
-                    //transformSetup.singleOut_Gamma_k = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    //transformSetup.arrayOut_Gamma_K = egbt22lib.Convert.EGBT22_Local_Gamma_k;
-                    break;
-            }
             return transformSetup;
+        }
+        private void comboBox_Transform_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox_TransformFrom.SelectedItem == null || comboBox_TransformTo.SelectedItem == null) return;
+            ComboBoxItem CRSFrom = (ComboBoxItem)comboBox_TransformFrom.SelectedItem;
+            ComboBoxItem CRSTo = (ComboBoxItem)comboBox_TransformTo.SelectedItem;
+            string info;
+            bool result = valib.Convert.GetConversion(CRSFrom.FullString, CRSTo.FullString, out transformSetup.ConvertFunc, out info) 
+                && valib.Convert.GetGammaKCalculation(CRSFrom.FullString, out transformSetup.GammaK_From)
+                && valib.Convert.GetGammaKCalculation(CRSTo.FullString, out transformSetup.GammaK_To);
+            toolTip.SetToolTip(comboBox_TransformFrom, info);
+            toolTip.SetToolTip(comboBox_TransformTo, info);
+            btn_Transform.Enabled = result;
         }
     }
 }

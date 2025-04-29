@@ -41,17 +41,30 @@ namespace TRA.Tool
 
         internal struct TransformSetup
         {
-            public SingleCoordinateTransform singleCoordinateTransform = null;
-            public ArrayCoordinateTransform arrayCoordinateTransform = null;
-            public Single_Gamma_k singleIn_Gamma_k = null;
-            public Array_Gamma_k arrayIn_Gamma_K = null;
-            public Single_Gamma_k singleOut_Gamma_k = null;
-            public Array_Gamma_k arrayOut_Gamma_K = null;
+            public Func<double, double, (double x, double y)> ConvertFunc;
+            public Func<double, double, (double gamma, double k)> GammaK_From;
+            public Func<double, double, (double gamma, double k)> GammaK_To;
 
             public TransformSetup()
             {
             }
         }
+
+        public static double[][] CalcArray2(double[][] points, Func<double, double, (double x, double y)> calc)
+        {
+            int n = points[0].Length;
+            double[][] xy = new double[2][];
+            xy[0] = new double[n];
+            xy[1] = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                var (x, y) = calc(points[0][i], points[1][i]);
+                xy[0][i] = x;
+                xy[1][i] = y;
+            }
+            return xy;
+        }
+
         /// <summary>
         /// Transforms all Elements of a TRA by the given transformSetup
         /// </summary>
@@ -74,19 +87,19 @@ namespace TRA.Tool
                     {
                         double[][] points = { interp.Y, interp.X, interp.H };
                         double[] zeros = new double[interp.Y.Length];
-                        double[] gamma_i, k_i, gamma_o, k_o = new double[interp.X.Length];
-                        transformSetup.arrayIn_Gamma_K(points[0], points[1], out gamma_i, out k_i);
+                        double[] gamma_from, k_from, gamma_to, k_to = new double[interp.X.Length];
+                        (gamma_from, k_from) = egbt22lib.Convert.CalcArrays2(points[0], points[1],transformSetup.GammaK_From);
                         // TODO transform interpolation points also at zero level?
                         //egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], points[2], out points[0], out points[1],out points[2]);
-                        transformSetup.arrayCoordinateTransform(points[0], points[1], zeros, out points[0], out points[1], out zeros);
-                        transformSetup.arrayOut_Gamma_K(points[0], points[1], out gamma_o, out k_o);
+                        points = CalcArray2(points, transformSetup.ConvertFunc);
+                        (gamma_to, k_to) = egbt22lib.Convert.CalcArrays2(points[0], points[1], transformSetup.GammaK_To);
                         //Workaround to set values in place
                         for (int i = 0; i < interp.X.Length; i++)
                         {
-                            interp.X[i] = points[1][i];
                             interp.Y[i] = points[0][i];
+                            interp.X[i] = points[1][i];
                             interp.H[i] = interp.H[i] + zeros[i]; //TODO is that expected behaviour
-                            interp.T[i] = interp.T[i] - DegreesToRadians(gamma_o[i] - gamma_i[i]);
+                            interp.T[i] = interp.T[i] - DegreesToRadians(gamma_to[i] - gamma_from[i]);
                         }
                     }
                     catch
@@ -98,9 +111,9 @@ namespace TRA.Tool
                 {
                     double gamma_i, k_i, gamma_o, k_o;
                     double rechts, hoch;
-                    (gamma_i, k_i) = transformSetup.singleIn_Gamma_k(element.Ystart, element.Xstart);
-                    (rechts, hoch, _) = transformSetup.singleCoordinateTransform(element.Ystart, element.Xstart, 0.0);
-                    (gamma_o, k_o) = transformSetup.singleOut_Gamma_k(rechts, hoch);
+                    (gamma_i, k_i) = transformSetup.GammaK_From(element.Ystart, element.Xstart);
+                    (rechts, hoch) = transformSetup.ConvertFunc(element.Ystart, element.Xstart);
+                    (gamma_o, k_o) = transformSetup.GammaK_To(rechts, hoch);
                     double dK = (k_o / k_i);
                     double dT = DegreesToRadians(gamma_o - gamma_i);
                     element.Relocate(hoch, rechts, dT, dK, previousdK, checkBox_RecalcHeading.Checked, checkBox_RecalcLength.Checked);
@@ -133,7 +146,8 @@ namespace TRA.Tool
             }
             trasse.Elemente = trasse.Elemente.Where(x => !(x.GetGeometryType() == typeof(KSprung) && x.L == 0)).ToArray(); //Remove KSprung elements of length 0
         }
-        internal virtual TransformSetup SetupTransform() { return new TransformSetup(); }
+        internal virtual TransformSetup GetTransformSetup() { return new TransformSetup(); }
+
         private void btn_Transform_Click(object sender, EventArgs e)
         {
             LoadingForm loadingForm = null;
@@ -144,8 +158,6 @@ namespace TRA.Tool
                 Application.Run(loadingForm);
             });
             _backgroundThread.Start();
-
-            TransformSetup transformSetup = SetupTransform();
 
             FlowLayoutPanel owner = Parent as FlowLayoutPanel;
             if (owner == null) { return; }
@@ -172,7 +184,7 @@ namespace TRA.Tool
                 tasks[localN] = Task.Run(() =>
                 {
                     //Transform 
-                    TrassenTransform(trasse, transformSetup);
+                    TrassenTransform(trasse, GetTransformSetup());
                     //Calc Deviations
                     foreach (TrassenElementExt element in trasse.Elemente)
                     {

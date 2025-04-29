@@ -37,10 +37,14 @@
             ((System.ComponentModel.ISupportInitialize)num_allowedTolerance).BeginInit();
             SuspendLayout();
             // 
+            // label_Panel
+            // 
+            label_Panel.Size = new Size(472, 56);
+            // 
             // btn_Interpolate
             // 
             btn_Interpolate.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_Interpolate.Location = new Point(555, 79);
+            btn_Interpolate.Location = new Point(291, 79);
             btn_Interpolate.Margin = new Padding(6);
             btn_Interpolate.Name = "btn_Interpolate";
             btn_Interpolate.Size = new Size(175, 90);
@@ -55,7 +59,7 @@
             num_InterpDist.DecimalPlaces = 1;
             num_InterpDist.ImeMode = ImeMode.NoControl;
             num_InterpDist.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-            num_InterpDist.Location = new Point(452, 79);
+            num_InterpDist.Location = new Point(188, 79);
             num_InterpDist.Margin = new Padding(6);
             num_InterpDist.Name = "num_InterpDist";
             num_InterpDist.Size = new Size(91, 39);
@@ -68,7 +72,7 @@
             num_allowedTolerance.DecimalPlaces = 1;
             num_allowedTolerance.ImeMode = ImeMode.NoControl;
             num_allowedTolerance.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-            num_allowedTolerance.Location = new Point(452, 130);
+            num_allowedTolerance.Location = new Point(188, 130);
             num_allowedTolerance.Margin = new Padding(6);
             num_allowedTolerance.Name = "num_allowedTolerance";
             num_allowedTolerance.Size = new Size(91, 39);
@@ -79,7 +83,7 @@
             // 
             label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(342, 83);
+            label1.Location = new Point(78, 83);
             label1.Margin = new Padding(6, 0, 6, 0);
             label1.Name = "label1";
             label1.Size = new Size(105, 32);
@@ -90,7 +94,7 @@
             // 
             label2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             label2.AutoSize = true;
-            label2.Location = new Point(279, 134);
+            label2.Location = new Point(15, 134);
             label2.Margin = new Padding(6, 0, 6, 0);
             label2.Name = "label2";
             label2.Size = new Size(172, 32);
@@ -101,7 +105,6 @@
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
             BackColor = Color.Goldenrod;
             Controls.Add(label2);
             Controls.Add(label1);
@@ -109,7 +112,7 @@
             Controls.Add(num_InterpDist);
             Controls.Add(btn_Interpolate);
             Name = "InterpolationPanel";
-            Size = new Size(736, 190);
+            Size = new Size(472, 190);
             Controls.SetChildIndex(btn_Interpolate, 0);
             Controls.SetChildIndex(num_InterpDist, 0);
             Controls.SetChildIndex(num_allowedTolerance, 0);

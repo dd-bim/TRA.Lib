@@ -28,10 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             btn_Transform = new Button();
             checkBox_RecalcHeading = new CheckBox();
             groupBox = new GroupBox();
             checkBox_RecalcLength = new CheckBox();
+            toolTip = new ToolTip(components);
             panel_TransformProperties = new Panel();
             groupBox.SuspendLayout();
             panel_TransformProperties.SuspendLayout();
@@ -39,12 +41,12 @@
             // 
             // label_Panel
             // 
-            label_Panel.Size = new Size(1114, 56);
+            label_Panel.Size = new Size(1093, 56);
             // 
             // btn_Transform
             // 
             btn_Transform.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_Transform.Location = new Point(854, 156);
+            btn_Transform.Location = new Point(833, 156);
             btn_Transform.Margin = new Padding(6);
             btn_Transform.Name = "btn_Transform";
             btn_Transform.Size = new Size(254, 81);
@@ -101,7 +103,7 @@
             panel_TransformProperties.Dock = DockStyle.Fill;
             panel_TransformProperties.Location = new Point(0, 56);
             panel_TransformProperties.Name = "panel_TransformProperties";
-            panel_TransformProperties.Size = new Size(1114, 243);
+            panel_TransformProperties.Size = new Size(1093, 243);
             panel_TransformProperties.TabIndex = 11;
             // 
             // TransformPanelBase
@@ -111,7 +113,7 @@
             BackColor = SystemColors.WindowFrame;
             Controls.Add(panel_TransformProperties);
             Name = "TransformPanelBase";
-            Size = new Size(1114, 299);
+            Size = new Size(1093, 299);
             Controls.SetChildIndex(panel_TransformProperties, 0);
             groupBox.ResumeLayout(false);
             groupBox.PerformLayout();
@@ -122,10 +124,11 @@
 
         #endregion
 
-        private Button btn_Transform;
+        protected Button btn_Transform;
         private CheckBox checkBox_RecalcHeading;
         private GroupBox groupBox;
         private CheckBox checkBox_RecalcLength;
+        protected ToolTip toolTip;
         protected Panel panel_TransformProperties;
     }
 }
