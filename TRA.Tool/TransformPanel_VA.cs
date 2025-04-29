@@ -48,24 +48,18 @@ namespace TRA.Tool
             comboBox_TransformFrom.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
             comboBox_TransformTo.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
             comboBox_Transform_SelectedIndexChanged(this, EventArgs.Empty);
-            comboBox_TransformFrom.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
-            comboBox_TransformTo.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
-            comboBox_Transform_SelectedIndexChanged(this, EventArgs.Empty);
         }
 
         class ComboBoxItem
         {
             public ComboBoxItem(string Name, string VA_ID = "", string fullString = "")
-            public ComboBoxItem(string Name, string VA_ID = "", string fullString = "")
             {
                 this.Name = Name;
                 this.VA_ID = VA_ID;
                 FullString = (fullString != "" ? fullString : Name);
-                FullString = (fullString != "" ? fullString : Name);
             }
             public string VA_ID { get; set; }
             public string Name { get; set; }
-            public string FullString { get; set; }
             public string FullString { get; set; }
             public override string ToString()
             {
@@ -89,10 +83,6 @@ namespace TRA.Tool
                     ComboBoxItem item = new ComboBoxItem(values[1], values[0],line);
                     comboBox_TransformTo.Items.Add(item); // Assuming the first column contains the options
                     comboBox_TransformFrom.Items.Add(item);
-                        // Add a specific column or the full line to the ComboBox
-                    ComboBoxItem item = new ComboBoxItem(values[1], values[0],line);
-                    comboBox_TransformTo.Items.Add(item); // Assuming the first column contains the options
-                    comboBox_TransformFrom.Items.Add(item);
                 }
             }
             catch (Exception ex)
@@ -104,23 +94,7 @@ namespace TRA.Tool
         private TransformSetup transformSetup;
         internal override TransformSetup GetTransformSetup()
         {
-        private TransformSetup transformSetup;
-        internal override TransformSetup GetTransformSetup()
-        {
             return transformSetup;
-        }
-        private void comboBox_Transform_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (comboBox_TransformFrom.SelectedItem == null || comboBox_TransformTo.SelectedItem == null) return;
-            ComboBoxItem CRSFrom = (ComboBoxItem)comboBox_TransformFrom.SelectedItem;
-            ComboBoxItem CRSTo = (ComboBoxItem)comboBox_TransformTo.SelectedItem;
-            string info;
-            bool result = valib.Convert.GetConversion(CRSFrom.FullString, CRSTo.FullString, out transformSetup.ConvertFunc, out info) 
-                && valib.Convert.GetGammaKCalculation(CRSFrom.FullString, out transformSetup.GammaK_From)
-                && valib.Convert.GetGammaKCalculation(CRSTo.FullString, out transformSetup.GammaK_To);
-            toolTip.SetToolTip(comboBox_TransformFrom, info);
-            toolTip.SetToolTip(comboBox_TransformTo, info);
-            btn_Transform.Enabled = result;
         }
         private void comboBox_Transform_SelectedIndexChanged(object sender, EventArgs e)
         {

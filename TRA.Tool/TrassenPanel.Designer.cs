@@ -51,17 +51,17 @@ namespace TRA.Tool
             // 
             // label_Panel
             // 
-            label_Panel.Size = new Size(1055, 56);
+            label_Panel.Size = new Size(1208, 56);
             // 
             // panel1
             // 
             panel1.Controls.Add(btn_SaveTRA);
             panel1.Controls.Add(btn_SaveCSV);
             panel1.Dock = DockStyle.Bottom;
-            panel1.Location = new Point(0, 258);
+            panel1.Location = new Point(0, 271);
             panel1.Margin = new Padding(6);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1055, 58);
+            panel1.Size = new Size(1208, 58);
             panel1.TabIndex = 1;
             // 
             // btn_SaveTRA
@@ -111,18 +111,18 @@ namespace TRA.Tool
             tableLayoutPanel1.RowStyles.Add(new RowStyle());
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 43F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.Size = new Size(1055, 202);
+            tableLayoutPanel1.Size = new Size(1208, 215);
             tableLayoutPanel1.TabIndex = 4;
             // 
             // tb_TRA_S
             // 
             tb_TRA_S.AllowDrop = true;
             tb_TRA_S.Dock = DockStyle.Fill;
-            tb_TRA_S.Location = new Point(357, 49);
+            tb_TRA_S.Location = new Point(408, 49);
             tb_TRA_S.Margin = new Padding(6);
             tb_TRA_S.Name = "tb_TRA_S";
             tb_TRA_S.ReadOnly = true;
-            tb_TRA_S.Size = new Size(339, 39);
+            tb_TRA_S.Size = new Size(390, 39);
             tb_TRA_S.TabIndex = 9;
             tb_TRA_S.TextChanged += tb_XRA_TextChanged;
             tb_TRA_S.DragDrop += Tb_TRA_DragDrop;
@@ -135,7 +135,7 @@ namespace TRA.Tool
             label_TRA_L.Location = new Point(6, 0);
             label_TRA_L.Margin = new Padding(6, 0, 6, 0);
             label_TRA_L.Name = "label_TRA_L";
-            label_TRA_L.Size = new Size(339, 43);
+            label_TRA_L.Size = new Size(390, 43);
             label_TRA_L.TabIndex = 3;
             label_TRA_L.Text = "L.TRA";
             label_TRA_L.TextAlign = ContentAlignment.BottomCenter;
@@ -148,7 +148,7 @@ namespace TRA.Tool
             tb_TRA_L.Margin = new Padding(6);
             tb_TRA_L.Name = "tb_TRA_L";
             tb_TRA_L.ReadOnly = true;
-            tb_TRA_L.Size = new Size(339, 39);
+            tb_TRA_L.Size = new Size(390, 39);
             tb_TRA_L.TabIndex = 0;
             tb_TRA_L.TextChanged += tb_XRA_TextChanged;
             tb_TRA_L.DragDrop += Tb_TRA_DragDrop;
@@ -158,11 +158,11 @@ namespace TRA.Tool
             // 
             tb_TRA_R.AllowDrop = true;
             tb_TRA_R.Dock = DockStyle.Fill;
-            tb_TRA_R.Location = new Point(708, 49);
+            tb_TRA_R.Location = new Point(810, 49);
             tb_TRA_R.Margin = new Padding(6);
             tb_TRA_R.Name = "tb_TRA_R";
             tb_TRA_R.ReadOnly = true;
-            tb_TRA_R.Size = new Size(341, 39);
+            tb_TRA_R.Size = new Size(392, 39);
             tb_TRA_R.TabIndex = 2;
             tb_TRA_R.TextChanged += tb_XRA_TextChanged;
             tb_TRA_R.DragDrop += Tb_TRA_DragDrop;
@@ -172,10 +172,10 @@ namespace TRA.Tool
             // 
             label_TRA_R.AutoSize = true;
             label_TRA_R.Dock = DockStyle.Fill;
-            label_TRA_R.Location = new Point(708, 0);
+            label_TRA_R.Location = new Point(810, 0);
             label_TRA_R.Margin = new Padding(6, 0, 6, 0);
             label_TRA_R.Name = "label_TRA_R";
-            label_TRA_R.Size = new Size(341, 43);
+            label_TRA_R.Size = new Size(392, 43);
             label_TRA_R.TabIndex = 5;
             label_TRA_R.Text = "R.TRA";
             label_TRA_R.TextAlign = ContentAlignment.BottomCenter;
@@ -184,10 +184,10 @@ namespace TRA.Tool
             // 
             label_TRA_S.AutoSize = true;
             label_TRA_S.Dock = DockStyle.Fill;
-            label_TRA_S.Location = new Point(357, 0);
+            label_TRA_S.Location = new Point(408, 0);
             label_TRA_S.Margin = new Padding(6, 0, 6, 0);
             label_TRA_S.Name = "label_TRA_S";
-            label_TRA_S.Size = new Size(339, 43);
+            label_TRA_S.Size = new Size(390, 43);
             label_TRA_S.TabIndex = 6;
             label_TRA_S.Text = "S.TRA";
             label_TRA_S.TextAlign = ContentAlignment.BottomCenter;
@@ -196,10 +196,10 @@ namespace TRA.Tool
             // 
             label_GRA_R.AutoSize = true;
             label_GRA_R.Dock = DockStyle.Fill;
-            label_GRA_R.Location = new Point(708, 94);
+            label_GRA_R.Location = new Point(810, 94);
             label_GRA_R.Margin = new Padding(6, 0, 6, 0);
             label_GRA_R.Name = "label_GRA_R";
-            label_GRA_R.Size = new Size(341, 43);
+            label_GRA_R.Size = new Size(392, 43);
             label_GRA_R.TabIndex = 7;
             label_GRA_R.Text = "R.GRA";
             label_GRA_R.TextAlign = ContentAlignment.BottomCenter;
@@ -211,7 +211,7 @@ namespace TRA.Tool
             label_GRA_L.Location = new Point(6, 94);
             label_GRA_L.Margin = new Padding(6, 0, 6, 0);
             label_GRA_L.Name = "label_GRA_L";
-            label_GRA_L.Size = new Size(339, 43);
+            label_GRA_L.Size = new Size(390, 43);
             label_GRA_L.TabIndex = 8;
             label_GRA_L.Text = "L.GRA";
             label_GRA_L.TextAlign = ContentAlignment.BottomCenter;
@@ -224,7 +224,7 @@ namespace TRA.Tool
             tb_GRA_L.Margin = new Padding(6);
             tb_GRA_L.Name = "tb_GRA_L";
             tb_GRA_L.ReadOnly = true;
-            tb_GRA_L.Size = new Size(339, 39);
+            tb_GRA_L.Size = new Size(390, 39);
             tb_GRA_L.TabIndex = 10;
             tb_GRA_L.TextChanged += tb_XRA_TextChanged;
             tb_GRA_L.DragDrop += Tb_GRA_DragDrop;
@@ -234,11 +234,11 @@ namespace TRA.Tool
             // 
             tb_GRA_R.AllowDrop = true;
             tb_GRA_R.Dock = DockStyle.Fill;
-            tb_GRA_R.Location = new Point(708, 143);
+            tb_GRA_R.Location = new Point(810, 143);
             tb_GRA_R.Margin = new Padding(6);
             tb_GRA_R.Name = "tb_GRA_R";
             tb_GRA_R.ReadOnly = true;
-            tb_GRA_R.Size = new Size(341, 39);
+            tb_GRA_R.Size = new Size(392, 39);
             tb_GRA_R.TabIndex = 11;
             tb_GRA_R.TextChanged += tb_XRA_TextChanged;
             tb_GRA_R.DragDrop += Tb_GRA_DragDrop;
@@ -248,11 +248,12 @@ namespace TRA.Tool
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoSize = false;
             BackColor = Color.LightBlue;
             Controls.Add(tableLayoutPanel1);
             Controls.Add(panel1);
             Name = "TrassenPanel";
-            Size = new Size(1055, 316);
+            Size = new Size(1208, 329);
             Controls.SetChildIndex(panel1, 0);
             Controls.SetChildIndex(tableLayoutPanel1, 0);
             panel1.ResumeLayout(false);
