@@ -1,7 +1,8 @@
 # TRA.Lib
 
 ## Description
-This repository consists of three projects.
+This repository consists of three projects. First is a Library for importing .TRA and .GRA files, second is are corresponding Tests for different caluclations (some of the geometries require iterative caluclations so this can be used to compare results). The third Project is the actual User-Interface which can be used to read, export, visualize and transform TRA/GRA-files. If you are happy with that, and you don`t want to create a own application using the TRA.Lib, you can skip the first two sections and start with [TRA.Tool](#3.TRA.Tool). Only be aware of the currently available [Gemeotry-Types](#Geometry-Types) and available [Tolerance-Settings](#Settings).
+
 ## 1. TRA.Lib:
 Library providing Functionality for loading .TRA and .GRA files. If the Library is compiled using the symbol "USE_SCOTTPLOT" it is also providing a detailed visualisation of the loaded data.
 ### Geometry-Types
@@ -58,6 +59,15 @@ along with the library a settings.json is provided. Editing this allows changes 
 - ConnectivityMismatchTolerance[m]: The last point(L)-Position of the interpolation is compared to the successor element coordinates of the TRA-File. A euclidean distance is used for comparison.
 - ContinuityOfHeadingTolerance[rad]: The last point(L)-Heading of the interpolation is compared to the successor element heading of the TRA-File.
 - ContinuityOfCurvatureTolerance[1/m]: The last point(L)-Curvature of the interpolation is compared to the successor element curvature of the TRA-File.
+
+### Export
+the library allows export to .TRA/GRA and .csv. For exporting to TRA different options are available:
+- Discard: The scale is ignored, the length retains its original value. This leads to coordinate differences between the geometry elements. The condition **station value + L = subsequent element station value** is satisfied.
+- Multiply: The length is multiplied by scale. The station values of the elements are not adjusted. The condition **station value + L = subsequent element station value** is NOT met.
+- Add KSprung: The length is multiplied by the scale. To satisfy the condition **station value + L = subsequent element station value**, additional KSprung elements are added where necessary (this mostly results in a TRA-File having KSprung-elements between each geometry). Also a check for Removing KSprung-Elements is done after transform, especially when transformig back to a previous coordinate-system this takes effect.
+
+Export to csv exports a list of all elements, properties and interpolationpoints. Depending on a previous TRA-export scale is already applied to Length parameter, or not if csv-export is done before TRA-export.
+
 ## 2.TRA.Lib_TEST:
 This project contains Unit-Tests to verify the calculations and functions implemented in TRA.Lib. Results are compared to expected values, especally relevant for interpolations of complex Geometries like Clothoids. Tests are grouped in different categories:
 - CoordinateTransformation (Transformation in local Geometryspace)
@@ -66,12 +76,14 @@ This project contains Unit-Tests to verify the calculations and functions implem
 - GeometryProjection (Get a value s on a Gemeotry for a 2D-Point)
 - OverallExecutionTest (Test the whole workflow, loading files, interpolate and Plot)
 ## 3.TRA.Tool
-This project provides a executable UI and a simple usage of TRA.Lib.
+This project provides a executable UI and a simple usage of TRA.Lib. It can be used to read, export, visualize and transform TRA/GRA-files.
 ### Usage
-In the explorer to the left, open the folder containig the relevant TRA and GRA files. The UI allows to load a set of files, like they are commonly used, containing TRA -left(L), -right(R), -milage(S) and GRA -left(L), right(R). Simply drag a file to the corresponding textbox, if the naming convention of the other files follows 'xxx[L/R/S].TRA' and 'xxx[L/R].GRA', the other fileds are set automatically. Afterwards a Interpolation can be calculated using the 'Interpolate'-Button (this opens automatically the Plot-View if the included TRA.Lib is compiled with "USE_SCOTTPLOT") and the Result can be exported using the 'SaveCSV' button.
+In the explorer to the left, open the folder containig the relevant TRA and GRA files. The UI allows to load a set of files, like they are commonly used, containing TRA -left(L), -right(R), -milage(S) and GRA -left(L), right(R). Simply drag a file to the corresponding textbox, if the naming convention of the other files follows 'xxx[L/R/S].TRA' and 'xxx[L/R].GRA', the other fileds are set automatically. It is also possible to import entire folders (by draging the folder into the List on the right), all TRA files are loaded and grouped, if the naming convention allows it. Afterwards a Interpolation can be calculated using the 'Interpolate'-Button (this opens automatically the Plot-View if the included TRA.Lib is compiled with "USE_SCOTTPLOT") and the Result can be exported using the 'SaveCSV' button.
+![Screenshot 2025-04-24 133038](https://github.com/user-attachments/assets/6f737996-8c7a-400f-ba8c-c73c05e3fed3)
+
 
 ### Transform
-Transfromations are currently hardcoded to DBRef_GK5 -> EGBT22_Local more options will be available in future Release.
+Transfromations are currently limited to **DBRef_GK5 <-> EGBT22_Local** and **DBRef_GK5 <-> ETRS89_UTM33**  more options will be available in future Release.
 Resulting changes from Meridian Convergence and Scale Factor are applied to the Element geometries:
 #### Meridian Convergence
 Delta of Meridian Convergence before and after Transformation is subtracted from original heading
@@ -80,7 +92,7 @@ heading_{new} = heading - (γ_{EGBT22} - γ_{DBref}).
 ```
 Only using this approach there remain systematic deviations (52.4mm mean) like in the following image:
 ![Recalculated Heading](Documentation/images/SystematicDeviationsByHeading.png)
-Therefore a recalculation of the heading was implemented, which is enabled by default using "Recalculate Heading". \
+Therefore a recalculation of the heading was implemented, which is enabled by default using "Optimize Heading". \
 $$X_i,Y_i$$ coordinates calculated from Geometry at end \
 $$γ_i = \text{atan2}(X_i - X_{element}, Y_i - Y_{element})$$ heading by geometry \
 $$γ_t = \text{atan2}(X_{successor} - X_{element}, Y_{successor} - Y_{element})$$ heading from element to successor element \
@@ -93,4 +105,6 @@ Scale is applied as follows:
 - to the Length parameter as mean of Scale at elements start- & endpoint
 - to r1 & r2 of a circle geometry as mean of Scale at elements start- & endpoint
 - for Bloss & Klothoid r1 is multiplied by scale at element start and r2 is multiplied by scale at element end
+
+Only changing Length parameter by Scale resulting from Transforms Scale Factor left significant deviations. Similar to the Heading optimization, a length optimization is available and enabled by default. 
 
