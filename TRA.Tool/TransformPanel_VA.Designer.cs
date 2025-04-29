@@ -59,6 +59,12 @@
             comboBox_TransformFrom.Name = "comboBox_TransformInput";
             comboBox_TransformFrom.Size = new Size(437, 40);
             comboBox_TransformFrom.TabIndex = 2;
+            comboBox_TransformFrom.FormattingEnabled = true;
+            comboBox_TransformFrom.Location = new Point(12, 52);
+            comboBox_TransformFrom.Margin = new Padding(6);
+            comboBox_TransformFrom.Name = "comboBox_TransformInput";
+            comboBox_TransformFrom.Size = new Size(437, 40);
+            comboBox_TransformFrom.TabIndex = 2;
             // 
             // comboBox_TransformOutput
             // 

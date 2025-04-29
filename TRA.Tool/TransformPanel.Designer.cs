@@ -30,10 +30,28 @@
         {
             comboBox_TransformFrom = new ComboBox();
             comboBox_TransformTo = new ComboBox();
+            comboBox_TransformFrom = new ComboBox();
+            comboBox_TransformTo = new ComboBox();
             SuspendLayout();
             // 
             // comboBox_TransformFrom
+            // comboBox_TransformFrom
             // 
+            comboBox_TransformFrom.FormattingEnabled = true;
+            comboBox_TransformFrom.Location = new Point(12, 81);
+            comboBox_TransformFrom.Margin = new Padding(6);
+            comboBox_TransformFrom.Name = "comboBox_TransformFrom";
+            comboBox_TransformFrom.Size = new Size(338, 40);
+            comboBox_TransformFrom.TabIndex = 2;
+            // 
+            // comboBox_TransformTo
+            // 
+            comboBox_TransformTo.FormattingEnabled = true;
+            comboBox_TransformTo.Location = new Point(420, 81);
+            comboBox_TransformTo.Margin = new Padding(6);
+            comboBox_TransformTo.Name = "comboBox_TransformTo";
+            comboBox_TransformTo.Size = new Size(338, 40);
+            comboBox_TransformTo.TabIndex = 5;
             comboBox_TransformFrom.FormattingEnabled = true;
             comboBox_TransformFrom.Location = new Point(12, 81);
             comboBox_TransformFrom.Margin = new Padding(6);
@@ -65,6 +83,8 @@
         }
 
         #endregion
+        private ComboBox comboBox_TransformFrom;
+        private ComboBox comboBox_TransformTo;
         private ComboBox comboBox_TransformFrom;
         private ComboBox comboBox_TransformTo;
     }

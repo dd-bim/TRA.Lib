@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             btn_Transform = new Button();
             checkBox_RecalcHeading = new CheckBox();
             groupBox = new GroupBox();
@@ -124,6 +125,7 @@
 
         #endregion
 
+        protected Button btn_Transform;
         protected Button btn_Transform;
         private CheckBox checkBox_RecalcHeading;
         private GroupBox groupBox;
