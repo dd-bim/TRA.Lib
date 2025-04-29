@@ -186,17 +186,7 @@ namespace TRA.Tool
                             childNode.References.Add(trassenPanel);
                             i++;
                         }
-                        if (fileInfo.Extension.Equals(".gra", StringComparison.OrdinalIgnoreCase) && childNode.References.Count() == 0)
-                        {
-                            TrassenPanel trassenPanel = new TrassenPanel();
-                            trassenPanel.set_GRA_L_Path(childNode);
-                            childNode.BackColor = trassenPanel.BackColor;
-                            selectedColor = trassenPanel.BackColor;
-                            panel.Controls.Add(trassenPanel);
-                            panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
-                            childNode.References.Add(trassenPanel);
-                            i++;
-                        }
+
                     }
                     TrassierungLog.Logger?.LogInformation("Loaded " + i + " TRA-Files");
                 }
@@ -308,6 +298,7 @@ namespace TRA.Tool
                     }
                     idx--;
                 }
+                MessageBox.Show("Export completed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
