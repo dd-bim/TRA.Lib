@@ -29,13 +29,14 @@ namespace TRA.Tool
             InitializeComponent();
 
             this.label_Panel.Text = "Transform";
-            comboBox_TransformFrom.DataSource = Enum.GetValues(typeof(egbt22lib.Convert.CRS));
-            comboBox_TransformTo.DataSource = Enum.GetValues(typeof(egbt22lib.Convert.CRS));
-            comboBox_TransformFrom.SelectedItem = egbt22lib.Convert.CRS.DB_Ref_GK5;
-            comboBox_TransformTo.SelectedItem = egbt22lib.Convert.CRS.ETRS89_EGBT22_LDP;
+            comboBox_TransformFrom.DataSource = new BindingList<string>(egbt22lib.Convert.Defined_CRS);
+            comboBox_TransformFromVCS.DataSource = egbt22lib.Convert.Defined_VRS;
+            comboBox_TransformTo.DataSource = new BindingList<string>(egbt22lib.Convert.Defined_CRS);
+            comboBox_TransformFrom.SelectedIndex = 4;
+            comboBox_TransformTo.SelectedItem = 0;
             comboBox_TransformFrom.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
             comboBox_TransformTo.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
-            comboBox_Transform_SelectedIndexChanged(this,EventArgs.Empty);
+            comboBox_Transform_SelectedIndexChanged(this, EventArgs.Empty);
         }
         private TransformSetup transformSetup;
         internal override TransformSetup GetTransformSetup()
@@ -46,11 +47,12 @@ namespace TRA.Tool
 
         private void comboBox_Transform_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(comboBox_TransformFrom.SelectedItem == null || comboBox_TransformTo.SelectedItem == null) return;
-            egbt22lib.Convert.CRS CRSFrom = (egbt22lib.Convert.CRS)comboBox_TransformFrom.SelectedItem;
-            egbt22lib.Convert.CRS CRSTo = (egbt22lib.Convert.CRS)comboBox_TransformTo.SelectedItem;
+            if (comboBox_TransformFrom.SelectedItem == null || comboBox_TransformTo.SelectedItem == null) return;
+            string CRSFrom = (string)comboBox_TransformFrom.SelectedItem;
+            string CRSFromVCS = comboBox_TransformFromVCS.SelectedItem != null ? (string)comboBox_TransformFromVCS.SelectedItem : "";
+            string CRSTo = (string)comboBox_TransformTo.SelectedItem;
             string info;
-            bool result = egbt22lib.Convert.GetConversion(CRSFrom, CRSTo,out transformSetup.ConvertFunc, out info, true)
+            bool result = egbt22lib.Convert.GetConversion(CRSFrom, CRSTo, out transformSetup.ConvertFunc, out info, true)
                 && egbt22lib.Convert.GetGammaKCalculation(CRSFrom, out transformSetup.GammaK_From)
                 && egbt22lib.Convert.GetGammaKCalculation(CRSTo, out transformSetup.GammaK_To);
             toolTip.SetToolTip(comboBox_TransformFrom, info);
