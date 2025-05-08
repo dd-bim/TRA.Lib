@@ -143,7 +143,7 @@ namespace TRA_Lib
         public string C { get { return c.ToString("F5").Replace(',','.'); } }
         public float Cf { get { return c; } }
         /// <value>Richtung am Elementanfang</value>
-        public double T { get { return t; } }
+        public double T { set { t = value; } get { return t; } }
         public int Kz { get { return (int)kz; } }
         public string KzString { get { return kz.ToString(); } }
         public double Scale { get { return scale; } }

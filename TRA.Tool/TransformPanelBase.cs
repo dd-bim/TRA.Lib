@@ -141,6 +141,7 @@ namespace TRA.Tool
                     else
                     {
                         element.Successor.L = element.Successor.Successor.S - element.S - element.L * element.Scale; //if there is still a deviation in Sation-values update this in KSprung-Length
+                        element.Successor.T = element.Successor.Successor.T;
                     }
                 }
             }

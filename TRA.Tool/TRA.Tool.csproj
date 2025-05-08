@@ -17,6 +17,7 @@
     <DefineConstants>$(DefineConstants);USE_SCOTTPLOT</DefineConstants>
   </PropertyGroup>
 
+
   <ItemGroup>
     <PackageReference Include="MaxRev.Gdal.Core" Version="3.10.0.306" />
     <PackageReference Include="MaxRev.Gdal.WindowsRuntime.Minimal" Version="3.10.0.306" />
@@ -29,12 +30,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="egbt22lib">
-      <HintPath>..\..\egbt22trans\egbt22lib\bin\x64\Debug\netstandard2.1\egbt22lib.dll</HintPath>
-    </Reference>
-    <Reference Include="GeographicLib">
-      <HintPath>..\..\egbt22trans\egbt22lib\bin\x64\Debug\netstandard2.1\GeographicLib.dll</HintPath>
-    </Reference>
+    <Resource Include="dbref_va_syst.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="GCG2016v2023">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -63,12 +64,6 @@
 
   <ItemGroup>
     <None Update="bkg_license.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="dbref_va_syst.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="GCG2016v2023">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
