@@ -123,6 +123,10 @@ namespace TRA.Tool
                 {
                 }
             }
+            //Set Heading to End element as this is only an empty Geometry and we started to iterate reverse heading could not be calculated. Set heading from the second last element
+            double heading = 0;
+            (_,_,heading) = trasse.Elemente[^2].GetPointAtS(trasse.Elemente[^2].L, true);
+            trasse.Elemente.Last().T = heading;
             //Try Removing unnecessary KSprung-Elements.This can happen if previous scale was saved to TRA using KSprung, and inverted Transform was applied. Else Update
             foreach (TrassenElementExt element in trasse.Elemente)
             {
