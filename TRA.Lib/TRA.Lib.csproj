@@ -5,6 +5,8 @@
 	<UseWindowsForms>true</UseWindowsForms>
 	<TargetFramework>net6.0-windows</TargetFramework>
 	<Configurations>Debug;Release;Release_NO_SCOTTPLOT</Configurations>
+	 <VersionPrefix>2.0.1</VersionPrefix>
+	<Version>$(c)</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NO_SCOTTPLOT|AnyCPU'" />

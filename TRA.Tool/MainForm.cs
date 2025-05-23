@@ -302,7 +302,10 @@ namespace TRA.Tool
             }
         }
 
-        
+        private void flowLayoutPanel_ControlAdded(object sender, ControlEventArgs e)
+        {
+            flowLayoutPanel.ScrollControlIntoView(flowLayoutPanel.Controls[flowLayoutPanel.Controls.Count - 1]);
+        }
     }
 
     public class TextBoxLogger : ILogger

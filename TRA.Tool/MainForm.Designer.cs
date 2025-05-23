@@ -119,6 +119,7 @@
             flowLayoutPanel.Size = new Size(1002, 608);
             flowLayoutPanel.TabIndex = 3;
             flowLayoutPanel.WrapContents = false;
+            flowLayoutPanel.ControlAdded += flowLayoutPanel_ControlAdded;
             flowLayoutPanel.DragDrop += FlowLayoutPanel_DragDrop;
             flowLayoutPanel.DragEnter += FlowLayoutPanel_DragEnter;
             flowLayoutPanel.DragOver += FlowLayoutPanel_DragOver;

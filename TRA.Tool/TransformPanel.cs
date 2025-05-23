@@ -32,7 +32,7 @@ namespace TRA.Tool
             comboBox_TransformFrom.DataSource = new BindingList<string>(egbt22lib.Convert.Defined_CRS);
             comboBox_TransformFromVCS.DataSource = egbt22lib.Convert.Defined_VRS;
             comboBox_TransformTo.DataSource = new BindingList<string>(egbt22lib.Convert.Defined_CRS);
-            comboBox_TransformFrom.SelectedIndex = 4;
+            comboBox_TransformFrom.SelectedIndex = 8;
             comboBox_TransformTo.SelectedItem = 0;
             comboBox_TransformFrom.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;
             comboBox_TransformTo.SelectedIndexChanged += comboBox_Transform_SelectedIndexChanged;

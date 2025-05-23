@@ -124,7 +124,7 @@ namespace TRA_Lib
                         reader.ReadSingle();
 
                         //Search for existing trasse
-                        TRATrasse trasse = (TRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Contains(Path.GetFileName(fileName)));// Split('.')[0]));
+                        TRATrasse trasse = (TRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Equals(Path.GetFileName(fileName)));// Split('.')[0]));
                         if (trasse != null)
                         {
                             TrassierungLog.Logger?.LogInformation("A existing TRA-Trasse was found, existing TRA Data is overwritten", nameof(trasse));
@@ -316,7 +316,7 @@ namespace TRA_Lib
                         num_GS = reader.ReadInt32();
 
                         //Search for existing trasse
-                        GRATrasse trasse = (GRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Contains(Path.GetFileName(fileName).Split('.')[0]));
+                        GRATrasse trasse = (GRATrasse)Trasse.LoadedTrassen.Find(n => n.Filename.Equals(Path.GetFileName(fileName).Split('.')[0]));
                         if (trasse != null)
                         {
                             TrassierungLog.Logger?.LogInformation("A existing Trasse was found: " + (trasse is TRATrasse ? "GRA Data is added to TRATrasse, " : "") + "existing GRA Data is overwritten", nameof(trasse));
