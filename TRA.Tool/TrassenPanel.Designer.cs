@@ -31,8 +31,7 @@ namespace TRA.Tool
         private void InitializeComponent()
         {
             panel1 = new Panel();
-            btn_SaveTRA = new Button();
-            btn_SaveCSV = new Button();
+            btn_Save = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
             tb_TRA_S = new TextBox();
             label_TRA_L = new Label();
@@ -44,7 +43,7 @@ namespace TRA.Tool
             label_GRA_L = new Label();
             tb_GRA_L = new TextBox();
             tb_GRA_R = new TextBox();
-            folderBrowserDialog = new FolderBrowserDialog();
+            saveFileDialog = new SaveFileDialog();
             panel1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
@@ -55,8 +54,7 @@ namespace TRA.Tool
             // 
             // panel1
             // 
-            panel1.Controls.Add(btn_SaveTRA);
-            panel1.Controls.Add(btn_SaveCSV);
+            panel1.Controls.Add(btn_Save);
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 271);
             panel1.Margin = new Padding(6);
@@ -64,27 +62,16 @@ namespace TRA.Tool
             panel1.Size = new Size(1208, 58);
             panel1.TabIndex = 1;
             // 
-            // btn_SaveTRA
+            // btn_Save
             // 
-            btn_SaveTRA.Location = new Point(193, 9);
-            btn_SaveTRA.Margin = new Padding(6);
-            btn_SaveTRA.Name = "btn_SaveTRA";
-            btn_SaveTRA.Size = new Size(195, 43);
-            btn_SaveTRA.TabIndex = 2;
-            btn_SaveTRA.Text = "Save TRA+GRA";
-            btn_SaveTRA.UseVisualStyleBackColor = true;
-            btn_SaveTRA.Click += btn_SaveTRA_Click;
-            // 
-            // btn_SaveCSV
-            // 
-            btn_SaveCSV.Location = new Point(6, 9);
-            btn_SaveCSV.Margin = new Padding(6);
-            btn_SaveCSV.Name = "btn_SaveCSV";
-            btn_SaveCSV.Size = new Size(176, 43);
-            btn_SaveCSV.TabIndex = 1;
-            btn_SaveCSV.Text = "SaveCSV";
-            btn_SaveCSV.UseVisualStyleBackColor = true;
-            btn_SaveCSV.Click += btn_Save_Click;
+            btn_Save.Location = new Point(6, 9);
+            btn_Save.Margin = new Padding(6);
+            btn_Save.Name = "btn_Save";
+            btn_Save.Size = new Size(176, 43);
+            btn_Save.TabIndex = 1;
+            btn_Save.Text = "Export";
+            btn_Save.UseVisualStyleBackColor = true;
+            btn_Save.Click += btn_Save_Click;
             // 
             // tableLayoutPanel1
             // 
@@ -244,6 +231,11 @@ namespace TRA.Tool
             tb_GRA_R.DragDrop += Tb_GRA_DragDrop;
             tb_GRA_R.DragEnter += Tb_GRA_DragEnter;
             // 
+            // saveFileDialog
+            // 
+            saveFileDialog.FileName = "overwritten by loaded filename";
+            saveFileDialog.Filter = "GRA/TRA|*.TRA|CSV|*.csv|DXF|*.dxf";
+            // 
             // TrassenPanel
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
@@ -275,8 +267,7 @@ namespace TRA.Tool
         private Label label_GRA_L;
         private TextBox tb_GRA_L;
         private TextBox tb_GRA_R;
-        private Button btn_SaveCSV;
-        private FolderBrowserDialog folderBrowserDialog;
-        private Button btn_SaveTRA;
+        private Button btn_Save;
+        private SaveFileDialog saveFileDialog;
     }
 }

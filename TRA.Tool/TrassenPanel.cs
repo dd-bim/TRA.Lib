@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using TRA_Lib;
+using static TRA_Lib.Trassierung;
 
 namespace TRA.Tool
 {
@@ -85,9 +86,10 @@ namespace TRA.Tool
                 if (tb != null && fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase))
                 {
                     ReferenceTreeNode previousNode = (ReferenceTreeNode)tb.Tag;
-                    if (previousNode != null) {
+                    if (previousNode != null)
+                    {
                         previousNode.References.Remove(this);
-                        if (previousNode.References.Count() == 0) previousNode.BackColor = Color.Empty; 
+                        if (previousNode.References.Count() == 0) previousNode.BackColor = Color.Empty;
                     }
                     tb.Tag = node;
                     tb.Text = fileInfo.Name;
@@ -240,23 +242,40 @@ namespace TRA.Tool
             if (tag != null)
             {
                 FileInfo fileInfo = new FileInfo((tag as TreeNode).Tag.ToString());
-                folderBrowserDialog.InitialDirectory = fileInfo.DirectoryName;
+                saveFileDialog.InitialDirectory = fileInfo.DirectoryName;
             }
-            DialogResult result = folderBrowserDialog.ShowDialog();
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+            DialogResult result = saveFileDialog.ShowDialog();
+            string SelectedPath = Path.GetDirectoryName(saveFileDialog.FileName);
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(SelectedPath))
             {
-                if (trasseL != null)
+                switch (Path.GetExtension(saveFileDialog.FileName).ToLower())
                 {
-                    Trassierung.ExportTRA_CSV(trasseL, Path.Combine(folderBrowserDialog.SelectedPath, trasseL.Filename.Substring(0, trasseL.Filename.Length - 3) + "csv"));
+                    case ".tra":
+                        SaveScaleDialog ScaleDialog = new SaveScaleDialog();
+                        DialogResult resultScale = ScaleDialog.ShowDialog();
+                        Trassierung.ESaveScale saveScale = Trassierung.ESaveScale.discard;
+                        if (resultScale == DialogResult.OK) saveScale = ScaleDialog.result;
+                        if (trasseL != null) Trassierung.ExportTRA(trasseL, Path.Combine(SelectedPath, trasseL.Filename), saveScale);
+                        if (trasseS != null) Trassierung.ExportTRA(trasseS, Path.Combine(SelectedPath, trasseS.Filename), saveScale);
+                        if (trasseR != null) Trassierung.ExportTRA(trasseR, Path.Combine(SelectedPath, trasseR.Filename), saveScale);
+                        if (gradientR != null) Trassierung.ExportGRA(gradientR, Path.Combine(SelectedPath, gradientR.Filename));
+                        if (gradientL != null) Trassierung.ExportGRA(gradientL, Path.Combine(SelectedPath, gradientL.Filename));
+                        break;
+                    case ".csv":
+                        if (trasseL != null) Trassierung.ExportTRA_CSV(trasseL, Path.Combine(SelectedPath, trasseL.Filename.Substring(0, trasseL.Filename.Length - 3) + "csv"));
+                        if (trasseS != null) Trassierung.ExportTRA_CSV(trasseS, Path.Combine(SelectedPath, trasseS.Filename.Substring(0, trasseS.Filename.Length - 3) + "csv"));
+                        if (trasseR != null) Trassierung.ExportTRA_CSV(trasseR, Path.Combine(SelectedPath, trasseR.Filename.Substring(0, trasseR.Filename.Length - 3) + "csv"));
+                        break;
+                    case ".dxf":
+                        if (trasseL != null) Trassierung.ExportTRA_DXF(trasseL, Path.Combine(SelectedPath, trasseL.Filename.Substring(0, trasseL.Filename.Length - 3) + "dxf"));
+                        if (trasseS != null) Trassierung.ExportTRA_DXF(trasseS, Path.Combine(SelectedPath, trasseS.Filename.Substring(0, trasseS.Filename.Length - 3) + "dxf"));
+                        if (trasseR != null) Trassierung.ExportTRA_DXF(trasseR, Path.Combine(SelectedPath, trasseR.Filename.Substring(0, trasseR.Filename.Length - 3) + "dxf"));
+                        break;
+                    default:
+                        MessageBox.Show("Unsupported file format. Please use .tra .csv or .dxf");
+                        break;
                 }
-                if (trasseS != null)
-                {
-                    Trassierung.ExportTRA_CSV(trasseS, Path.Combine(folderBrowserDialog.SelectedPath, trasseS.Filename.Substring(0, trasseS.Filename.Length - 3) + "csv"));
-                }
-                if (trasseR != null)
-                {
-                    Trassierung.ExportTRA_CSV(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename.Substring(0, trasseR.Filename.Length - 3) + "csv"));
-                }
+
             }
         }
 
@@ -266,7 +285,7 @@ namespace TRA.Tool
             if (referenceNode != null)
             {
                 referenceNode.References.Remove(this);
-                if(referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
+                if (referenceNode.References.Count() == 0) referenceNode.BackColor = Color.Empty;
             }
             referenceNode = tb_TRA_S.Tag as ReferenceTreeNode;
             if (referenceNode != null)
@@ -296,43 +315,9 @@ namespace TRA.Tool
             base.btn_delete_Click(sender, e);
         }
 
-        private void btn_SaveTRA_Click(object sender, EventArgs e)
+        private void folderBrowserDialog_HelpRequest(object sender, EventArgs e)
         {
-            object tag = tb_TRA_L.Tag ?? tb_TRA_R.Tag ?? tb_TRA_S.Tag;
-            if (tag != null)
-            {
-                FileInfo fileInfo = new FileInfo((tag as TreeNode).Tag.ToString());
-                folderBrowserDialog.InitialDirectory = fileInfo.DirectoryName;
-            }
-            DialogResult result = folderBrowserDialog.ShowDialog();
-            SaveScaleDialog ScaleDialog = new SaveScaleDialog();
-            DialogResult resultScale = ScaleDialog.ShowDialog();
-            Trassierung.ESaveScale saveScale = Trassierung.ESaveScale.discard;
-            if (resultScale == DialogResult.OK) saveScale = ScaleDialog.result;
 
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
-            {
-                if (trasseL != null)
-                {
-                    Trassierung.ExportTRA(trasseL, Path.Combine(folderBrowserDialog.SelectedPath, trasseL.Filename), saveScale);
-                }
-                if (trasseS != null)
-                {
-                    Trassierung.ExportTRA(trasseS, Path.Combine(folderBrowserDialog.SelectedPath, trasseS.Filename), saveScale);
-                }
-                if (trasseR != null)
-                {
-                    Trassierung.ExportTRA(trasseR, Path.Combine(folderBrowserDialog.SelectedPath, trasseR.Filename), saveScale);
-                }
-                if (gradientR != null)
-                {
-                    Trassierung.ExportGRA(gradientR, Path.Combine(folderBrowserDialog.SelectedPath, gradientR.Filename));
-                }
-                if (gradientL != null)
-                {
-                    Trassierung.ExportGRA(gradientL, Path.Combine(folderBrowserDialog.SelectedPath, gradientL.Filename));
-                }
-            }
         }
     }
 }

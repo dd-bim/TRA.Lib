@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using netDxf.Tables;
+using netDxf;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -9,6 +11,8 @@ using System.Text;
 using System.Text.Json;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static netDxf.Entities.HatchBoundaryPath;
+
 
 namespace TRA_Lib
 {
@@ -295,6 +299,48 @@ namespace TRA_Lib
             {
                 MessageBox.Show("Can not write to File " + fileName);
             }
+        }
+
+        public static void ExportTRA_DXF(TRATrasse trasse, string fileName)
+        {
+            // Create a new DXF document
+            DxfDocument dxf = new DxfDocument();
+
+            foreach (TrassenElementExt element in trasse.Elemente)
+            {
+                if (element.GetGeometryType() == typeof(KSprung))
+                {
+                    // Skip KSprung elements for DXF export
+                    continue;
+                }
+                netDxf.Entities.EntityObject entitiy;
+                Interpolation interp = element.InterpolationResult;
+                if (interp.H != null)
+                {
+                    List<Vector3> points = new List<Vector3>
+                    {
+                        new Vector3(element.Xstart,element.Ystart,interp.H[0])
+                    };
+                    for (int i = 0; i < interp.X.Length; i++) points.Add(new Vector3(interp.X[i], interp.Y[i], interp.H[i]));
+                    entitiy = new netDxf.Entities.Polyline3D(points);
+                }
+                else
+                {
+                    List<Vector2> points = new List<Vector2>
+                    {
+                        new Vector2(element.Xstart,element.Ystart)
+                    };
+                    for (int i = 0; i < interp.X.Length; i++) points.Add(new Vector2(interp.X[i], interp.Y[i]));
+                    entitiy = new netDxf.Entities.Polyline2D(points);
+                }
+                entitiy.Layer = new Layer(trasse.Filename);
+                entitiy.Linetype = Linetype.Continuous;
+
+                // Add polyline to the DXF document
+                dxf.Entities.Add(entitiy);
+            }
+            // Save the DXF file
+            dxf.Save(fileName);
         }
 
         public static GRATrasse ImportGRA(string fileName)
