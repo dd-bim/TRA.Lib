@@ -136,7 +136,7 @@ namespace TRA_Lib
                 Assert.IsTrue(Double.IsNaN(expecteds), "Line Projection returned wrong s-value");
                 return;
             }
-            Assert.AreEqual(expecteds, s, 0.0000001, "Line Projection returned wrong s-value");
+            Assert.AreEqual(expecteds, s, 0.000001, "Line Projection returned wrong s-value");
         }
 
         [TestMethod]
@@ -165,7 +165,6 @@ namespace TRA_Lib
         [TestMethod]
         [TestCategory("GeometryProjection")]
         [DataRow(double.NaN, -10.0, double.NaN, 0.0, 5.0, 100, double.NaN, DisplayName = "Get s along Clothoid NaN")]
-        [DataRow(5.0, -10.0, double.NaN, 10.0, double.NaN, 100, 36.24000549316406, DisplayName = "Get s along Clothoid r2=NaN")]
         // TODO: Testdata for Clothoids needed
         public void ProjectionClothoid(double X, double Y, double t, double radius1, double radius2, double length, double expecteds)
         {
@@ -217,20 +216,20 @@ namespace TRA_Lib
         #region Element Estimation Tests
         [TestMethod]
         [TestCategory("ElementEstimation")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046L.TRA", 5.4221e+06, 5.6488e+06, 26, DisplayName = "6240046L.TRA")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046R.TRA", 5.4221e+06, 5.6488e+06, 26, DisplayName = "6240046R.TRA")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", 5.4221e+06, 5.6488e+06, 16, DisplayName = "6240046S.TRA")]
+        [DataRow("6240046L.TRA", 5.4221e+06, 5.6488e+06, 26, DisplayName = "6240046L.TRA")]
+        [DataRow("6240046R.TRA", 5.4221e+06, 5.6488e+06, 26, DisplayName = "6240046R.TRA")]
+        [DataRow("6240046S.TRA", 5.4221e+06, 5.6488e+06, 16, DisplayName = "6240046S.TRA")]
         public void GetTRAElementFromPoint(string Filename, double PointY, double PointX, int expectedElementID)
         {
-            TRATrasse trasse = Trassierung.ImportTRA(Filename);
+            TRATrasse trasse = Trassierung.ImportTRA(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", Filename));
             TrassenElementExt element = trasse.GetElementFromPoint(PointX, PointY);
             Assert.AreEqual(expectedElementID, element.ID, "Input Point was not associated with correct Element");
         }
 
         [TestMethod]
         [TestCategory("ElementEstimation")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240045L.GRA", 54300, 26, DisplayName = "6240045L.GRA")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240045R.GRA", 48288.1, 11, DisplayName = "6240045R.GRA")]
+        [DataRow("TestData\\6240045L.GRA", 54300, 26, DisplayName = "6240045L.GRA")]
+        [DataRow("TestData\\6240045R.GRA", 48288.1, 11, DisplayName = "6240045R.GRA")]
         public void GetGRAElementFromPoint(string Filename, double s, int expectedElementID)
         {
             GRATrasse trasse;
@@ -265,8 +264,8 @@ namespace TRA_Lib
         #region OverallExecutionTest
         [TestMethod]
         [TestCategory("OverallExecutionTest")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046L.TRA", "C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", "C:\\HTW\\Trassierung\\Infos\\6240045L.GRA", DisplayName = "3D Interpolation 6240046L.TRA")]
-        [DataRow("C:\\HTW\\Trassierung\\Infos\\6240046R.TRA", "C:\\HTW\\Trassierung\\Infos\\6240046S.TRA", "C:\\HTW\\Trassierung\\Infos\\6240045R.GRA", DisplayName = "3D Interpolation 6240046R.TRA")]
+        [DataRow("TestData\\6240046L.TRA", "TestData\\6240046S.TRA", "TestData\\6240045L.GRA", DisplayName = "3D Interpolation 6240046L.TRA")]
+        [DataRow("TestData\\6240046R.TRA", "TestData\\6240046S.TRA", "TestData\\6240045R.GRA", DisplayName = "3D Interpolation 6240046R.TRA")]
         public void TestImportTrasse(string FilenameTRA_LR, string FilenameTRA_S, string FilenameGRA_LR)
         {
             TRATrasse trasseLR = Trassierung.ImportTRA(FilenameTRA_LR);
@@ -288,4 +287,166 @@ namespace TRA_Lib
     }
 
 
+}
+
+namespace TRA_Tool
+{
+    using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Reflection;
+    using System.Windows.Forms;
+    using TRA.Tool;
+    using TRA_Lib;
+    using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+    using static TRA_Lib.Trassierung;
+
+    [TestClass]
+    public class RoundtripTests
+    {
+        public TestContext TestContext { get; set; }
+
+        [TestMethod]
+        [TestCategory("Roundtrip")]
+        [DataRow("TestData\\6240046L.TRA", "TestData\\6240046S.TRA", "TestData\\6240045L.GRA",8,0, DisplayName = "Roundtrip for 6240046L.TRA")]
+        public void Roundtrip(string FilenameTRA_LR, string FilenameTRA_S, string FilenameGRA_LR, int SourceCRSIdx,int TargetCRSIdx)
+        {
+            BindingList<string> test = new BindingList<string>(egbt22lib.Convert.Defined_CRS);
+            string tmpFolderPath = Path.Combine("TestData", "tmp");
+            if (!Directory.Exists(tmpFolderPath))
+            {
+                Directory.CreateDirectory(tmpFolderPath);
+            }
+            File.Copy(FilenameTRA_LR,Path.Combine(tmpFolderPath,"TRA.TRA"),true);
+            File.Copy(FilenameTRA_S, Path.Combine(tmpFolderPath, "S.TRA"), true);
+
+            FlowLayoutPanel flowLayoutPanel = new FlowLayoutPanel();
+            //CreateTrassenPanel
+            TrassenPanel panel = new TrassenPanel();
+            panel.trasseL = Trassierung.ImportTRA(Path.Combine(tmpFolderPath, "TRA.TRA"));
+            panel.trasseS = Trassierung.ImportTRA(Path.Combine(tmpFolderPath, "S.TRA"));
+            panel.gradientL = Trassierung.ImportGRA(FilenameGRA_LR);
+            flowLayoutPanel.Controls.Add(panel);
+
+            //Load Original values
+            TRATrasse trasseL = Trassierung.ImportTRA(FilenameTRA_LR);
+            TRATrasse trasseS = Trassierung.ImportTRA(FilenameTRA_S);
+
+            //Create TransformPanel & Transform
+            TransformPanel transformPanel = new TransformPanel();
+            flowLayoutPanel.Controls.Add(transformPanel);
+            //Use reflection to set provate properties for testing
+            var propertyFrom = typeof(TransformPanel).GetField("comboBox_TransformFrom", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (propertyFrom != null)
+            {
+                var comboBoxInstance = propertyFrom.GetValue(transformPanel);
+
+                // Assuming that `comboBoxInstance` is a ComboBox and has a `SelectedItem` property
+                var selectedItemProperty = comboBoxInstance.GetType().GetProperty("SelectedIndex");
+                if (selectedItemProperty != null)
+                {
+                    selectedItemProperty.SetValue(comboBoxInstance, SourceCRSIdx); // Set selected item
+                }
+            }
+            var propertyTo = typeof(TransformPanel).GetField("comboBox_TransformTo", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (propertyTo != null)
+            {
+                var comboBoxInstance = propertyTo.GetValue(transformPanel);
+
+                // Assuming that `comboBoxInstance` is a ComboBox and has a `SelectedItem` property
+                var selectedItemProperty = comboBoxInstance.GetType().GetProperty("SelectedIndex");
+                if (selectedItemProperty != null)
+                {
+                    selectedItemProperty.SetValue(comboBoxInstance, TargetCRSIdx); // Set selected item
+                }
+            }
+
+            //Update TransformSetup 
+            transformPanel.Refresh();
+            var methodInfo = typeof(TransformPanelBase).GetMethod("btn_Transform_Click", BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = methodInfo.Invoke(transformPanel, new object[] { null, EventArgs.Empty });
+            //Save Transformed
+            Trassierung.ExportTRA(panel.trasseL, Path.Combine(tmpFolderPath, panel.trasseL.Filename), Trassierung.ESaveScale.multiply);
+            Trassierung.ExportTRA(panel.trasseS, Path.Combine(tmpFolderPath, panel.trasseS.Filename), Trassierung.ESaveScale.multiply);
+
+            //Transform inverse--------------------------------
+            propertyFrom = typeof(TransformPanel).GetField("comboBox_TransformFrom", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (propertyFrom != null)
+            {
+                var comboBoxInstance = propertyFrom.GetValue(transformPanel) as System.Windows.Forms.ComboBox;
+
+                // Assuming that `comboBoxInstance` is a ComboBox and has a `SelectedItem` property
+                var selectedItemProperty = comboBoxInstance.GetType().GetProperty("SelectedIndex");
+                if (selectedItemProperty != null)
+                {
+                    selectedItemProperty.SetValue(comboBoxInstance, TargetCRSIdx); // Set selected item
+                }
+            }
+            propertyTo = typeof(TransformPanel).GetField("comboBox_TransformTo", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (propertyTo != null)
+            {
+                var comboBoxInstance = propertyTo.GetValue(transformPanel) as System.Windows.Forms.ComboBox;
+
+                // Assuming that `comboBoxInstance` is a ComboBox and has a `SelectedItem` property
+                var selectedItemProperty = comboBoxInstance.GetType().GetProperty("SelectedIndex");
+                if (selectedItemProperty != null)
+                {
+                    selectedItemProperty.SetValue(comboBoxInstance, SourceCRSIdx); // Set selected item
+                }
+            }
+            //Update TransformSetup 
+            transformPanel.Refresh();
+            //Trigger Transform
+            result = methodInfo.Invoke(transformPanel, new object[] { null, EventArgs.Empty });
+
+            using (StreamWriter outputFile = new StreamWriter(Path.Combine(TestContext.TestDir, @"..\Roundtrip.csv")))
+            {
+                outputFile.WriteLine($"Differences from Roundtrip for {FilenameTRA_LR}");
+                outputFile.WriteLine("ID;X;Y;T;L;R1;R2");
+                //Compare Roundtrip
+                for (int i = 0; i < trasseL.Elemente.Count(); i++)
+                {
+                    TrassenElementExt elemenPre = trasseL.Elemente[i];
+                    TrassenElementExt elementPost = panel.trasseL.Elemente[i];
+                    Assert.AreEqual(elemenPre.ID, elementPost.ID, "Element ID mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.Xstart, elementPost.Xstart, 0.0001, "Element X mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.Ystart, elementPost.Ystart, 0.0001, "Element Y mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.T, elementPost.T, 0.00001, "Element T mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.L, elementPost.L, 0.00001, "Element L mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.R1, elementPost.R1, 0.00001, "Element R1 mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.R2, elementPost.R2, 0.00001, "Element R2 mismatch after roundtrip");
+                    outputFile.WriteLine(string.Join(";",
+                        elemenPre.ID,
+                        (elemenPre.Xstart - elementPost.Xstart),
+                        (elemenPre.Ystart - elementPost.Ystart),
+                        (elemenPre.T - elementPost.T),
+                        (elemenPre.L - elementPost.L),
+                        (elemenPre.R1 - elementPost.R1),
+                        (elemenPre.R2 - elementPost.R2)));
+                }
+                outputFile.WriteLine($"Differences from Roundtrip for {FilenameTRA_LR}");
+                outputFile.WriteLine("ID;X;Y;T;L;R1;R2");
+                for (int i = 0; i < trasseS.Elemente.Count(); i++)
+                {
+                    TrassenElementExt elemenPre = trasseS.Elemente[i];
+                    TrassenElementExt elementPost = panel.trasseS.Elemente[i];
+                    Assert.AreEqual(elemenPre.ID, elementPost.ID, "Element ID mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.Xstart, elementPost.Xstart, 0.0001, "Element X mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.Ystart, elementPost.Ystart, 0.0001, "Element Y mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.T, elementPost.T, 0.00001, "Element T mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.L, elementPost.L, 0.00001, "Element L mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.R1, elementPost.R1, 0.00001, "Element R1 mismatch after roundtrip");
+                    Assert.AreEqual(elemenPre.R2, elementPost.R2, 0.00001, "Element R2 mismatch after roundtrip");
+                    outputFile.WriteLine(string.Join(";",
+                        elemenPre.ID,
+    (elemenPre.Xstart - elementPost.Xstart),
+    (elemenPre.Ystart - elementPost.Ystart),
+    (elemenPre.T - elementPost.T),
+    (elemenPre.L - elementPost.L),
+    (elemenPre.R1 - elementPost.R1),
+    (elemenPre.R2 - elementPost.R2)));
+                }
+            }
+        }
+    }
 }

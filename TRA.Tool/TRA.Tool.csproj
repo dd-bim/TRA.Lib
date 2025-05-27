@@ -23,6 +23,11 @@
     <PackageReference Include="MaxRev.Gdal.WindowsRuntime.Minimal" Version="3.10.0.306" />
   </ItemGroup>
 
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="TRA.Lib_TEST" />
+	</ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\dbva\valib\valib.csproj" />
     <ProjectReference Include="..\..\egbt22trans\egbt22lib\egbt22lib.csproj" />
