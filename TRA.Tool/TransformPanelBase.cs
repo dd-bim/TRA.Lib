@@ -34,11 +34,6 @@ namespace TRA.Tool
             return degrees * (Math.PI / 180.0);
         }
 
-        internal delegate (double Rechts, double Hoch, double H) SingleCoordinateTransform(double InRechts, double InHoch, double InH);
-        internal delegate bool ArrayCoordinateTransform(double[] InRechts, double[] InHoch, double[] InH, out double[] OutRechts, out double[] OutHoch, out double[] OutH);
-        internal delegate (double gamma, double k) Single_Gamma_k(double Rechts, double Hoch);
-        internal delegate bool Array_Gamma_k(double[] Rechts, double[] Hoch, out double[] gamma, out double[] k);
-
         internal struct TransformSetup
         {
             public Func<double, double, (double x, double y)> ConvertFunc;
