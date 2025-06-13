@@ -1,7 +1,7 @@
 # TRA.Lib
 
 ## Description
-This repository consists of three projects. First is a Library for importing .TRA and .GRA files, second is are corresponding Tests for different caluclations (some of the geometries require iterative caluclations so this can be used to compare results). The third Project is the actual User-Interface which can be used to read, export, visualize and transform TRA/GRA-files. If you are happy with that, and you don`t want to create a own application using the TRA.Lib, you can skip the first two sections and start with [TRA.Tool](#3.TRA.Tool). Only be aware of the currently available [Gemeotry-Types](#Geometry-Types) and available [Tolerance-Settings](#Settings).
+This repository consists of three projects. First is a Library for importing .TRA and .GRA files, second contains corresponding Unit-Tests for different caluclations (some of the geometries require iterative caluclations so this can be used to compare results). The third Project is the actual User-Interface which can be used to read, export, visualize and transform TRA/GRA-files. If you are happy with that, and you don`t want to create a own application using the TRA.Lib, you can skip the first two sections and start with [TRA.Tool](#3.TRA.Tool). Only be aware of the currently available [Gemeotry-Types](#Geometry-Types) and available [Tolerance-Settings](#Settings).
 
 ## 1. TRA.Lib:
 Library providing Functionality for loading .TRA and .GRA files. If the Library is compiled using the symbol "USE_SCOTTPLOT" it is also providing a detailed visualisation of the loaded data.
