@@ -321,7 +321,10 @@ namespace TRA_Lib
                     {
                         new Vector3(element.Ystart,element.Xstart,interp.H[0])
                     };
-                    for (int i = 0; i < interp.X.Length; i++) points.Add(new Vector3(interp.Y[i], interp.X[i], interp.H[i]));
+                    for (int i = 0; i < interp.X.Length; i++)
+                    {
+                        if (!double.IsNaN(interp.X[i]) && !double.IsNaN(interp.Y[i]) && !double.IsNaN(interp.H[i])) points.Add(new Vector3(interp.Y[i], interp.X[i], interp.H[i]));
+                    }
                     entitiy = new netDxf.Entities.Polyline3D(points);
                 }
                 else
@@ -330,7 +333,10 @@ namespace TRA_Lib
                     {
                         new Vector2(element.Ystart,element.Xstart)
                     };
-                    for (int i = 0; i < interp.X.Length; i++) points.Add(new Vector2(interp.Y[i], interp.X[i]));
+                    for (int i = 0; i < interp.X.Length; i++)
+                    {
+                        if (!double.IsNaN(interp.X[i]) && !double.IsNaN(interp.Y[i])) points.Add(new Vector2(interp.Y[i], interp.X[i]));
+                    }
                     entitiy = new netDxf.Entities.Polyline2D(points);
                 }
                 entitiy.Layer = new Layer(trasse.Filename);
