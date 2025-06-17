@@ -64,6 +64,7 @@ namespace TRA_Lib
                 s1 = (h - predecessor.h) / (S - predecessor.S) * 1000;
                 predecessor.s2 = s1;
                 predecessor.CalcConstants();
+                CalcConstants();
             }
             this.owner = owner;
         }
