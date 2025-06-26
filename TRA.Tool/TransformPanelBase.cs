@@ -69,6 +69,8 @@ namespace TRA.Tool
         {
             double previousdK = double.NaN; //Scale from previous element
             if (trasse == null) return;
+            HashSet<TrassenElementExt> elementsOutsideSource = new HashSet<TrassenElementExt>();
+            HashSet<TrassenElementExt> elementsOutsideTarget = new HashSet<TrassenElementExt>();
             foreach (TrassenElementExt element in trasse.Elemente.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
             {
                 //Transform Interpolation Points
@@ -94,6 +96,17 @@ namespace TRA.Tool
                             interp.H[i] = interp.H[i];
                             interp.T[i] = interp.T[i] - DegreesToRadians(gamma_to[i] - gamma_from[i]);
                         }
+                        if (inside_from.Contains(false))
+                        {
+                            elementsOutsideSource.Add(element);
+                            TrassierungLog.Logger?.Log_Async(LogLevel.Warning, trasse.Filename + ":Element#" + element.ID + " one or more InterpolationPoint coordinate is outside valid range of SourceCRS");
+
+                        }
+                        if (inside_to.Contains(false))
+                        {
+                            elementsOutsideTarget.Add(element);
+                            TrassierungLog.Logger?.Log_Async(LogLevel.Warning, trasse.Filename + ":Element#" + element.ID + " one or more InterpolationPoint coordinate is outside valid range of SourceCRS");
+                        }
                     }
                     catch
                     {
@@ -112,10 +125,27 @@ namespace TRA.Tool
                     double dT = DegreesToRadians(gamma_o - gamma_i);
                     element.Relocate(hoch, rechts, dT, dK, previousdK, checkBox_RecalcHeading.Checked, checkBox_RecalcLength.Checked);
                     previousdK = dK;
+                    if (!inside_from)
+                    {
+                        elementsOutsideSource.Add(element);
+                    }      
+                    if (!inside_to)
+                    {
+                        elementsOutsideTarget.Add(element);
+                    }
                 }
                 catch
                 {
                 }
+            }
+            //Message if elements are outside CRS-BBox;
+            if (elementsOutsideSource.Count > 0)
+            {
+                MessageBox.Show(trasse.Filename + ": has Elements outside SourceCRS BoundingBox:\n" + string.Join(", ", elementsOutsideSource.Select(p => p.ID)) + "\n (see log for more information)", "Transform: " + trasse.Filename);
+            }
+            if (elementsOutsideTarget.Count > 0)
+            {
+                MessageBox.Show(trasse.Filename + ": has Elements outside TargetCRS BoundingBox:\n" + string.Join(", ", elementsOutsideTarget.Select(p => p.ID)) + "\n (see log for more information)", "Transform: " + trasse.Filename);
             }
             //Set Heading to End element as this is only an empty Geometry and we started to iterate reverse heading could not be calculated. Set heading from the second last element
             double heading = 0;
