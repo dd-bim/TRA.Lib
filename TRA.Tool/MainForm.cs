@@ -172,21 +172,23 @@ namespace TRA.Tool
                     node.Expand(); //To Load Child Nodes
                     node.Collapse(false);
                     int i = 0;
-                    foreach (ReferenceTreeNode childNode in node.Nodes)
+                    foreach (var child in node.Nodes)
                     {
-                        fileInfo = new FileInfo(childNode.Tag.ToString());
-                        if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase) && childNode.References.Count() == 0)
+                        if (child is ReferenceTreeNode childNode)
                         {
-                            TrassenPanel trassenPanel = new TrassenPanel();
-                            trassenPanel.set_TRA_L_Path(childNode);
-                            childNode.BackColor = trassenPanel.BackColor;
-                            selectedColor = trassenPanel.BackColor;
-                            panel.Controls.Add(trassenPanel);
-                            panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
-                            childNode.References.Add(trassenPanel);
-                            i++;
+                            fileInfo = new FileInfo(childNode.Tag.ToString());
+                            if (fileInfo.Extension.Equals(".tra", StringComparison.OrdinalIgnoreCase) && childNode.References.Count() == 0)
+                            {
+                                TrassenPanel trassenPanel = new TrassenPanel();
+                                trassenPanel.set_TRA_L_Path(childNode);
+                                childNode.BackColor = trassenPanel.BackColor;
+                                selectedColor = trassenPanel.BackColor;
+                                panel.Controls.Add(trassenPanel);
+                                panel.Controls.SetChildIndex(trassenPanel, panel.Controls.Count - 2);
+                                childNode.References.Add(trassenPanel);
+                                i++;
+                            }
                         }
-
                     }
                     TrassierungLog.Logger?.LogInformation("Loaded " + i + " TRA-Files");
                 }
