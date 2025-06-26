@@ -37,8 +37,8 @@ namespace TRA.Tool
         internal struct TransformSetup
         {
             public Func<double, double, (double x, double y)> ConvertFunc;
-            public Func<double, double, (double gamma, double k)> GammaK_From;
-            public Func<double, double, (double gamma, double k)> GammaK_To;
+            public Func<double, double, (double gamma, double k, bool IsInside)> GammaK_From;
+            public Func<double, double, (double gamma, double k, bool IsInside)> GammaK_To;
 
             public TransformSetup()
             {
@@ -75,15 +75,14 @@ namespace TRA.Tool
                 Interpolation interp = element.InterpolationResult;
                 if (!interp.IsEmpty())
                 {
-                    double elementHeight = interp.H != null ? interp.H[0] : double.NaN; //save original height befor transforming
-                                                                                        // TODO how to handle trasse without heights (like S) in transformations
                     if (interp.H == null) { interp.H = new double[interp.X.Length]; }
                     try
                     {
                         //Transform is done in 2D. Normal Heights are not transformed, but the X/Y coordinates are transformed.
                         double[][] points = { interp.Y, interp.X};
                         double[] gamma_from, k_from, gamma_to, k_to = new double[interp.X.Length];
-                        bool[] inside_from, inside_to;
+                        bool[] inside_from, inside_to = new bool[interp.X.Length];
+                    
                         (gamma_from, k_from, inside_from) = egbt22lib.Convert.CalcArrays2(points[0], points[1],transformSetup.GammaK_From);
                         points = CalcArray2(points, transformSetup.ConvertFunc);
                         (gamma_to, k_to, inside_to) = egbt22lib.Convert.CalcArrays2(points[0], points[1], transformSetup.GammaK_To);
@@ -105,9 +104,10 @@ namespace TRA.Tool
                 {
                     double gamma_i, k_i, gamma_o, k_o;
                     double rechts, hoch;
-                    (gamma_i, k_i) = transformSetup.GammaK_From(element.Ystart, element.Xstart);
+                    bool inside_from, inside_to;
+                    (gamma_i, k_i, inside_from) = transformSetup.GammaK_From(element.Ystart, element.Xstart);
                     (rechts, hoch) = transformSetup.ConvertFunc(element.Ystart, element.Xstart);
-                    (gamma_o, k_o) = transformSetup.GammaK_To(rechts, hoch);
+                    (gamma_o, k_o, inside_to) = transformSetup.GammaK_To(rechts, hoch);
                     double dK = (k_o / k_i);
                     double dT = DegreesToRadians(gamma_o - gamma_i);
                     element.Relocate(hoch, rechts, dT, dK, previousdK, checkBox_RecalcHeading.Checked, checkBox_RecalcLength.Checked);

@@ -34,7 +34,7 @@ namespace TRA.Tool
             this.label_Panel.Text = "Transform VA";
             //Load available Options
             List<ComboBoxItem> options = new List<ComboBoxItem>();
-            foreach (valib.Convert.CRS value in Enum.GetValues(typeof(valib.Convert.CRS)))
+            foreach (valib.CRS value in Enum.GetValues(typeof(valib.CRS)))
             {
                 options.Add(new ComboBoxItem(value.ToString()));
             }
@@ -103,8 +103,8 @@ namespace TRA.Tool
             ComboBoxItem CRSTo = (ComboBoxItem)comboBox_TransformTo.SelectedItem;
             string info;
             bool result = valib.Convert.GetConversion(CRSFrom.FullString, CRSTo.FullString, out transformSetup.ConvertFunc, out info) 
-                && valib.Convert.GetGammaKCalculation(CRSFrom.FullString, out transformSetup.GammaK_From)
-                && valib.Convert.GetGammaKCalculation(CRSTo.FullString, out transformSetup.GammaK_To);
+                && valib.Convert.GetGammaKInsideCalculation(CRSFrom.FullString, out transformSetup.GammaK_From)
+                && valib.Convert.GetGammaKInsideCalculation(CRSTo.FullString, out transformSetup.GammaK_To);
             toolTip.SetToolTip(comboBox_TransformFrom, info);
             toolTip.SetToolTip(comboBox_TransformTo, info);
             btn_Transform.Enabled = result;
