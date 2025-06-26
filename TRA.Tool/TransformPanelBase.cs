@@ -80,20 +80,19 @@ namespace TRA.Tool
                     if (interp.H == null) { interp.H = new double[interp.X.Length]; }
                     try
                     {
-                        double[][] points = { interp.Y, interp.X, interp.H };
-                        double[] zeros = new double[interp.Y.Length];
+                        //Transform is done in 2D. Normal Heights are not transformed, but the X/Y coordinates are transformed.
+                        double[][] points = { interp.Y, interp.X};
                         double[] gamma_from, k_from, gamma_to, k_to = new double[interp.X.Length];
-                        (gamma_from, k_from) = egbt22lib.Convert.CalcArrays2(points[0], points[1],transformSetup.GammaK_From);
-                        // TODO transform interpolation points also at zero level?
-                        //egbt22lib.Convert.DBRef_GK5_to_EGBT22_Local_Ell(points[0], points[1], points[2], out points[0], out points[1],out points[2]);
+                        bool[] inside_from, inside_to;
+                        (gamma_from, k_from, inside_from) = egbt22lib.Convert.CalcArrays2(points[0], points[1],transformSetup.GammaK_From);
                         points = CalcArray2(points, transformSetup.ConvertFunc);
-                        (gamma_to, k_to) = egbt22lib.Convert.CalcArrays2(points[0], points[1], transformSetup.GammaK_To);
+                        (gamma_to, k_to, inside_to) = egbt22lib.Convert.CalcArrays2(points[0], points[1], transformSetup.GammaK_To);
                         //Workaround to set values in place
                         for (int i = 0; i < interp.X.Length; i++)
                         {
                             interp.Y[i] = points[0][i];
                             interp.X[i] = points[1][i];
-                            interp.H[i] = interp.H[i] + zeros[i]; //TODO is that expected behaviour
+                            interp.H[i] = interp.H[i];
                             interp.T[i] = interp.T[i] - DegreesToRadians(gamma_to[i] - gamma_from[i]);
                         }
                     }
