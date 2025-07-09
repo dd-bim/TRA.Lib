@@ -106,6 +106,7 @@ namespace TRA.Tool
             bool result = valib.Convert.GetConversion(CRSFrom.FullString, CRSTo.FullString, out transformSetup.ConvertFunc, out info) 
                 && valib.Convert.GetGammaKInsideCalculation(CRSFrom.FullString, out transformSetup.GammaK_From)
                 && valib.Convert.GetGammaKInsideCalculation(CRSTo.FullString, out transformSetup.GammaK_To);
+            transformSetup.Target_CRS = CRSTo.FullString;
             toolTip.SetToolTip(comboBox_TransformFrom, info);
             toolTip.SetToolTip(comboBox_TransformTo, info);
             btn_Transform.Enabled = result;

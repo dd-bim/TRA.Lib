@@ -65,7 +65,9 @@ namespace TRA_Lib
             _logTask.Wait();
         }
     }
-
+    /// <summary>
+    /// Class providing import and export functionality
+    /// </summary>
     public class Trassierung
     {
         //config from settings.json
@@ -344,6 +346,20 @@ namespace TRA_Lib
 
                 // Add polyline to the DXF document
                 dxf.Entities.Add(entitiy);
+            }
+            //In case of a VA CRS we add an insert point 
+            if(trasse.CRS_Name.StartsWith("VA"))
+            {
+                dxf.Entities.Add(new netDxf.Entities.Polyline2D(new[]
+                    {
+                        new Vector2(5000-5, 10000),
+                        new Vector2(5000+5, 10000),
+                    }));
+                dxf.Entities.Add(new netDxf.Entities.Polyline2D(new[]
+                    {
+                        new Vector2(5000, 10000-5),
+                        new Vector2(5000, 10000+5),
+                    }));
             }
             // Save the DXF file
             dxf.Save(fileName);

@@ -39,7 +39,7 @@ namespace TRA.Tool
             public Func<double, double, (double x, double y)> ConvertFunc;
             public Func<double, double, (double gamma, double k, bool IsInside)> GammaK_From;
             public Func<double, double, (double gamma, double k, bool IsInside)> GammaK_To;
-
+            public string Target_CRS;
             public TransformSetup()
             {
             }
@@ -69,6 +69,7 @@ namespace TRA.Tool
         {
             double previousdK = double.NaN; //Scale from previous element
             if (trasse == null) return;
+            trasse.CRS_Name = transformSetup.Target_CRS; //Store new CRS of this trasse
             HashSet<TrassenElementExt> elementsOutsideSource = new HashSet<TrassenElementExt>();
             HashSet<TrassenElementExt> elementsOutsideTarget = new HashSet<TrassenElementExt>();
             HashSet<TrassenElementExt> elementsExeedingPPM = new HashSet<TrassenElementExt>();
@@ -278,11 +279,6 @@ namespace TRA.Tool
             }
             // Wait for the thread to terminate
             _backgroundThread.Join();
-        }
-
-        private void btn_SaveAll_Click(object sender, EventArgs e)
-        {
-            
         }
     }
 }

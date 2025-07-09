@@ -67,6 +67,8 @@ namespace TRA_Lib
         static double interpDelta = 1.0;
         static double interpTolerance = 0.01;
 
+        //optional name of current CRS
+        public string CRS_Name = "";
         public TrassenElementExt[] Elemente;
         ///<value>Stationierungs/Kilometrierungs Trasse. Used to project coordinates to TrasseS and get Station values S of the mileage(TrasseS).</value>
         TRATrasse TrasseS;
