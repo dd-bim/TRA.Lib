@@ -1,4 +1,5 @@
-﻿namespace TRA.Tool
+﻿#if USE_VALIB
+namespace TRA.Tool
 {
     partial class TransformPanel_VA
     {
@@ -113,3 +114,4 @@
         private Label label_Target;
     }
 }
+#endif

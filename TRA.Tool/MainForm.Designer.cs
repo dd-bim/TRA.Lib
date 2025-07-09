@@ -161,6 +161,7 @@
             btn_SaveAll.Text = "Save All";
             btn_SaveAll.UseVisualStyleBackColor = true;
             btn_SaveAll.Click += btn_SaveAll_Click;
+#if USE_VALIB
             // 
             // btn_TransformationVA
             // 
@@ -172,6 +173,8 @@
             btn_TransformationVA.Text = "+ Transformation VA";
             btn_TransformationVA.UseVisualStyleBackColor = true;
             btn_TransformationVA.Click += btn_TransformationVA_Click;
+#endif
+#if USE_EGBT22LIB
             // 
             // btn_AddTransformation
             // 
@@ -184,6 +187,7 @@
             btn_AddTransformation.Text = "+ Transformation";
             btn_AddTransformation.UseVisualStyleBackColor = true;
             btn_AddTransformation.Click += btn_AddTransformation_Click;
+#endif
             // 
             // btn_AddInterpolation
             // 

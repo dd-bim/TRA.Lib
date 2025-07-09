@@ -133,9 +133,9 @@ namespace TRA.Tool
             {
                 control = e.Data.GetData(typeof(InterpolationPanel)) as InterpolationPanel;
             }
-            else if (e.Data.GetDataPresent(typeof(TransformPanel)))
+            else if (e.Data.GetDataPresent(typeof(TransformPanelBase)))
             {
-                control = e.Data.GetData(typeof(TransformPanel)) as TransformPanel;
+                control = e.Data.GetData(typeof(TransformPanelBase)) as TransformPanelBase;
             }
             FlowLayoutPanel panel = sender as FlowLayoutPanel;
             if (control != null && panel != null)
@@ -222,6 +222,7 @@ namespace TRA.Tool
 
         private void btn_AddTransformation_Click(object sender, EventArgs e)
         {
+#if USE_EGBT22LIB
             if (flowLayoutPanel != null)
             {
                 TransformPanel control = new TransformPanel();
@@ -229,9 +230,12 @@ namespace TRA.Tool
                 control.Dock = DockStyle.Top;
                 flowLayoutPanel.Invalidate();
             }
+#endif
         }
         private void btn_TransformationVA_Click(object sender, EventArgs e)
         {
+
+#if USE_VALIB
             if (flowLayoutPanel != null)
             {
                 TransformPanel_VA control = new TransformPanel_VA();
@@ -239,6 +243,7 @@ namespace TRA.Tool
                 control.Dock = DockStyle.Top;
                 flowLayoutPanel.Invalidate();
             }
+#endif
         }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)

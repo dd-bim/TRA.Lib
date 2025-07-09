@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if USE_EGBT22LIB
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -61,3 +62,4 @@ namespace TRA.Tool
         }
     }
 }
+#endif

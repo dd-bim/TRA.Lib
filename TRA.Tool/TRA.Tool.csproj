@@ -6,17 +6,28 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Configurations>Debug;Release;Release_NO_SCOTT</Configurations>
+    <Configurations>Debug;Release;Release_NO_SCOTT;Release_VAOnly</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT</DefineConstants>
+    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT;USE_EGBT22LIB;USE_VALIB</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT</DefineConstants>
+    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT;USE_EGBT22LIB;USE_VALIB</DefineConstants>
+	<USE_EGBT22LIB>true</USE_EGBT22LIB>
+    <USE_VALIB>true</USE_VALIB>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_VAOnly|AnyCPU'">
+    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT;USE_VALIB</DefineConstants>
+    <USE_EGBT22LIB>true</USE_EGBT22LIB>
+    <USE_VALIB>true</USE_VALIB>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NO_SCOTT|AnyCPU'">
+    <DefineConstants>$(DefineConstants);USE_SCOTTPLOT;USE_EGBT22LIB;USE_VALIB</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MaxRev.Gdal.Core" Version="3.10.0.306" />
@@ -35,9 +46,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="dbref_va_syst.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Content Include="dbref_va_syst.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="GCG2016v2023">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -49,9 +60,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Update="TransformPanel_VA.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Update="TransformPanel_VA.cs" />
     <Compile Update="TransformPanelBase.cs">
       <SubType>UserControl</SubType>
     </Compile>

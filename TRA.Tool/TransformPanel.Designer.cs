@@ -1,4 +1,5 @@
-﻿namespace TRA.Tool
+﻿#if USE_EGBT22LIB
+namespace TRA.Tool
 {
     partial class TransformPanel
     {
@@ -125,3 +126,4 @@
         private GroupBox groupBox_Target;
     }
 }
+#endif

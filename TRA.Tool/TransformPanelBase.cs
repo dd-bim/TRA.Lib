@@ -71,6 +71,7 @@ namespace TRA.Tool
             if (trasse == null) return;
             HashSet<TrassenElementExt> elementsOutsideSource = new HashSet<TrassenElementExt>();
             HashSet<TrassenElementExt> elementsOutsideTarget = new HashSet<TrassenElementExt>();
+            HashSet<TrassenElementExt> elementsExeedingPPM = new HashSet<TrassenElementExt>();
             foreach (TrassenElementExt element in trasse.Elemente.Reverse()) //run reverse for having X/Yend from the successor is already transformed for plausability checks 
             {
                 //Transform Interpolation Points
@@ -107,6 +108,12 @@ namespace TRA.Tool
                             elementsOutsideTarget.Add(element);
                             TrassierungLog.Logger?.Log_Async(LogLevel.Warning, trasse.Filename + ":Element#" + element.ID + " one or more InterpolationPoint coordinate is outside valid range of SourceCRS");
                         }
+                        //Check for PPM greather 10 
+                        //if(Math.Abs(k_to.First()-1)*1000000 > 10 || Math.Abs(k_to.Last() - 1) * 1000000 > 10) //we only check first and last point for simplicity
+                        //{
+                        //    elementsExeedingPPM.Add(element);
+                        //    TrassierungLog.Logger?.Log_Async(LogLevel.Warning, trasse.Filename + ":Element#" + element.ID + " scale exceeds 10ppm (" + Math.Max(Math.Abs(k_to.First() - 1) * 1000000, Math.Abs(k_to.Last() - 1) * 1000000) + ")");
+                        //}
                     }
                     catch
                     {
@@ -133,6 +140,11 @@ namespace TRA.Tool
                     {
                         elementsOutsideTarget.Add(element);
                     }
+                    //Check for PPM greather 10 
+                    //if (Math.Abs(k_o - 1) * 1000000 > 10)
+                    //{
+                    //    elementsExeedingPPM.Add(element);
+                    //}
                 }
                 catch
                 {
@@ -143,9 +155,11 @@ namespace TRA.Tool
             {
                 MessageBox.Show(trasse.Filename + ": has Elements outside SourceCRS BoundingBox:\n" + string.Join(", ", elementsOutsideSource.Select(p => p.ID)) + "\n (see log for more information)", "Transform: " + trasse.Filename);
             }
-            if (elementsOutsideTarget.Count > 0)
+            if (elementsOutsideTarget.Count > 0 || elementsExeedingPPM.Count > 0)
             {
-                MessageBox.Show(trasse.Filename + ": has Elements outside TargetCRS BoundingBox:\n" + string.Join(", ", elementsOutsideTarget.Select(p => p.ID)) + "\n (see log for more information)", "Transform: " + trasse.Filename);
+                MessageBox.Show(trasse.Filename + ": has Elements outside TargetCRS BoundingBox:\n" + string.Join(", ", elementsOutsideTarget.Select(p => p.ID)) + 
+                    //"\n Element-Scale exceeding 10ppm:\n" + string.Join(", ", elementsExeedingPPM.Select(p => p.ID)) +
+                    "\n(see log for more information)", "Transform: " + trasse.Filename);
             }
             //Set Heading to End element as this is only an empty Geometry and we started to iterate reverse heading could not be calculated. Set heading from the second last element
             double heading = 0;
@@ -205,7 +219,7 @@ namespace TRA.Tool
 
             List<TRATrasse> transform_Trasse = new List<TRATrasse>();
             //Get all TRAs to transform
-            while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanel))
+            while (idx >= 0 && owner.Controls[idx].GetType() != typeof(TransformPanelBase))
             {
                 if (owner.Controls[idx].GetType() == typeof(TrassenPanel))
                 {

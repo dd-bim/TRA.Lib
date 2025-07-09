@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if USE_VALIB
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -111,3 +112,4 @@ namespace TRA.Tool
         }
     }
 }
+#endif
