@@ -26,7 +26,11 @@ namespace TRA_Lib
 {   
     public class Trasse
     {
-        internal const bool saveProjectionsOnInterpolation = false; //only for Debug, save Projections during Interpolation as Projection Errors
+#if !DEBUG
+        internal const bool saveProjectionsOnInterpolation = false; //save Projections during Interpolation as Projection Errors
+#else
+        internal const bool saveProjectionsOnInterpolation = true; //save Projections during Interpolation as Projection Errors
+#endif
         public static List<Trasse> LoadedTrassen = new List<Trasse> { };
         public string Filename = "";
         internal SynchronizationContext context; //MainThread context
@@ -67,7 +71,9 @@ namespace TRA_Lib
         static double interpDelta = 1.0;
         static double interpTolerance = 0.01;
 
-        //optional name of current CRS
+        /// <summary>
+        /// optional name of current CRS
+        /// </summary>
         public string CRS_Name = "";
         public TrassenElementExt[] Elemente;
         ///<value>Stationierungs/Kilometrierungs Trasse. Used to project coordinates to TrasseS and get Station values S of the mileage(TrasseS).</value>
@@ -297,7 +303,7 @@ namespace TRA_Lib
             if (element != null && !Double.IsNaN(s))
             {
                 (X_, Y_, _) = element.GetPointAtS(s);
-#if USE_SCOTTPLOT    
+#if USE_SCOTTPLOT
                 if (bsaveProjections)
                 {
                     element.projections.Add(new ProjectionArrow(new Coordinates(Y, X), new Coordinates(Y_, X_)));
