@@ -24,6 +24,12 @@ namespace TRA.Tool
                 Visible = false
             };
             flowLayoutPanel.Controls.Add(dropIndicatorPanel);
+#if !USE_EGBT22LIB
+            btn_AddTransformation.Hide();
+#endif
+#if !USE_VALIB
+            btn_TransformationVA.Hide();
+#endif
         }
 
         private void LoadRootDirectories()

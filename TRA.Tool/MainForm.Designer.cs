@@ -154,40 +154,35 @@
             // btn_SaveAll
             // 
             btn_SaveAll.Dock = DockStyle.Left;
-            btn_SaveAll.Location = new Point(808, 0);
+            btn_SaveAll.Location = new Point(847, 0);
             btn_SaveAll.Name = "btn_SaveAll";
             btn_SaveAll.Size = new Size(124, 53);
             btn_SaveAll.TabIndex = 12;
             btn_SaveAll.Text = "Save All";
             btn_SaveAll.UseVisualStyleBackColor = true;
             btn_SaveAll.Click += btn_SaveAll_Click;
-#if USE_VALIB
             // 
             // btn_TransformationVA
             // 
             btn_TransformationVA.Dock = DockStyle.Left;
-            btn_TransformationVA.Location = new Point(546, 0);
+            btn_TransformationVA.Location = new Point(585, 0);
             btn_TransformationVA.Name = "btn_TransformationVA";
             btn_TransformationVA.Size = new Size(262, 53);
             btn_TransformationVA.TabIndex = 11;
             btn_TransformationVA.Text = "+ Transformation VA";
             btn_TransformationVA.UseVisualStyleBackColor = true;
             btn_TransformationVA.Click += btn_TransformationVA_Click;
-#endif
-#if USE_EGBT22LIB
             // 
-            // btn_AddTransformation
+            // btn_Transformation
             // 
             btn_AddTransformation.Dock = DockStyle.Left;
             btn_AddTransformation.Location = new Point(323, 0);
-            btn_AddTransformation.Margin = new Padding(6);
-            btn_AddTransformation.Name = "btn_AddTransformation";
-            btn_AddTransformation.Size = new Size(223, 53);
-            btn_AddTransformation.TabIndex = 10;
+            btn_AddTransformation.Name = "btn_Transformation";
+            btn_AddTransformation.Size = new Size(262, 53);
+            btn_AddTransformation.TabIndex = 13;
             btn_AddTransformation.Text = "+ Transformation";
             btn_AddTransformation.UseVisualStyleBackColor = true;
             btn_AddTransformation.Click += btn_AddTransformation_Click;
-#endif
             // 
             // btn_AddInterpolation
             // 
@@ -266,6 +261,11 @@
             ResumeLayout(false);
         }
 
+        private void Btn_Transformation_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         private SplitContainer splitContainer1;
@@ -280,10 +280,10 @@
         private Panel panel_Buttons;
         private Button btn_AddInterpolation;
         private Button btn_AddTrassenPanel;
-        private Button btn_AddTransformation;
         private TrassenPanel trassenPanel1;
         private Button btn_SaveAll;
         private Button btn_TransformationVA;
         private FolderBrowserDialog folderBrowserDialog;
+        private Button btn_AddTransformation;
     }
 }
