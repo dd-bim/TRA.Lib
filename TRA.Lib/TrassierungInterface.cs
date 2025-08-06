@@ -352,13 +352,23 @@ namespace TRA_Lib
             {
                 dxf.Entities.Add(new netDxf.Entities.Polyline2D(new[]
                     {
-                        new Vector2(5000-5, 10000),
+                        new Vector2(5000, 10000),
                         new Vector2(5000+5, 10000),
                     }));
                 dxf.Entities.Add(new netDxf.Entities.Polyline2D(new[]
                     {
-                        new Vector2(5000, 10000-5),
+                        new Vector2(5000, 10000),
                         new Vector2(5000, 10000+5),
+                    }));
+                dxf.Entities.Add(new netDxf.Entities.Polyline2D(new[]
+                    {
+                        new Vector2(5000, 10000),
+                        new Vector2(5000-5, 10000),
+                    }));
+                dxf.Entities.Add(new netDxf.Entities.Polyline2D(new[]
+                    {
+                        new Vector2(5000, 10000),
+                        new Vector2(5000, 10000-5),
                     }));
             }
             // Save the DXF file
