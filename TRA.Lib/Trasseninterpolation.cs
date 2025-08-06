@@ -277,8 +277,7 @@ namespace TRA_Lib
             }
             if (i == maxIterations)
             {
-                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + d, this);
-                return double.NaN;
+                TrassierungLog.Logger?.Log_Async(LogLevel.Warning, "Could not Interpolate a valid solution on Clothoid geometry. Using closes value, remaining distance is " + d, this);
             }
             return s;
         }
@@ -526,8 +525,7 @@ namespace TRA_Lib
             }
             if (i == maxIterations)
             {
-                TrassierungLog.Logger?.LogWarning("Could not Interpolate a valid solution on Clothoid geometry" + d, this);
-                return double.NaN;
+                TrassierungLog.Logger?.Log_Async(LogLevel.Warning,"Could not Interpolate a valid solution on Bloss geometry. Using closes value, remaining distance is " + d, this);
             }
             return s;
         }
