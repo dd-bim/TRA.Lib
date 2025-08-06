@@ -151,7 +151,7 @@ namespace TRA.Tool
                 {
                 }
             }
-#if USE_EGBT22LIB //Checks disabled for VA only Version
+//#if USE_EGBT22LIB //Checks disabled for VA only Version
             //Message if elements are outside CRS-BBox;
             if (elementsOutsideSource.Count > 0)
             {
@@ -163,7 +163,7 @@ namespace TRA.Tool
                     //"\n Element-Scale exceeding 10ppm:\n" + string.Join(", ", elementsExeedingPPM.Select(p => p.ID)) +
                     "\n(see log for more information)", "Transform: " + trasse.Filename);
             }
-#endif
+//#endif
             //Set Heading to End element as this is only an empty Geometry and we started to iterate reverse heading could not be calculated. Set heading from the second last element
             double heading = 0;
             (_,_,heading) = trasse.Elemente[^2].GetPointAtS(trasse.Elemente[^2].L, true);
