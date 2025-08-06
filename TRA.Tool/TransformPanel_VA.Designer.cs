@@ -29,8 +29,8 @@ namespace TRA.Tool
         /// </summary>
         private void InitializeComponent()
         {
-            comboBox_TransformFrom = new ComboBox();
-            comboBox_TransformTo = new ComboBox();
+            comboBox_TransformFrom = new ComboBoxSearchable();
+            comboBox_TransformTo = new ComboBoxSearchable();
             label_Source = new Label();
             label_Target = new Label();
             panel_TransformProperties.SuspendLayout();
