@@ -46,9 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="dbref_va_syst.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="GCG2016v2023">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
